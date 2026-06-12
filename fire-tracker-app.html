@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FIRE">
+<meta name="mobile-web-app-capable" content="yes">
+<title>FIRE Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #1a1a2e;
+    --mid: #16213e;
+    --blue: #0f3460;
+    --coral: #e94560;
+    --mint: #06d6a0;
+    --amber: #ffb347;
+    --purple: #533483;
+    --sky: #4fc3f7;
+    --grey-l: #f0f4ff;
+    --grey-m: #dde3ee;
+    --grey-d: #c5d3e8;
+    --white: #ffffff;
+    --text: #1a1a2e;
+    --text-light: #6b7a99;
+    --success: #06d6a0;
+    --danger: #e94560;
+    --card-radius: 12px;
+    --font-mono: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--grey-l);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── Layout ── */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  .topbar {
+    background: var(--navy);
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.3px;
+  }
+  .topbar-month {
+    font-size: 12px;
+    color: var(--grey-d);
+    font-family: var(--font-mono);
+  }
+
+  .nav {
+    background: var(--mid);
+    display: flex;
+    gap: 2px;
+    padding: 6px 12px;
+    position: sticky;
+    top: 52px;
+    z-index: 99;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    flex: 1;
+    min-width: 60px;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #8899bb;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .nav-btn.active {
+    background: var(--blue);
+    color: var(--white);
+  }
+  .nav-btn:hover:not(.active) { background: rgba(255,255,255,0.07); color: var(--white); }
+
+  .screen { display: none; padding: 16px; max-width: 800px; margin: 0 auto; width: 100%; }
+  .screen.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--card-radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+
+  /* ── KPI grid ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .kpi-card {
+    border-radius: var(--card-radius);
+    padding: 14px;
+    color: var(--white);
+  }
+  .kpi-label { font-size: 10px; opacity: 0.75; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-value { font-size: 20px; font-weight: 800; margin: 4px 0 2px; font-family: var(--font-mono); line-height: 1; }
+  .kpi-sub { font-size: 10px; opacity: 0.6; }
+  .kpi-navy  { background: linear-gradient(135deg, var(--navy), #2a2a4e); }
+  .kpi-blue  { background: linear-gradient(135deg, var(--blue), #1a4480); }
+  .kpi-purple{ background: linear-gradient(135deg, var(--purple), #7344b3); }
+  .kpi-coral { background: linear-gradient(135deg, var(--coral), #ff6b85); }
+
+  /* ── Progress bars ── */
+  .progress-item { margin-bottom: 14px; }
+  .progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .progress-label { font-size: 12px; font-weight: 600; }
+  .progress-meta { font-size: 11px; color: var(--text-light); font-family: var(--font-mono); }
+  .progress-eta { font-size: 10px; color: var(--text-light); margin-top: 3px; }
+  .progress-track {
+    height: 8px;
+    background: var(--grey-m);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+
+  /* ── Charts ── */
+  .chart-wrap { position: relative; height: 220px; }
+  .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .chart-wrap-sm { position: relative; height: 180px; }
+
+  /* ── Upload screen ── */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .platform-btn {
+    border: 2px solid var(--grey-m);
+    border-radius: 10px;
+    padding: 10px 6px;
+    background: var(--white);
+    cursor: pointer;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-light);
+    transition: all 0.15s;
+  }
+  .platform-btn:hover, .platform-btn.selected {
+    border-color: var(--blue);
+    color: var(--blue);
+    background: #f0f6ff;
+  }
+  .platform-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+
+  .drop-zone {
+    border: 2px dashed var(--grey-d);
+    border-radius: var(--card-radius);
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--grey-l);
+    margin-bottom: 14px;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--blue);
+    background: #e8f0ff;
+  }
+  .drop-zone-icon { font-size: 36px; margin-bottom: 8px; }
+  .drop-zone-text { font-size: 13px; color: var(--text-light); }
+  .drop-zone-text strong { color: var(--blue); }
+  #file-input { display: none; }
+
+  .preview-img {
+    width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid var(--grey-m);
+  }
+
+  /* ── OCR Results ── */
+  .ocr-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--grey-l);
+  }
+  .ocr-row:last-child { border-bottom: none; }
+  .ocr-label { font-size: 12px; font-weight: 600; }
+  .ocr-input {
+    border: 1px solid var(--grey-m);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    width: 100%;
+    background: var(--grey-l);
+  }
+  .ocr-input:focus { outline: none; border-color: var(--blue); background: var(--white); }
+  .ocr-ccy {
+    font-size: 11px;
+    color: var(--text-light);
+    font-weight: 600;
+    min-width: 32px;
+  }
+
+  /* ── Ledger ── */
+  .month-selector {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .month-selector select {
+    flex: 1;
+    border: 1px solid var(--grey-m);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    background: var(--white);
+  }
+
+  .ledger-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .ledger-table th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .ledger-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--grey-l);
+    vertical-align: middle;
+  }
+  .ledger-table tr:nth-child(even) td { background: var(--grey-l); }
+  .ledger-table tr:hover td { background: #e8f0ff; }
+  .cat-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .cat-流动资金 { background: #e3f4ff; color: #0f3460; }
+  .cat-固定收益类 { background: #e8fff0; color: #0a6640; }
+  .cat-理财类 { background: #fff8e3; color: #8a6000; }
+  .cat-风险投资 { background: #ffe8ea; color: #c02030; }
+  .cat-实物资产 { background: #f0e8ff; color: #533483; }
+  .cat-负债 { background: #ffe0e0; color: #c0302a; }
+  .cat-应收 { background: #e0f7ff; color: #0066a0; }
+  .row-actions { display: flex; gap: 4px; justify-content: center; }
+  .row-action-btn {
+    border: none; background: transparent; cursor: pointer;
+    font-size: 13px; padding: 2px 4px; border-radius: 4px; line-height: 1;
+    opacity: 0.55; transition: opacity 0.15s;
+  }
+  .row-action-btn:hover { opacity: 1; background: var(--grey-m); }
+
+  /* ── Assets screen ── */
+  .input-group { margin-bottom: 14px; }
+  .input-label { font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 5px; display: block; }
+  .input-field {
+    width: 100%;
+    border: 1px solid var(--grey-m);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    background: var(--white);
+    transition: border 0.15s;
+  }
+  .input-field:focus { outline: none; border-color: var(--blue); }
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .calc-result {
+    background: var(--grey-l);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .calc-result-label { font-size: 12px; color: var(--text-light); font-weight: 600; }
+  .calc-result-value { font-size: 16px; font-weight: 800; color: var(--blue); font-family: var(--font-mono); }
+
+  /* ── Settings ── */
+  .settings-section { margin-bottom: 20px; }
+  .settings-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--grey-m); }
+  .fx-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .fx-item { text-align: center; }
+  .fx-ccy { font-size: 10px; font-weight: 700; color: var(--text-light); margin-bottom: 3px; }
+  .fx-val { font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: var(--navy); }
+  .fx-date { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+
+  /* ── Buttons ── */
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 11px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--blue); color: var(--white); }
+  .btn-primary:hover { background: #0a2a50; }
+  .btn-success { background: var(--mint); color: var(--navy); }
+  .btn-success:hover { background: #04b888; }
+  .btn-danger  { background: var(--coral); color: var(--white); }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--grey-m);
+    color: var(--text);
+  }
+  .btn-outline:hover { border-color: var(--blue); color: var(--blue); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-full { width: 100%; justify-content: center; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+  /* ── States ── */
+  .loading-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--grey-m);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 20px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); }
+  .empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .empty-text { font-size: 13px; }
+
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--grey-m);
+    color: var(--text-light);
+    margin-right: 4px;
+  }
+
+  .status-bar {
+    background: linear-gradient(90deg, var(--navy), var(--blue));
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #8899bb;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+    .platform-grid { grid-template-columns: repeat(3, 1fr); }
+    .input-row { grid-template-columns: 1fr; }
+    .fx-grid { grid-template-columns: repeat(3, 1fr); }
+    .kpi-value { font-size: 17px; }
+  }
+
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0 12px;
+  }
+  .section-divider-label { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; }
+  .section-divider-line { flex: 1; height: 1px; background: var(--grey-m); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-title">🌿 FIRE Tracker</div>
+    <div class="topbar-month" id="topbar-month">—</div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" data-screen="dashboard" onclick="showScreen('dashboard')">📊 看板</button>
+    <button class="nav-btn" data-screen="upload" onclick="showScreen('upload')">📸 录入</button>
+    <button class="nav-btn" data-screen="ledger" onclick="showScreen('ledger')">📋 明细</button>
+    <button class="nav-btn" data-screen="assets" onclick="showScreen('assets')">🏡 资产</button>
+    <button class="nav-btn" data-screen="settings" onclick="showScreen('settings')">⚙️ 设置</button>
+  </nav>
+
+  <!-- ══════════ DASHBOARD ══════════ -->
+  <div id="screen-dashboard" class="screen active">
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-navy">
+        <div class="kpi-label">总净资产</div>
+        <div class="kpi-value" id="kpi-total">—</div>
+        <div class="kpi-sub">CNY 月末汇率</div>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-label">金融资产</div>
+        <div class="kpi-value" id="kpi-fin">—</div>
+        <div class="kpi-sub">不含房产车辆</div>
+      </div>
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-label">房产净值</div>
+        <div class="kpi-value" id="kpi-prop">—</div>
+        <div class="kpi-sub">WOZ估算 − 房贷</div>
+      </div>
+      <div class="kpi-card kpi-coral">
+        <div class="kpi-label">年化增速 CAGR</div>
+        <div class="kpi-value" id="kpi-cagr">—</div>
+        <div class="kpi-sub">基于个人积累</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">FIRE 目标进度</div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-label" id="prog-500-label">💰 500万 里程碑</span>
+          <span class="progress-meta" id="prog-500-meta">—</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="prog-500-bar" style="background:var(--mint);width:0%"></div></div>
+        <div class="progress-eta" id="prog-500-eta">预计达成：计算中…</div>
+      </div>
+      <div class="progress-item" id="prog-1000-item">
+        <div class="progress-header">
+          <span class="progress-label" id="prog-1000-label">🚀 1000万 FIRE目标</span>
+          <span class="progress-meta" id="prog-1000-meta">—</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="prog-1000-bar" style="background:var(--coral);width:0%"></div></div>
+        <div class="progress-eta" id="prog-1000-eta">预计达成：计算中…</div>
+      </div>
+      <div class="progress-item" style="margin-bottom:0">
+        <div class="progress-header">
+          <span class="progress-label">💶 Bunq欧元现金 €20k</span>
+          <span class="progress-meta" id="prog-eur-meta">—</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="prog-eur-bar" style="background:var(--amber);width:0%"></div></div>
+        <div class="progress-eta" id="prog-eur-eta">预计达成：计算中…</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">个人积累追踪</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--grey-l);border-radius:8px">
+          <span style="font-size:12px;color:var(--text-light)">总净资产</span>
+          <span style="font-size:14px;font-weight:800;font-family:var(--font-mono)" id="own-total">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fff0f3;border-radius:8px">
+          <span style="font-size:12px;color:var(--coral)">− 购房资助</span>
+          <span style="font-size:14px;font-weight:800;font-family:var(--font-mono);color:var(--coral)" id="own-support">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:linear-gradient(135deg,var(--mint),#04b888);border-radius:8px">
+          <span style="font-size:12px;color:var(--navy);font-weight:700">= 个人积累（自有贡献）</span>
+          <span style="font-size:16px;font-weight:800;font-family:var(--font-mono);color:var(--navy)" id="own-net">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">净资产走势</div>
+      <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">资产类别</div>
+        <div class="chart-wrap-sm"><canvas id="chart-alloc"></canvas></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">币种分布</div>
+        <div class="chart-wrap-sm"><canvas id="chart-ccy"></canvas></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">净资产构成</div>
+        <div class="chart-wrap-sm"><canvas id="chart-networth"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ UPLOAD ══════════ -->
+  <div id="screen-upload" class="screen">
+    <div class="card" id="upload-zone-card">
+      <div class="card-title">上传截图 — 自动识别平台</div>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleDrop(event)">
+        <div class="drop-zone-icon">📷</div>
+        <div class="drop-zone-text">
+          点击或拖拽截图（可多张）<br>
+          <strong>无需选择平台，Claude 自动识别</strong>
+        </div>
+      </div>
+      <input type="file" id="file-input" accept="image/*" multiple onchange="handleFileSelect(event)">
+    </div>
+
+    <div class="card">
+      <div class="card-title">本月上传进度 <span id="checklist-month" style="font-weight:400;color:var(--text-light)"></span></div>
+      <div class="platform-grid" id="platform-checklist"></div>
+    </div>
+
+    <div id="ocr-section" style="display:none">
+      <div class="card">
+        <div class="card-title">截图预览</div>
+        <img id="preview-img" class="preview-img" src="" alt="preview">
+        <div id="ocr-status"></div>
+      </div>
+      <div class="card" id="ocr-results-card" style="display:none">
+        <div class="card-title">识别结果 — 请确认或修改</div>
+        <div id="ocr-rows"></div>
+        <div class="btn-row">
+          <button class="btn btn-success" onclick="saveOcrResults()">✓ 确认保存</button>
+          <button class="btn btn-outline" onclick="resetUpload()">↩ 重新上传</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <span class="section-divider-label">✏️ 手动录入</span>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">手动添加 — 公积金 / 应收账款 / 未兑付收益等</div>
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">资产名称</label>
+          <input class="input-field" type="text" id="manual-name" placeholder="如：公积金 / 应收款 / 定存利息">
+        </div>
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">账户</label>
+          <input class="input-field" type="text" id="manual-account" placeholder="如：公积金 / 微信">
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">二级分类</label>
+          <select class="input-field" id="manual-cat2">
+            <option value="公积金">公积金</option>
+            <option value="应收款">应收款</option>
+            <option value="活期现金">活期现金</option>
+            <option value="定期存款">定期存款</option>
+            <option value="理财">理财</option>
+            <option value="指数基金">指数基金</option>
+            <option value="个股">个股</option>
+            <option value="保险">保险</option>
+            <option value="信用卡负债">信用卡负债（负数）</option>
+          </select>
+        </div>
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">币种</label>
+          <select class="input-field" id="manual-ccy">
+            <option value="CNY">CNY 人民币</option>
+            <option value="EUR">EUR 欧元</option>
+            <option value="USD">USD 美元</option>
+            <option value="JPY">JPY 日元</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group" style="margin-bottom:8px">
+        <label class="input-label">金额（原币，负债填负数）</label>
+        <input class="input-field" type="number" id="manual-amount" step="0.01" placeholder="如：96409.56">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveManualEntry()">＋ 添加到本月</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⏩ 快速结转 — 冻结/不变项</div>
+      <p style="font-size:12px;color:var(--text-light);margin-bottom:10px">
+        将上月的 公积金、应收款、保险、房产市值/净值、房贷余额、车辆价值 等项目一键复制到本月（金额不变，汇率重新换算）。
+        若本月已通过 🏡资产 页面或手动录入填写过同名项目，该项会自动跳过，不会覆盖你的修改 — 可放心先编辑再结转，或先结转再编辑。
+      </p>
+      <p style="font-size:12px;color:var(--text-light);margin-bottom:10px">
+        💡 应收账款、房贷余额等结转后仍可在下方 📋明细 页面用 ✏️ 编辑或 🗑 删除。
+      </p>
+      <div id="carry-preview" style="font-size:12px;color:var(--text-light);margin-bottom:10px"></div>
+      <button class="btn btn-success btn-full" onclick="carryForwardFrozen()">⏩ 复制上月冻结项到本月</button>
+    </div>
+  </div>
+
+  <!-- ══════════ LEDGER ══════════ -->
+  <div id="screen-ledger" class="screen">
+    <div class="card">
+      <div class="month-selector">
+        <select id="ledger-month-select" onchange="renderLedger()"></select>
+        <button class="btn btn-primary btn-sm" onclick="exportExcel()">⬇ 导出 Excel</button>
+      </div>
+      <div id="ledger-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div style="overflow-x:auto">
+        <table class="ledger-table">
+          <thead>
+            <tr>
+              <th>资产名称</th><th>账户</th><th>币种</th>
+              <th>原币金额</th><th>折人民币</th><th>类别</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ASSETS ══════════ -->
+  <div id="screen-assets" class="screen">
+    <div class="card">
+      <div class="card-title">🏡 房产估值（WOZ方法）</div>
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">WOZ价值 (€)</label>
+          <input class="input-field" type="number" id="woz-value" placeholder="e.g. 480000" oninput="calcHouse()">
+        </div>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">市场溢价 (% 加在WOZ之上)</label>
+          <input class="input-field" type="number" id="woz-rate" placeholder="e.g. 4" step="0.1" oninput="calcHouse()">
+        </div>
+      </div>
+      <div class="input-group" style="margin-top:10px;margin-bottom:0">
+        <p style="font-size:11px;color:var(--text-light)">💡 每年WOZ更新后，在此输入新值并保存 — 仅更新当前月份（<span id="woz-current-month"></span>）的房产记录，历史月份保持不变。</p>
+      </div>
+      <div class="calc-result" id="house-result" style="display:none">
+        <span class="calc-result-label">当前估算市值</span>
+        <span class="calc-result-value" id="house-value">—</span>
+      </div>
+      <div class="calc-result" style="margin-top:6px" id="house-cny-result" style="display:none">
+        <span class="calc-result-label">折合人民币（月末汇率）</span>
+        <span class="calc-result-value" id="house-cny">—</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveHouseAsset()">保存到本月数据</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏦 房贷余额</div>
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">当前余额 (€)</label>
+          <input class="input-field" type="number" id="mortgage-eur" placeholder="e.g. 282000" oninput="calcMortgage()">
+        </div>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">折合人民币</label>
+          <input class="input-field" type="number" id="mortgage-cny" placeholder="自动计算" readonly style="background:var(--grey-l)">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveMortgage()">保存</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚗 车辆估值（每年更新）</div>
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">当前市值 (€)</label>
+          <input class="input-field" type="number" id="car-eur" placeholder="e.g. 10000" oninput="calcCar()">
+        </div>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">折合人民币</label>
+          <input class="input-field" type="number" id="car-cny" placeholder="自动计算" readonly style="background:var(--grey-l)">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveCar()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SETTINGS ══════════ -->
+  <div id="screen-settings" class="screen">
+    <div class="card">
+      <div class="settings-section">
+        <div class="settings-title">🔑 Claude API Key</div>
+        <div class="input-group">
+          <label class="input-label">API Key（用于截图OCR识别）</label>
+          <input class="input-field" type="password" id="api-key-input" placeholder="sk-ant-...">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveApiKey()">保存 API Key</button>
+        <div style="margin-top:10px;padding:10px 12px;background:var(--grey-l);border-radius:8px;font-size:11px;color:var(--text-light);line-height:1.6">
+          <strong style="color:var(--navy)">如何获取 API Key：</strong><br>
+          1. 访问 <strong>console.anthropic.com</strong> 并注册/登录<br>
+          2. 左侧菜单进入 <strong>Billing</strong>，充值 $5–10（个人用量每月几毛钱即可）<br>
+          3. 左侧菜单进入 <strong>API Keys</strong> → <strong>Create Key</strong><br>
+          4. 复制以 <code>sk-ant-...</code> 开头的密钥，粘贴到上方输入框并保存<br>
+          ⚠️ 密钥仅保存在你本机浏览器中（localStorage），不会上传到任何服务器
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">💱 月末汇率</div>
+        <div class="input-group" style="margin-bottom:10px">
+          <label class="input-label">汇率日期</label>
+          <input class="input-field" type="date" id="fx-date" style="max-width:200px">
+        </div>
+        <div class="btn-row" style="margin-top:0;margin-bottom:14px">
+          <button class="btn btn-primary btn-sm" onclick="fetchFxRates()">🌐 自动获取</button>
+          <button class="btn btn-outline btn-sm" onclick="saveFxManual()">手动保存</button>
+        </div>
+        <div class="fx-grid" id="fx-display">
+          <div class="fx-item"><div class="fx-ccy">EUR/CNY</div><div class="fx-val" id="fx-eur">—</div></div>
+          <div class="fx-item"><div class="fx-ccy">USD/CNY</div><div class="fx-val" id="fx-usd">—</div></div>
+          <div class="fx-item"><div class="fx-ccy">JPY/CNY</div><div class="fx-val" id="fx-jpy">—</div></div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="fx-grid">
+            <div><label class="input-label">EUR/CNY</label><input class="input-field" type="number" id="fx-eur-in" step="0.0001" placeholder="7.81"></div>
+            <div><label class="input-label">USD/CNY</label><input class="input-field" type="number" id="fx-usd-in" step="0.0001" placeholder="7.15"></div>
+            <div><label class="input-label">JPY/CNY</label><input class="input-field" type="number" id="fx-jpy-in" step="0.00001" placeholder="0.047"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">🎯 FIRE 目标设置</div>
+        <div class="input-row">
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">里程碑目标 (CNY)</label>
+            <input class="input-field" type="number" id="target-1" placeholder="5000000">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">FIRE目标 (CNY)</label>
+            <input class="input-field" type="number" id="target-2" placeholder="10000000">
+          </div>
+        </div>
+        <div class="input-group" style="margin-top:10px;margin-bottom:0">
+          <label class="input-label">欧元现金目标 (EUR, Bunq)</label>
+          <input class="input-field" type="number" id="target-eur" placeholder="20000">
+        </div>
+        <div class="input-row" style="margin-top:10px">
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">购房资助金额 (CNY)</label>
+            <input class="input-field" type="number" id="house-support" placeholder="700000">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">生效月份（购房月）</label>
+            <input class="input-field" type="month" id="house-support-from">
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--text-light);margin-top:6px">个人积累 = 总净资产 − 购房资助（仅从生效月份起扣除，此前月份不受影响）</p>
+        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveTargets()">保存目标</button>
+      </div>
+
+      <div class="settings-section" style="margin-bottom:0">
+        <div class="settings-title">🗑 数据管理</div>
+        <div class="btn-row" style="margin-top:0">
+          <button class="btn btn-outline btn-sm" onclick="exportExcel()">⬇ 导出 Excel</button>
+          <button class="btn btn-success btn-sm" onclick="exportJSON()">⬇ 导出数据备份 (JSON)</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-json-input').click()">⬆ 导入数据备份</button>
+          <button class="btn btn-danger btn-sm" onclick="clearAllData()">清除所有数据</button>
+        </div>
+        <input type="file" id="import-json-input" accept="application/json" style="display:none" onchange="importJSON(event)">
+        <p style="font-size:11px;color:var(--text-light);margin-top:8px">
+          💡 在不同设备/浏览器间转移数据：先在这里"导出数据备份"，再在另一台设备打开本应用并"导入数据备份"。
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════
+
+const DB = {
+  get: (k, def=null) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } },
+  set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+  del: (k) => localStorage.removeItem(k)
+};
+
+// Entries: array of { month:'2026-05', name, account, currency, origAmt, cnhAmt, cat1, cat2, include:true }
+const getEntries = () => {
+  const entries = DB.get('entries', []);
+  let changed = false;
+  entries.forEach(e => { if (!e.id) { e.id = genId(); changed = true; } });
+  if (changed) DB.set('entries', entries);
+  return entries;
+};
+const setEntries = (e) => DB.set('entries', e);
+
+const getSettings = () => DB.get('settings', {
+  apiKey: '', target1: 5000000, target2: 10000000, targetEur: 20000,
+  fxEur: 7.81, fxUsd: 6.71, fxJpy: 0.042, fxDate: '',
+  wozValue: 468000, wozRate: 4, carEur: 0,
+  houseSupport: 700000, houseSupportFrom: '2025-01',
+});
+const saveSettings = (s) => DB.set('settings', { ...getSettings(), ...s });
+
+// Platform definitions for OCR prompts
+const PLATFORMS = {
+  cmb:    { name:'招商银行',    lang:'zh', hint:'招商银行 活期/理财/基金余额' },
+  xmib:   { name:'厦门国际银行', lang:'zh', hint:'厦门国际 活期/定期余额' },
+  boc:    { name:'中国银行',    lang:'zh', hint:'中国银行 账户余额' },
+  ccb:    { name:'建设银行',    lang:'zh', hint:'建设银行 账户余额' },
+  alipay: { name:'支付宝',     lang:'zh', hint:'支付宝 余额/余额宝/基金' },
+  wechat: { name:'微信',       lang:'zh', hint:'微信支付 零钱/理财/基金' },
+  bunq:   { name:'Bunq',       lang:'en', hint:'Bunq bank account balances in EUR' },
+  abn:    { name:'ABN AMRO',   lang:'en', hint:'ABN AMRO account balances in EUR' },
+  revolut:{ name:'Revolut',    lang:'en', hint:'Revolut balances by currency' },
+  tr:     { name:'Trade Republic', lang:'en', hint:'Trade Republic portfolio: cash, ETF positions, stocks' },
+  ibkr:   { name:'IBKR',       lang:'en', hint:'Interactive Brokers cash and portfolio value in EUR' },
+  klarna: { name:'Klarna',     lang:'en', hint:'Klarna balance or outstanding amount in EUR' },
+};
+
+// Category mapping for known accounts
+const ACCOUNT_CATS = {
+  '招商银行-活期': { cat1:'金融资产', cat2:'活期现金' },
+  '招商银行-理财': { cat1:'金融资产', cat2:'理财' },
+  '招商银行-基金': { cat1:'金融资产', cat2:'指数基金' },
+  '厦门国际-活期': { cat1:'金融资产', cat2:'活期现金' },
+  '厦门国际-定期': { cat1:'金融资产', cat2:'定期存款' },
+  '中国银行-活期': { cat1:'金融资产', cat2:'活期现金' },
+  '建设银行-活期': { cat1:'金融资产', cat2:'活期现金' },
+  '支付宝-余额':   { cat1:'金融资产', cat2:'活期现金' },
+  '支付宝-余额宝': { cat1:'金融资产', cat2:'活期现金' },
+  '支付宝-基金':   { cat1:'金融资产', cat2:'指数基金' },
+  '支付宝-定期':   { cat1:'金融资产', cat2:'定期存款' },
+  '微信-零钱':     { cat1:'金融资产', cat2:'活期现金' },
+  '微信-理财':     { cat1:'金融资产', cat2:'理财' },
+  '微信-基金':     { cat1:'金融资产', cat2:'指数基金' },
+  'Bunq-活期':     { cat1:'金融资产', cat2:'活期现金' },
+  'ABN-活期':      { cat1:'金融资产', cat2:'活期现金' },
+  'Revolut-活期':  { cat1:'金融资产', cat2:'活期现金' },
+  'Trade Republic-现金':   { cat1:'金融资产', cat2:'活期现金' },
+  'Trade Republic-ETF':    { cat1:'金融资产', cat2:'指数基金' },
+  'Trade Republic-个股':   { cat1:'金融资产', cat2:'个股' },
+  'IBKR-现金':     { cat1:'金融资产', cat2:'活期现金' },
+  'Klarna-余额':   { cat1:'金融资产', cat2:'活期现金' },
+};
+
+// Maps a specific 二级分类 to its broad display group for badge styling
+const CAT2_GROUP = {
+  '活期现金':'流动资金', '应收款':'应收',
+  '定期存款':'固定收益类', '保险':'固定收益类', '公积金':'固定收益类',
+  '理财':'理财类',
+  '指数基金':'风险投资', '个股':'风险投资',
+  '信用卡负债':'负债',
+  '房产市值':'实物资产', '房产净值':'实物资产', '房贷余额':'实物资产', '车辆价值':'实物资产',
+};
+function cat2Group(cat2) { return CAT2_GROUP[cat2] || '流动资金'; }
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+function fmt(n, decimals=0) {
+  if (n == null || isNaN(n)) return '—';
+  return new Intl.NumberFormat('zh-CN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(n);
+}
+function fmtShort(n) {
+  if (n == null || isNaN(n)) return '—';
+  if (Math.abs(n) >= 10000) return (n/10000).toFixed(1) + '万';
+  return fmt(n);
+}
+function currentMonth() {
+  const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function genId() {
+  return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+function toast(msg, dur=2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+function toCny(amt, ccy) {
+  const s = getSettings();
+  if (ccy === 'CNY') return amt;
+  if (ccy === 'EUR') return amt * s.fxEur;
+  if (ccy === 'USD') return amt * s.fxUsd;
+  if (ccy === 'JPY') return amt * s.fxJpy;
+  return amt;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
+  document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'upload') { renderCarryPreview(); renderChecklist(); }
+  if (name === 'ledger') renderLedger();
+  if (name === 'assets') renderAssets();
+  if (name === 'settings') renderSettings();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+
+let chartTrend=null, chartAlloc=null, chartCcy=null, chartNetworth=null;
+
+function calcTotals(month) {
+  const entries = getEntries().filter(e => e.month === month && e.include);
+  const s = getSettings();
+
+  let liquid=0, fixed=0, wealth=0, risk=0, debt=0;
+  let eur=0, usd=0, jpy=0, cny=0;
+  let bunqEur = 0;
+
+  entries.forEach(e => {
+    const v = e.cnhAmt || 0;
+    const cat2 = e.cat2 || '';
+    if (e.cat1 === '金融资产') {
+      if (cat2 === '活期现金') liquid += v;
+      else if (['定期存款','保险','公积金'].includes(cat2)) fixed += v;
+      else if (cat2 === '理财') wealth += v;
+      else if (['指数基金','个股'].includes(cat2)) risk += v;
+      else if (cat2 === '信用卡负债') debt += v;
+      else if (cat2 === '应收款') liquid += v;
+      // Currency breakdown: financial assets only (实物资产 excluded)
+      if (e.currency === 'EUR') eur += v;
+      else if (e.currency === 'USD') usd += v;
+      else if (e.currency === 'JPY') jpy += v;
+      else if (e.currency === 'CNY') cny += v;
+    }
+    if (e.account === 'Bunq' && e.currency === 'EUR') bunqEur += (e.origAmt || 0);
+  });
+
+  const fin = liquid + fixed + wealth + risk + debt;
+
+  // Property: read directly from this month's entries.
+  // 房产市值 + 房产净值(direct net, used for older months where only net is known) + 房贷余额(negative)
+  let houseCny = 0, mortgageCny = 0;
+  entries.forEach(e => {
+    if (e.cat1 !== '实物资产') return;
+    if (e.cat2 === '房产市值' || e.cat2 === '房产净值') houseCny += (e.cnhAmt || 0);
+    else if (e.cat2 === '房贷余额') mortgageCny += (e.cnhAmt || 0);
+  });
+  const propNet = houseCny + mortgageCny; // mortgage stored negative
+
+  // Car: sum of 车辆价值 entries for this month
+  let carCny = 0;
+  entries.forEach(e => { if (e.cat1 === '实物资产' && e.cat2 === '车辆价值') carCny += (e.cnhAmt || 0); });
+
+  const total = fin + propNet + carCny;
+  // Mother's ¥700,000 house-purchase support only affects 个人积累 from the
+  // purchase month onward (2025-01) — earlier months' totals didn't include it.
+  const support = (month >= (s.houseSupportFrom || '2025-01')) ? (s.houseSupport || 0) : 0;
+  const ownTotal = total - support;
+
+  return { liquid, fixed, wealth, risk, fin, propNet, carCny, total, support, ownTotal, eur, usd, jpy, cny, bunqEur,
+           catData: [liquid, fixed, wealth, risk],
+           ccyData: [cny, eur, usd, jpy] };
+}
+
+function computeCagr() {
+  const entries = getEntries();
+  const months = [...new Set(entries.map(e => e.month))].sort();
+  if (months.length < 2) return { cagr: null, history: [] };
+
+  // history.total = total net worth (for the trend chart);
+  // CAGR itself is computed on 个人积累 (ownTotal), which already applies the
+  // ¥700,000 house-support deduction only from the purchase month onward.
+  const history = months.map(m => {
+    const t = calcTotals(m);
+    return { month: m, total: t.total, ownTotal: t.ownTotal };
+  });
+  const n = history.length;
+  const months_elapsed = (new Date(history[n-1].month+'-01') - new Date(history[0].month+'-01')) / (30.44*24*3600*1000);
+  const first = history[0].ownTotal, last = history[n-1].ownTotal;
+  const cagr = (first > 0 && months_elapsed > 0) ? Math.pow(last/first, 12/months_elapsed) - 1 : null;
+  return { cagr, history };
+}
+
+function estimateEta(current, target, cagr) {
+  if (!cagr || cagr <= 0) return '需更多历史数据';
+  if (current >= target) return '已达成 ✓';
+  const monthRate = Math.pow(1+cagr, 1/12) - 1;
+  const months = Math.log(target/current) / Math.log(1+monthRate);
+  const eta = new Date();
+  eta.setMonth(eta.getMonth() + Math.ceil(months));
+  return `预计 ${eta.getFullYear()}年${eta.getMonth()+1}月`;
+}
+
+function renderDashboard() {
+  const months = [...new Set(getEntries().map(e => e.month))].sort();
+  const latestMonth = months[months.length-1] || currentMonth();
+  document.getElementById('topbar-month').textContent = latestMonth || '无数据';
+
+  const t = calcTotals(latestMonth);
+  const { cagr, history } = computeCagr();
+  const s = getSettings();
+
+  document.getElementById('kpi-total').textContent = fmtShort(t.total);
+  document.getElementById('kpi-fin').textContent = fmtShort(t.fin);
+  document.getElementById('kpi-prop').textContent = fmtShort(t.propNet);
+  document.getElementById('kpi-cagr').textContent = cagr != null ? (cagr*100).toFixed(1)+'%' : '—';
+
+  // Personal accumulation tracking
+  document.getElementById('own-total').textContent = '¥ ' + fmt(t.total, 0);
+  document.getElementById('own-support').textContent = '− ¥ ' + fmt(t.support, 0);
+  document.getElementById('own-net').textContent = '¥ ' + fmt(t.ownTotal, 0);
+
+  // Progress bars — measured on PERSONAL ACCUMULATION (total − house support).
+  // Second target stays hidden until the first is reached.
+  const target1Reached = t.ownTotal >= s.target1;
+  document.getElementById('prog-1000-item').style.display = target1Reached ? 'block' : 'none';
+  document.getElementById('prog-500-label').textContent = `💰 ${Math.round(s.target1/10000)}万 里程碑（个人积累）`;
+  document.getElementById('prog-1000-label').textContent = `🚀 ${Math.round(s.target2/10000)}万 FIRE目标（个人积累）`;
+
+  const bars = [
+    { pct: t.ownTotal/s.target1, cur: t.ownTotal, tgt: s.target1, bar: 'prog-500-bar', meta: 'prog-500-meta', eta: 'prog-500-eta', color: 'var(--mint)' },
+    { pct: t.ownTotal/s.target2, cur: t.ownTotal, tgt: s.target2, bar: 'prog-1000-bar', meta: 'prog-1000-meta', eta: 'prog-1000-eta', color: 'var(--coral)' },
+    { pct: t.bunqEur/s.targetEur, cur: t.bunqEur, tgt: s.targetEur, bar: 'prog-eur-bar', meta: 'prog-eur-meta', eta: 'prog-eur-eta', color: 'var(--amber)', isCcy: true },
+  ];
+  bars.forEach(b => {
+    const pct = Math.min(b.pct || 0, 1);
+    document.getElementById(b.bar).style.width = (pct*100)+'%';
+    document.getElementById(b.bar).style.background = b.color;
+    document.getElementById(b.meta).textContent = b.isCcy
+      ? `€${fmt(b.cur,0)} / €${fmt(b.tgt,0)} (${(pct*100).toFixed(1)}%)`
+      : `¥${fmtShort(b.cur)} / ¥${fmtShort(b.tgt)} (${(pct*100).toFixed(1)}%)`;
+    document.getElementById(b.eta).textContent = estimateEta(b.isCcy ? b.cur : b.cur, b.isCcy ? b.tgt : b.tgt, cagr);
+  });
+
+  // Trend chart
+  const ctx1 = document.getElementById('chart-trend').getContext('2d');
+  if (chartTrend) chartTrend.destroy();
+  const histLabels = history.map(h => h.month);
+  const histTotals = history.map(h => +(h.total/10000).toFixed(1));
+  const histOwn = history.map(h => +(h.ownTotal/10000).toFixed(1));
+  const tgt1Wan = +(s.target1/10000).toFixed(0);
+  const tgt2Wan = +(s.target2/10000).toFixed(0);
+  const datasets = [
+    { label:'总净资产(万)', data: histTotals, borderColor:'#0f3460', backgroundColor:'rgba(15,52,96,0.08)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:3 },
+    { label:'个人积累(万)', data: histOwn, borderColor:'#06d6a0', borderWidth:2, fill:false, tension:0.3, pointRadius:2 },
+    { label:`${tgt1Wan}万目标`, data: histLabels.map(()=>tgt1Wan), borderColor:'#ffb347', borderWidth:1.5, borderDash:[5,5], fill:false, pointRadius:0 },
+  ];
+  // Second target line activates only after the first milestone is reached
+  if (target1Reached) {
+    datasets.push({ label:`${tgt2Wan}万目标`, data: histLabels.map(()=>tgt2Wan), borderColor:'#e94560', borderWidth:1.5, borderDash:[5,5], fill:false, pointRadius:0 });
+  }
+  chartTrend = new Chart(ctx1, {
+    type: 'line',
+    data: { labels: histLabels, datasets },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ font:{size:10}, boxWidth:12 } } }, scales:{ y:{ ticks:{ font:{size:9} } }, x:{ ticks:{ font:{size:9}, maxRotation:45 } } } }
+  });
+
+  // ── Pie chart helper: appends "X.X%" to each legend label ──
+  function pctLabels(labels, data) {
+    const total = data.reduce((a,b) => a + (b||0), 0);
+    return labels.map((l,i) => total > 0 ? `${l} ${(data[i]/total*100).toFixed(1)}%` : `${l} 0%`);
+  }
+  function pctTooltip(ctx) {
+    const data = ctx.dataset.data;
+    const total = data.reduce((a,b) => a + (b||0), 0);
+    const pct = total > 0 ? (ctx.parsed/total*100).toFixed(1) : '0';
+    return `${ctx.label.split(' ')[0]}: ¥${fmt(ctx.parsed,0)} (${pct}%)`;
+  }
+  const pieOpts = { responsive:true, maintainAspectRatio:false, plugins:{
+    legend:{ position:'bottom', labels:{ font:{size:9}, boxWidth:10 } },
+    tooltip:{ callbacks:{ label: pctTooltip } }
+  }};
+
+  // Allocation pie
+  const ctx2 = document.getElementById('chart-alloc').getContext('2d');
+  if (chartAlloc) chartAlloc.destroy();
+  chartAlloc = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+      labels: pctLabels(['流动资金','固定收益','理财','风险投资'], t.catData),
+      datasets: [{ data: t.catData, backgroundColor: ['#4FC3F7','#C8FFE3','#FFD54F','#EF9A9A'], borderWidth:1 }]
+    },
+    options: pieOpts
+  });
+
+  // Currency pie
+  const ctx3 = document.getElementById('chart-ccy').getContext('2d');
+  if (chartCcy) chartCcy.destroy();
+  chartCcy = new Chart(ctx3, {
+    type: 'doughnut',
+    data: {
+      labels: pctLabels(['CNY','EUR','USD','JPY'], t.ccyData),
+      datasets: [{ data: t.ccyData, backgroundColor: ['#4CAF50','#2196F3','#FF9800','#E91E63'], borderWidth:1 }]
+    },
+    options: pieOpts
+  });
+
+  // Net worth composition pie: 金融资产 vs 房产净值 vs 车辆
+  const ctx4 = document.getElementById('chart-networth').getContext('2d');
+  if (chartNetworth) chartNetworth.destroy();
+  const nwData = [t.fin, t.propNet, t.carCny];
+  chartNetworth = new Chart(ctx4, {
+    type: 'doughnut',
+    data: {
+      labels: pctLabels(['金融资产','房产净值','车辆'], nwData),
+      datasets: [{ data: nwData, backgroundColor: ['#0F3460','#533483','#78909C'], borderWidth:1 }]
+    },
+    options: pieOpts
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UPLOAD + OCR
+// ═══════════════════════════════════════════════════════════════
+
+let currentImageBase64 = null;
+let pendingOcrResults = [];
+let uploadQueue = [];
+
+// Known platforms for the checklist + auto-detection
+const KNOWN_PLATFORMS = [
+  { key:'招商银行',       icon:'🏦' },
+  { key:'厦门国际',       icon:'🏦' },
+  { key:'中国银行',       icon:'🏦' },
+  { key:'建设银行',       icon:'🏦' },
+  { key:'支付宝',         icon:'💙' },
+  { key:'微信',           icon:'💚' },
+  { key:'Bunq',           icon:'🟢' },
+  { key:'ABN',            icon:'🟡' },
+  { key:'Revolut',        icon:'⚫' },
+  { key:'Trade Republic', icon:'🔴' },
+  { key:'IBKR',           icon:'🔵' },
+  { key:'Klarna',         icon:'🩷' },
+];
+
+// ── Monthly upload checklist ──
+function renderChecklist() {
+  const month = currentMonth();
+  document.getElementById('checklist-month').textContent = `(${month})`;
+  const monthEntries = getEntries().filter(e => e.month === month);
+  const grid = document.getElementById('platform-checklist');
+
+  let html = KNOWN_PLATFORMS.map(p => {
+    const done = monthEntries.some(e => (e.account||'').includes(p.key) || (e.name||'').includes(p.key));
+    return `<div class="platform-btn" style="cursor:default;${done ? 'border-color:var(--mint);background:#e8fff5;color:#0a8060' : 'opacity:0.55'}">
+      <span class="platform-icon">${done ? '✅' : p.icon}</span>${p.key}
+    </div>`;
+  }).join('');
+
+  // Auto-discover accounts that appeared this month but aren't in the known list
+  // (e.g. a newly uploaded platform like N26, 工商银行, Degiro)
+  const knownKeys = KNOWN_PLATFORMS.map(p => p.key);
+  const seenExtra = new Set();
+  monthEntries.forEach(e => {
+    const acc = e.account;
+    if (!acc || acc === '-' || acc === '历史' || acc === '现金') return;
+    if (knownKeys.some(k => acc.includes(k))) return;
+    seenExtra.add(acc);
+  });
+  if (seenExtra.size) {
+    html += [...seenExtra].map(acc => `<div class="platform-btn" style="cursor:default;border-color:var(--mint);background:#e8fff5;color:#0a8060">
+      <span class="platform-icon">✅</span>${acc}
+    </div>`).join('');
+  }
+
+  grid.innerHTML = html;
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+  if (files.length) startUploadQueue(files);
+}
+
+function handleFileSelect(e) {
+  const files = [...e.target.files];
+  if (files.length) startUploadQueue(files);
+}
+
+function startUploadQueue(files) {
+  uploadQueue = files;
+  pendingOcrResults = [];
+  document.getElementById('ocr-section').style.display = 'block';
+  document.getElementById('ocr-results-card').style.display = 'none';
+  processNextInQueue(0);
+}
+
+function processNextInQueue(idx) {
+  if (idx >= uploadQueue.length) {
+    // All done — show combined review
+    document.getElementById('ocr-status').innerHTML = pendingOcrResults.length
+      ? `<p style="text-align:center;color:var(--mint);font-size:12px;font-weight:700">✓ ${uploadQueue.length} 张截图识别完成，共 ${pendingOcrResults.length} 条记录</p>`
+      : '<p style="text-align:center;color:var(--coral);font-size:12px">未识别到任何余额，请检查截图</p>';
+    if (pendingOcrResults.length) renderOcrResults();
+    return;
+  }
+  const file = uploadQueue[idx];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    currentImageBase64 = dataUrl.split(',')[1];
+    document.getElementById('preview-img').src = dataUrl;
+    document.getElementById('ocr-status').innerHTML =
+      `<div class="loading-spinner"></div><p style="text-align:center;color:var(--text-light);font-size:12px">识别第 ${idx+1}/${uploadQueue.length} 张 — Claude 自动判断平台中…</p>`;
+    runOcr(() => processNextInQueue(idx + 1));
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runOcr(onDone) {
+  const s = getSettings();
+  if (!s.apiKey) {
+    document.getElementById('ocr-status').innerHTML = '<p style="color:var(--coral);text-align:center;font-size:12px">⚠️ 请先在设置中填写 API Key</p>';
+    return;
+  }
+  const prompt = buildOcrPrompt();
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': s.apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1500,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentImageBase64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content[0].text;
+    parseOcrResponse(text);
+    if (onDone) onDone();
+  } catch (err) {
+    document.getElementById('ocr-status').innerHTML = `<p style="color:var(--coral);text-align:center;font-size:12px">识别失败: ${err.message}</p>`;
+    if (onDone) onDone();
+  }
+}
+
+function buildOcrPrompt() {
+  const known = KNOWN_PLATFORMS.map(p => p.key).join(', ');
+  return `You are reading a financial app screenshot. Two tasks:
+
+1. IDENTIFY the platform from logos, UI style, app name, or language.
+   Known platforms: ${known}
+   If it matches one, use that EXACT name. If not, use the visible app/bank name.
+
+2. EXTRACT all account balances visible.
+
+Return ONLY this JSON, no other text:
+{"platform":"platform name","items":[{"name":"account name","amount":12345.67,"currency":"CNY/EUR/USD/JPY","type":"cash/savings/fund/stock/debt"}]}
+
+Rules:
+- Use the original currency shown (do not convert)
+- Negative for debts/loans
+- "name" descriptive e.g. "活期", "余额宝", "ETF持仓", "Cash"
+- Return ONLY the JSON object`;
+}
+
+function parseOcrResponse(text) {
+  try {
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    const platformName = parsed.platform || '未知平台';
+    const items = parsed.items || [];
+    const newResults = items.map(item => {
+      const key = `${platformName}-${item.name}`;
+      const catInfo = ACCOUNT_CATS[key] || { cat1: '金融资产', cat2: mapType(item.type) };
+      return {
+        name: `${platformName}-${item.name}`,
+        account: platformName,
+        currency: item.currency || 'CNY',
+        origAmt: item.amount,
+        cnhAmt: toCny(item.amount, item.currency || 'CNY'),
+        cat1: catInfo.cat1,
+        cat2: catInfo.cat2,
+        include: true
+      };
+    });
+    pendingOcrResults.push(...newResults);
+  } catch {
+    // skip failed parse, continue queue
+  }
+}
+
+// ── Manual entry ──
+function saveManualEntry() {
+  const name = document.getElementById('manual-name').value.trim();
+  const account = document.getElementById('manual-account').value.trim();
+  const cat2 = document.getElementById('manual-cat2').value;
+  const ccy = document.getElementById('manual-ccy').value;
+  const amt = +document.getElementById('manual-amount').value;
+  if (!name) { toast('⚠️ 请填写资产名称'); return; }
+  if (!amt && amt !== 0) { toast('⚠️ 请填写金额'); return; }
+
+  upsertEntry({
+    name, account: account || '-', currency: ccy,
+    origAmt: amt, cnhAmt: toCny(amt, ccy),
+    cat1: '金融资产', cat2, include: true
+  });
+  toast(`✓ 已添加：${name}`);
+  document.getElementById('manual-name').value = '';
+  document.getElementById('manual-account').value = '';
+  document.getElementById('manual-amount').value = '';
+  renderCarryPreview();
+  renderChecklist();
+}
+
+// ── Carry forward frozen items ──
+const FROZEN_CATS = ['公积金', '应收款', '保险', '房产市值', '房产净值', '房贷余额', '车辆价值'];
+
+function getPrevMonth(month) {
+  const [y, m] = month.split('-').map(Number);
+  const d = new Date(y, m - 2, 1);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function renderCarryPreview() {
+  const el = document.getElementById('carry-preview');
+  if (!el) return;
+  const month = currentMonth();
+  const prev = getPrevMonth(month);
+  const entries = getEntries();
+  const frozen = entries.filter(e => e.month === prev && FROZEN_CATS.includes(e.cat2));
+  if (!frozen.length) {
+    el.innerHTML = `<span style="color:#999">上月（${prev}）暂无冻结项记录</span>`;
+    return;
+  }
+  const currentNames = new Set(entries.filter(e => e.month === month).map(e => e.name));
+  el.innerHTML = `上月（${prev}）冻结项：` + frozen.map(e => {
+    const already = currentNames.has(e.name);
+    return `<span class="tag" style="${already?'opacity:.5':''}">${e.name} ¥${fmt(e.cnhAmt,0)}${already?' ✓已存在':''}</span>`;
+  }).join(' ');
+}
+
+function carryForwardFrozen() {
+  const month = currentMonth();
+  const prev = getPrevMonth(month);
+  const entries = getEntries();
+  const frozen = entries.filter(e => e.month === prev && FROZEN_CATS.includes(e.cat2));
+  if (!frozen.length) { toast(`上月（${prev}）无冻结项可复制`); return; }
+  const currentNames = new Set(entries.filter(e => e.month === month).map(e => e.name));
+  let copied = 0, skipped = 0;
+  frozen.forEach(e => {
+    // Skip if this month already has an entry with the same name —
+    // protects manual edits made on the 资产/明细 pages from being overwritten
+    if (currentNames.has(e.name)) { skipped++; return; }
+    const { id, month: _m, ...rest } = e; // strip id/month so upsertEntry assigns a fresh id
+    upsertEntry({ ...rest, cnhAmt: toCny(e.origAmt, e.currency) });
+    copied++;
+  });
+  toast(copied
+    ? `✓ 已结转 ${copied} 项到 ${month}${skipped ? `（${skipped} 项本月已存在，已跳过）` : ''}`
+    : `本月已有全部 ${skipped} 项冻结数据，无需结转`);
+  renderCarryPreview();
+  renderChecklist();
+}
+
+function mapType(t) {
+  if (!t) return '活期现金';
+  if (t.includes('fund') || t.includes('etf')) return '指数基金';
+  if (t.includes('stock')) return '个股';
+  if (t.includes('savings') || t.includes('fixed')) return '定期存款';
+  if (t.includes('debt') || t.includes('loan')) return '信用卡负债';
+  return '活期现金';
+}
+
+function renderOcrResults() {
+  const container = document.getElementById('ocr-rows');
+  container.innerHTML = '';
+  pendingOcrResults.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'ocr-row';
+    row.innerHTML = `
+      <div class="ocr-label">${item.name}</div>
+      <input class="ocr-input" type="number" value="${item.origAmt}" step="0.01"
+             onchange="pendingOcrResults[${i}].origAmt=+this.value; pendingOcrResults[${i}].cnhAmt=toCny(+this.value,'${item.currency}')">
+      <span class="ocr-ccy">${item.currency}</span>`;
+    container.appendChild(row);
+  });
+  document.getElementById('ocr-results-card').style.display = 'block';
+}
+
+function saveOcrResults() {
+  if (!pendingOcrResults.length) return;
+  const month = currentMonth();
+  const entries = getEntries();
+  const existing = entries.filter(e => e.month !== month || !pendingOcrResults.find(p => p.name === e.name));
+  const newEntries = pendingOcrResults.map(p => ({ ...p, month, id: genId() }));
+  setEntries([...existing, ...newEntries]);
+  toast(`✓ 已保存 ${newEntries.length} 条记录到 ${month}`);
+  resetUpload();
+  renderDashboard();
+  renderChecklist();
+}
+
+function resetUpload() {
+  currentImageBase64 = null;
+  pendingOcrResults = [];
+  uploadQueue = [];
+  document.getElementById('ocr-section').style.display = 'none';
+  document.getElementById('ocr-results-card').style.display = 'none';
+  document.getElementById('file-input').value = '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LEDGER
+// ═══════════════════════════════════════════════════════════════
+
+function renderLedger() {
+  const entries = getEntries();
+  const months = [...new Set(entries.map(e => e.month))].sort().reverse();
+  const sel = document.getElementById('ledger-month-select');
+  const curVal = sel.value;
+  sel.innerHTML = months.map(m => `<option value="${m}" ${m===curVal?'selected':''}>${m}</option>`).join('');
+  if (!sel.value && months.length) sel.value = months[0];
+  const month = sel.value;
+  const monthEntries = entries.filter(e => e.month === month);
+
+  const t = month ? calcTotals(month) : {};
+  const summary = document.getElementById('ledger-summary');
+  summary.innerHTML = [
+    ['总净资产', fmtShort(t.total), '#1a1a2e'],
+    ['金融资产', fmtShort(t.fin), '#0f3460'],
+    ['房产净值', fmtShort(t.propNet), '#533483'],
+    ['车辆', fmtShort(t.carCny), '#2E4057'],
+    ['项目数', monthEntries.length+' 项', '#06d6a0'],
+  ].map(([l,v,c]) => `<div style="background:${c};color:#fff;border-radius:8px;padding:6px 12px;font-size:11px">
+    <div style="opacity:.7;font-size:9px;font-weight:700">${l}</div><div style="font-weight:800;font-family:monospace">${v}</div></div>`).join('');
+
+  const tbody = document.getElementById('ledger-body');
+  if (!monthEntries.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#999">本月暂无数据 — 请到 📸 录入 页面添加</td></tr>';
+    return;
+  }
+
+  // Group entries by broad category for readability, sorted by group then by amount desc
+  const groupOrder = ['流动资金','固定收益类','理财类','风险投资','应收','负债','实物资产'];
+  const groupLabels = {
+    '流动资金':'💧 流动资金', '固定收益类':'🏦 固定收益类', '理财类':'📈 理财类',
+    '风险投资':'🚀 风险投资', '应收':'⏳ 应收款', '负债':'🔴 负债', '实物资产':'🏡 实物资产'
+  };
+  const grouped = {};
+  monthEntries.forEach(e => {
+    const g = cat2Group(e.cat2);
+    (grouped[g] = grouped[g] || []).push(e);
+  });
+
+  let html = '';
+  groupOrder.forEach(g => {
+    const items = grouped[g];
+    if (!items || !items.length) return;
+    const subtotal = items.reduce((s,e) => s + (e.cnhAmt||0), 0);
+    html += `<tr style="background:var(--grey-m)">
+      <td colspan="5" style="font-weight:700;font-size:11px;color:var(--navy)">${groupLabels[g]}</td>
+      <td style="font-family:monospace;text-align:right;font-weight:800;font-size:11px">¥ ${fmt(subtotal,0)}</td>
+      <td></td></tr>`;
+    items.sort((a,b) => Math.abs(b.cnhAmt||0) - Math.abs(a.cnhAmt||0));
+    items.forEach(e => {
+      html += `<tr>
+        <td style="padding-left:20px">${e.name||'—'}</td>
+        <td style="color:var(--text-light)">${e.account||'—'}</td>
+        <td><span class="tag">${e.currency||'CNY'}</span></td>
+        <td style="font-family:monospace;text-align:right">${fmt(e.origAmt,2)}</td>
+        <td style="font-family:monospace;text-align:right;font-weight:700">${fmt(e.cnhAmt,0)}</td>
+        <td><span class="cat-badge cat-${g}">${e.cat2||e.cat1||'—'}</span></td>
+        <td><div class="row-actions">
+          <button class="row-action-btn" title="编辑金额" onclick="editEntry('${e.id}')">✏️</button>
+          <button class="row-action-btn" title="删除" onclick="deleteEntry('${e.id}')">🗑</button>
+        </div></td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML = html;
+}
+
+function editEntry(id) {
+  const entries = getEntries();
+  const idx = entries.findIndex(e => e.id === id);
+  if (idx < 0) return;
+  const e = entries[idx];
+  const input = prompt(`修改「${e.name}」的原币金额 (${e.currency}):`, e.origAmt);
+  if (input === null) return;
+  const amt = parseFloat(input);
+  if (isNaN(amt)) { toast('⚠️ 请输入有效数字'); return; }
+  e.origAmt = amt;
+  e.cnhAmt = toCny(amt, e.currency);
+  setEntries(entries);
+  toast(`✓ 已更新「${e.name}」`);
+  renderLedger();
+  renderDashboard();
+}
+
+function deleteEntry(id) {
+  const entries = getEntries();
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  if (!confirm(`确认删除「${e.name}」(${e.account||''}) 这一条记录？`)) return;
+  setEntries(entries.filter(x => x.id !== id));
+  toast(`✓ 已删除「${e.name}」`);
+  renderLedger();
+  renderDashboard();
+  renderChecklist();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ASSETS
+// ═══════════════════════════════════════════════════════════════
+
+function renderAssets() {
+  const s = getSettings();
+  document.getElementById('woz-value').value = s.wozValue || '';
+  document.getElementById('woz-rate').value  = s.wozRate || 4;
+  document.getElementById('car-eur').value   = s.carEur || '';
+  document.getElementById('woz-current-month').textContent = currentMonth();
+  calcHouse(); calcCar();
+}
+
+function calcHouse() {
+  const woz  = +document.getElementById('woz-value').value || 0;
+  const rate = +document.getElementById('woz-rate').value  || 0;
+  const s    = getSettings();
+  // Flat premium on top of WOZ — WOZ refreshes yearly, no compounding
+  const estEur = woz * (1 + rate/100);
+  const estCny = estEur * s.fxEur;
+  if (woz) {
+    document.getElementById('house-result').style.display = 'flex';
+    document.getElementById('house-cny-result').style.display = 'flex';
+    document.getElementById('house-value').textContent = '€ ' + fmt(estEur, 0);
+    document.getElementById('house-cny').textContent   = '¥ ' + fmt(estCny, 0);
+  }
+}
+
+function calcMortgage() {
+  const eur = +document.getElementById('mortgage-eur').value || 0;
+  const s = getSettings();
+  document.getElementById('mortgage-cny').value = Math.round(-eur * s.fxEur);
+}
+
+function calcCar() {
+  const eur = +document.getElementById('car-eur').value || 0;
+  const s = getSettings();
+  document.getElementById('car-cny').value = Math.round(eur * s.fxEur);
+}
+
+function saveHouseAsset() {
+  const woz  = +document.getElementById('woz-value').value;
+  const rate = +document.getElementById('woz-rate').value || 0;
+  const s    = getSettings();
+  saveSettings({ wozValue: woz, wozRate: rate });
+  const estEur = woz * (1 + rate/100);
+  const estCny = estEur * s.fxEur;
+  // Updates the CURRENT month's 房产市值 entry only (other months keep their own recorded values)
+  upsertEntry({ name:'房产市值', account:'-', currency:'EUR', origAmt: estEur, cnhAmt: estCny, cat1:'实物资产', cat2:'房产市值', include: true });
+  toast(`✓ 房产估值已更新为 €${fmt(estEur,0)}（本月）`);
+}
+
+function saveMortgage() {
+  const eur = +document.getElementById('mortgage-eur').value;
+  const s = getSettings();
+  upsertEntry({ name:'房贷余额', account:'-', currency:'EUR', origAmt: -eur, cnhAmt: -eur*s.fxEur, cat1:'实物资产', cat2:'房贷余额', include: true });
+  toast('✓ 房贷余额已更新');
+}
+
+function saveCar() {
+  const eur = +document.getElementById('car-eur').value;
+  const s = getSettings();
+  saveSettings({ carEur: eur });
+  upsertEntry({ name:'车辆', account:'-', currency:'EUR', origAmt: eur, cnhAmt: eur*s.fxEur, cat1:'实物资产', cat2:'车辆价值', include: true });
+  toast('✓ 车辆价值已更新');
+}
+
+function upsertEntry(data) {
+  const month = currentMonth();
+  const entries = getEntries();
+  const idx = entries.findIndex(e => e.month === month && e.name === data.name);
+  if (idx >= 0) entries[idx] = { ...entries[idx], ...data, month };
+  else entries.push({ ...data, month, id: genId() });
+  setEntries(entries);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════
+
+function renderSettings() {
+  const s = getSettings();
+  document.getElementById('api-key-input').value = s.apiKey || '';
+  document.getElementById('target-1').value = s.target1 || 5000000;
+  document.getElementById('target-2').value = s.target2 || 10000000;
+  document.getElementById('target-eur').value = s.targetEur || 20000;
+  document.getElementById('house-support').value = s.houseSupport != null ? s.houseSupport : 700000;
+  document.getElementById('house-support-from').value = s.houseSupportFrom || '2025-01';
+  document.getElementById('fx-eur-in').value = s.fxEur || 7.81;
+  document.getElementById('fx-usd-in').value = s.fxUsd || 7.15;
+  document.getElementById('fx-jpy-in').value = s.fxJpy || 0.047;
+  document.getElementById('fx-eur').textContent = s.fxEur || '—';
+  document.getElementById('fx-usd').textContent = s.fxUsd || '—';
+  document.getElementById('fx-jpy').textContent = s.fxJpy || '—';
+
+  // Default FX date to last day of previous month
+  if (!document.getElementById('fx-date').value) {
+    const d = new Date(); d.setDate(0);
+    document.getElementById('fx-date').value = d.toISOString().split('T')[0];
+  }
+}
+
+function saveApiKey() { saveSettings({ apiKey: document.getElementById('api-key-input').value.trim() }); toast('✓ API Key 已保存'); }
+function saveTargets() {
+  saveSettings({ target1: +document.getElementById('target-1').value, target2: +document.getElementById('target-2').value, targetEur: +document.getElementById('target-eur').value, houseSupport: +document.getElementById('house-support').value || 0, houseSupportFrom: document.getElementById('house-support-from').value || '2025-01' });
+  toast('✓ 目标已更新');
+}
+function saveFxManual() {
+  saveSettings({ fxEur: +document.getElementById('fx-eur-in').value, fxUsd: +document.getElementById('fx-usd-in').value, fxJpy: +document.getElementById('fx-jpy-in').value });
+  renderSettings(); toast('✓ 汇率已保存');
+}
+
+async function fetchFxRates() {
+  const dateStr = document.getElementById('fx-date').value;
+  if (!dateStr) { toast('⚠️ 请选择日期'); return; }
+  try {
+    toast('🌐 获取汇率中…');
+    const resp = await fetch(`https://api.frankfurter.app/${dateStr}?from=CNY&to=EUR,USD,JPY`);
+    const data = await resp.json();
+    const rates = data.rates;
+    // frankfurter returns CNY→EUR/USD/JPY, we need EUR/USD/JPY→CNY
+    const eurCny = 1 / rates.EUR;
+    const usdCny = 1 / rates.USD;
+    const jpyCny = 1 / rates.JPY;
+    document.getElementById('fx-eur-in').value = eurCny.toFixed(4);
+    document.getElementById('fx-usd-in').value = usdCny.toFixed(4);
+    document.getElementById('fx-jpy-in').value = jpyCny.toFixed(5);
+    saveSettings({ fxEur: eurCny, fxUsd: usdCny, fxJpy: jpyCny, fxDate: dateStr });
+    renderSettings();
+    toast(`✓ ${dateStr} 汇率已更新`);
+  } catch (e) {
+    toast('❌ 获取失败，请手动输入');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXCEL EXPORT
+// ═══════════════════════════════════════════════════════════════
+
+function exportExcel() {
+  const entries = getEntries();
+  const s = getSettings();
+
+  // Sheet 1: 01_月度录入
+  const ws1Data = [['月份','资产名称','账户','一级分类','二级分类','币种','原币金额','月末汇率','折人民币(月末)','折人民币(固定)','月末折CNY','是否计入']];
+  entries.forEach(e => {
+    const fxRate = e.currency==='EUR' ? s.fxEur : e.currency==='USD' ? s.fxUsd : e.currency==='JPY' ? s.fxJpy : 1;
+    ws1Data.push([e.month, e.name, e.account, e.cat1, e.cat2, e.currency, e.origAmt, fxRate, e.cnhAmt, e.cnhAmt, e.cnhAmt, e.include ? '是' : '否']);
+  });
+
+  // Sheet 2: 02_汇率表
+  const fxRows = [['月份','CNY','EUR/CNY','USD/CNY','JPY/CNY']];
+  const fxMonths = [...new Set(entries.map(e => e.month))].sort();
+  fxMonths.forEach(m => fxRows.push([m, 1, s.fxEur, s.fxUsd, s.fxJpy]));
+
+  // Sheet 3: 03_历史数据库
+  const histData = [['月份','金融资产(固定)','金融资产(月末)','房产(固定)','房产(月末)','车辆(固定)','车辆(月末)','总净资产(固定)','总净资产(月末)','购房资助','个人积累']];
+  fxMonths.forEach(m => {
+    const t = calcTotals(m);
+    histData.push([m, t.fin, t.fin, t.propNet, t.propNet, t.carCny, t.carCny, t.total, t.total, t.support, t.ownTotal]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ws1Data), '01_月度录入');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(fxRows),  '02_汇率表');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(histData),'03_历史数据库');
+
+  const month = fxMonths[fxMonths.length-1] || currentMonth();
+  XLSX.writeFile(wb, `FIRE_tracker_${month}.xlsx`);
+  toast('✓ Excel 已导出');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLEAR DATA
+// ═══════════════════════════════════════════════════════════════
+
+function exportJSON() {
+  const payload = {
+    type: 'fire-tracker-backup',
+    version: SEED_VERSION,
+    exportedAt: new Date().toISOString(),
+    entries: getEntries(),
+    settings: getSettings(),
+  };
+  // Don't export the API key in plaintext backups
+  delete payload.settings.apiKey;
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fire-tracker-backup-${currentMonth()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('✓ 数据备份已下载');
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!payload.entries || !payload.settings) throw new Error('格式不正确');
+      if (!confirm(`将导入 ${payload.entries.length} 条记录，覆盖当前本机数据？（API Key 不会被覆盖）`)) return;
+      const currentApiKey = getSettings().apiKey;
+      setEntries(payload.entries);
+      saveSettings({ ...payload.settings, apiKey: currentApiKey, seedVersionApplied: SEED_VERSION });
+      toast(`✓ 已导入 ${payload.entries.length} 条记录`);
+      renderDashboard();
+      renderLedger();
+      renderChecklist();
+    } catch (err) {
+      toast('❌ 导入失败：文件格式不正确');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (confirm('确认清除所有本地数据？此操作不可撤销。')) {
+    localStorage.clear();
+    toast('数据已清除');
+    renderDashboard();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+// Seed with historical data from FIRE_tracker.xlsx (03_历史数据库 + 01_月度录入)
+// - Pre-house months: financial assets only (single aggregated entry)
+// - 2025 (post house-purchase) months: financial + 房产净值(direct net) + 车辆价值
+// - 2026-05: full line-item detail from 01_月度录入 (house already = WOZ×1.04, mother's
+//   ¥700,000 support NOT subtracted here — that deduction is applied separately via
+//   settings.houseSupport when computing 个人积累)
+// SEED DATA VERSIONING
+// Whenever the seed data below is corrected (categorization fixes, new months,
+// etc.), bump SEED_VERSION. On load, if the stored data was generated by an
+// older version, the seeded months (2022-01 .. 2026-05) are silently replaced
+// with the corrected data — any months you've added yourself beyond this range
+// are left untouched. This avoids needing "清除所有数据" after every update.
+const SEED_VERSION = 2;
+const SEEDED_MONTHS = [
+  '2022-01','2022-12','2023-01','2023-02','2023-03','2023-04','2023-08','2023-12','2024-02','2024-12',
+  '2025-03','2025-04','2025-05','2025-06','2025-09','2025-10','2025-12','2026-05'
+];
+
+function seedHistoryIfEmpty() {
+  // This is the clean/hostable build: no personal financial data is baked in.
+  // First-time users start with an empty ledger and can either:
+  //   (a) add data via 📸录入 / ✏️手动录入 each month, or
+  //   (b) restore a previous backup via ⚙️设置 → 导入数据备份 (JSON exported
+  //       from another instance of this app, e.g. your local copy).
+  const s = getSettings();
+  if ((s.seedVersionApplied || 0) < SEED_VERSION) {
+    saveSettings({ carEur: s.carEur || 10000, seedVersionApplied: SEED_VERSION });
+  }
+}
+seedHistoryIfEmpty();
+renderDashboard();
+</script>
+</body>
+</html>
