@@ -49,10 +49,11 @@
   .topbar {
     background: var(--navy);
     padding: 0 20px;
+    padding-top: env(safe-area-inset-top, 0px);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 52px;
+    height: calc(52px + env(safe-area-inset-top, 0px));
     position: sticky;
     top: 0;
     z-index: 100;
@@ -92,7 +93,7 @@
     gap: 2px;
     padding: 6px 12px;
     position: sticky;
-    top: 52px;
+    top: calc(52px + env(safe-area-inset-top, 0px));
     z-index: 99;
     overflow-x: auto;
     scrollbar-width: none;
@@ -890,7 +891,7 @@
         <div class="settings-title">🎯 FIRE 目标设置</div>
         <p id="i18n-rich-2" style="font-size:11px;color:var(--text-light);margin-bottom:10px">
           经典FIRE法则（4%法则）：FIRE所需金额 ≈ <strong style="color:var(--navy)">年支出 × 25</strong>（即月支出 × 300）。
-          填写你的月支出，可让"FIRE目标"按此公式自动计算；也可以随时切换为手动设定固定数值。
+          填写月支出后，右侧会显示按此公式算出的建议值，供下方手动填写"FIRE目标"时参考。
         </p>
         <div class="input-group" style="margin-bottom:10px">
           <label class="input-label">主货币（FIRE目标与汇总信息显示币种）</label>
@@ -902,18 +903,10 @@
             <input class="input-field" type="number" id="monthly-expense" placeholder="如 15000" oninput="updateFireTargetCalc()">
           </div>
           <div class="input-group" style="margin-bottom:0">
-            <label class="input-label">25倍年支出 (自动计算)</label>
+            <label class="input-label">25倍年支出（FIRE目标建议值）</label>
             <input class="input-field" type="text" id="fire-25x-display" readonly style="background:var(--grey-l)">
           </div>
         </div>
-        <label class="checkbox-chip" id="target2-mode-chip" style="margin-top:8px" onclick="event.preventDefault(); toggleTarget2Mode()">
-          <input type="checkbox" id="target2-mode-dynamic" onclick="event.stopPropagation()" onchange="toggleTarget2Mode()">
-          🔄 FIRE目标跟随月支出自动计算（×25年支出）
-        </label>
-        <p style="font-size:11px;color:var(--text-light);margin:6px 0 0">
-          勾选后，下方"FIRE目标"会随月支出自动更新；取消勾选则变为固定值，可手动修改（修改后不再随月支出变动，
-          直到再次勾选）。
-        </p>
         <div class="input-row" style="margin-top:10px">
           <div class="input-group" style="margin-bottom:0">
             <label class="input-label">里程碑目标 (<span class="main-ccy-label">CNY</span>)</label>
@@ -921,7 +914,7 @@
           </div>
           <div class="input-group" style="margin-bottom:0">
             <label class="input-label">FIRE目标 (<span class="main-ccy-label">CNY</span>)</label>
-            <input class="input-field" type="number" id="target-2" placeholder="10000000" oninput="onTarget2ManualEdit()">
+            <input class="input-field" type="number" id="target-2" placeholder="10000000">
           </div>
         </div>
         <div class="input-row" style="margin-top:10px">
@@ -946,7 +939,7 @@
         <div class="settings-title">🆘 应急资金 (Fuck-You-Money)</div>
         <p style="font-size:11px;color:var(--text-light);margin-bottom:10px">
           维持 6–12 个月基本生活的现金储备。目标金额 = 月支出（与上方"🎯 FIRE 目标设置"中的月支出共用一个数值） × 月数，
-          按主货币计算；进度按"统计范围"中所选账户、以主货币计价的活期现金计算。
+          按主货币计算；进度按"统计范围"中所选账户的活期现金计算（各账户原币种自动按当月汇率折算为主货币求和）。
         </p>
         <div class="input-group" style="margin-bottom:0">
           <label class="input-label">目标月数：<span id="fum-months-label">6 个月</span></label>
@@ -1060,7 +1053,7 @@ const setEntries = (e) => DB.set('entries', e);
 const getSettings = () => {
   const s = DB.get('settings', {
     apiKey: '', target1: 0, target2: 0,
-    monthlyExpense: 0, target2Mode: 'manual', language: 'zh',
+    monthlyExpense: 0, language: 'zh',
     fxRates: { EUR: 7.81, USD: 6.71, JPY: 0.042 }, fxDate: '',
     fixedFxRates: { EUR: 8, USD: 7, JPY: 0.05 },
     wozValue: 0, wozRate: 0, carEur: 0, assetCcy: 'EUR',
@@ -1114,7 +1107,6 @@ const getSettings = () => {
     s.monthlyExpense = Math.round(s.fumMonthlyCost * rate);
     changed = true;
   }
-  if (s.target2Mode === undefined) { s.target2Mode = 'manual'; changed = true; }
   if (s.language === undefined) { s.language = 'zh'; changed = true; }
   if (s.isDemoData === undefined) { s.isDemoData = false; changed = true; }
   if (s.demoBannerDismissed === undefined) { s.demoBannerDismissed = false; changed = true; }
@@ -1261,7 +1253,7 @@ const I18N = {
   "💾 数据备份 & 📱 添加到主屏幕": "💾 Data Backup & 📱 Add to Home Screen",
   "🗑 数据管理": "🗑 Data Management",
   "🚗 车辆估值（每年更新）": "🚗 Vehicle Valuation (yearly)",
-  "25倍年支出 (自动计算)": "25x Annual Expenses (auto)",
+  "25倍年支出（FIRE目标建议值）": "25x Annual Expenses (FIRE Target suggestion)",
   "API Key（用于截图OCR识别）": "API Key (for screenshot OCR)",
   "FIRE目标 (": "FIRE Target (",
   "二级分类": "Subcategory",
@@ -1314,7 +1306,6 @@ const I18N = {
   "目标金额": "Target Amount",
   "资产名称（表头）": "Asset Name",
   "币种（表头）": "Currency",
-  "🔄 FIRE目标跟随月支出自动计算（×25年支出）": "🔄 FIRE target follows monthly expenses (×25 annual)",
   "全部账户（活期现金）": "All accounts (cash)",
   "全部账户": "All accounts",
   "请先在🎯FIRE目标设置中填写月支出": "Please set your monthly expenses in 🎯 FIRE Goals above first",
@@ -1383,9 +1374,8 @@ const I18N = {
   "💡 应收账款、房贷余额等结转后仍可在下方 📋明细 页面用 ✏️ 编辑或 🗑 删除。": "💡 Receivables, mortgage balance, etc. can still be ✏️ edited or 🗑 deleted on the 📋 Ledger page below after carrying forward.",
   "许多地区都有类似的官方/政府评估价格作为估值基准——例如荷兰的 WOZ、中国的不动产评估价/计税基准价、\n        美国的 Property Tax Assessed Value、英国的 Council Tax Band 对应价值等。把该官方评估价填入下方，\n        再设置一个相对该价格的市场溢价/折价百分比，即可估算市场价值。如果你的地区没有这类官方评估，\n        也可以直接填入你自己估算的市场价值，溢价填 0。": "Many regions have an official/government assessed value used as a valuation baseline — e.g. the Netherlands' WOZ, China's real-estate assessed value / tax-basis price, the US Property Tax Assessed Value, or the UK Council Tax Band value. Enter that official figure below, then set a market premium/discount percentage relative to it to estimate market value. If your region doesn't have this kind of official assessment, you can simply enter your own estimated market value and set the premium to 0.",
   "下方列出当前支持的币种与汇率（均为 1单位外币 = ? 人民币）。可以增加新币种（如持有英镑/港币账户），\n          或删除不再使用的币种。账户币种下拉菜单会自动包含这里的所有币种。": "Below are the currently supported currencies and rates (each is 1 unit of foreign currency = ? CNY). You can add new currencies (e.g. if you hold GBP/HKD accounts) or remove ones you no longer use. The account currency dropdown automatically includes all currencies listed here.",
-  "勾选后，下方\"FIRE目标\"会随月支出自动更新；取消勾选则变为固定值，可手动修改（修改后不再随月支出变动，\n          直到再次勾选）。": "When checked, the \"FIRE Target\" below updates automatically with your monthly expenses; unchecking it turns it into a fixed value you can edit manually (it won't change with monthly expenses again until you check the box).",
   "这是一个可选项：如果有家人资助购房款等\"非自己积累\"的一次性资金，可填写金额，\n          系统会从该月起把它从总净资产中扣除，得到\"个人积累\"用于FIRE进度追踪。\n          如果不适用，填 0 即可——此时看板不会显示\"个人积累\"相关模块，所有目标直接基于总净资产。": "This is optional: if family helped fund part of a home purchase or similar one-time, \"not self-accumulated\" money, enter the amount — the system will deduct it from your net worth starting that month to get your \"Personal Accumulation\" for FIRE tracking. If this doesn't apply, leave it at 0 — the dashboard will then hide the \"Personal Accumulation\" module and all goals will be based directly on net worth.",
-  "维持 6–12 个月基本生活的现金储备。目标金额 = 月支出（与上方\"🎯 FIRE 目标设置\"中的月支出共用一个数值） × 月数，\n          按主货币计算；进度按\"统计范围\"中所选账户、以主货币计价的活期现金计算。": "A cash reserve covering 6–12 months of basic living costs. Target = monthly expenses (shares the same value as \"Monthly Expenses\" in 🎯 FIRE Goals above) × number of months, in your main currency; progress is measured against main-currency cash in the account(s) chosen under \"Scope\".",
+  "维持 6–12 个月基本生活的现金储备。目标金额 = 月支出（与上方\"🎯 FIRE 目标设置\"中的月支出共用一个数值） × 月数，\n          按主货币计算；进度按\"统计范围\"中所选账户的活期现金计算（各账户原币种自动按当月汇率折算为主货币求和）。": "A cash reserve covering 6–12 months of basic living costs. Target = monthly expenses (shares the same value as \"Monthly Expenses\" in 🎯 FIRE Goals above) × number of months, in your main currency; progress sums the cash in the account(s) chosen under \"Scope\" — each account\u2019s original currency is converted to your main currency at the current month-end rate.",
   "💡 在不同设备/浏览器间转移数据：先在这里\"导出数据备份\"，再在另一台设备打开本应用并\"导入数据备份\"。": "💡 To move data between devices/browsers: \"Export Backup\" here first, then open this app on the other device and \"Import Backup\".",
   "以上为基于资产配置比例的一般性观察，不构成投资建议；是否调整请结合自身风险承受能力、年龄、负债情况等综合判断。": "The above are general observations based on your allocation percentages and do not constitute investment advice; whether to make any changes is up to you, based on your risk tolerance, age, debt situation, and overall circumstances.",
 };
@@ -1393,7 +1383,7 @@ const I18N = {
 const I18N_RICH_EN = {
   "i18n-rich-0": "💡 Once the assessed value updates each year, enter the new figure and save — this only updates the property record for the current month (<span id=\"woz-current-month\"></span>); past months remain unchanged.",
   "i18n-rich-1": "<strong style=\"color:var(--navy)\">Month-end rate</strong> is the actual exchange rate each month, used to track real asset value (same as above); <strong style=\"color:var(--navy)\">Fixed rate</strong> is a long-term reference rate that stays constant, used to strip out FX fluctuations and compare pure asset growth. Defaults match the original spreadsheet: USD/CNY=7, EUR/CNY=8, JPY/CNY=0.05. The dashboard's \"FX Impact\" card = month-end-rate total − fixed-rate total.",
-  "i18n-rich-2": "Classic FIRE rule (4% rule): the amount needed for FIRE ≈ <strong style=\"color:var(--navy)\">annual expenses × 25</strong> (i.e. monthly expenses × 300). Enter your monthly expenses to have the \"FIRE target\" calculated automatically by this formula — or switch to a fixed manual value at any time.",
+  "i18n-rich-2": "Classic FIRE rule (4% rule): the amount needed for FIRE ≈ <strong style=\"color:var(--navy)\">annual expenses × 25</strong> (i.e. monthly expenses × 300). Once you enter your monthly expenses, the suggested value is shown on the right as a reference for setting your \"FIRE Target\" manually below.",
   "i18n-rich-3": "Enter the year-month you'd like to reach your FIRE target (<span id=\"planning-target2-label\">—</span>) to estimate the required annual growth rate and compare it with your historical rate for a rough likelihood reference.",
   "i18n-rich-4": "This is a personal FIRE (Financial Independence, Retire Early) tracker. All data is stored in <strong>your local browser</strong> (localStorage) — nothing is uploaded to any server.<br><br>Monthly routine: 📸 upload screenshots or ✏️ manually enter this month's data → 📋 double-check it on the Ledger page → 📊 the Dashboard automatically shows your net worth trend, FIRE progress, and asset allocation analysis.",
   "i18n-rich-10": "All data lives in your local browser — <strong>switching devices/browsers does not sync automatically</strong>. ⚙️ Settings → Data Management lets you export/import a JSON backup; if you share this app with someone else, each person's data is completely independent and invisible to the other.<br><br>📱 On mobile, use your browser menu's \"Add to Home Screen\" for an app-like fullscreen experience (no address bar).",
@@ -1696,15 +1686,14 @@ function calcTotals(month) {
   const fin = liquid + fixed + wealth + risk + debt;
 
   // ── Fuck-You-Money (emergency fund) progress ──
-  // Sums 活期现金 entries denominated in the main currency, optionally scoped
-  // to specific accounts. Target = 月支出 (主货币) × 月数.
+  // Sums 活期现金 entries across ALL currencies (converted to main currency),
+  // optionally scoped to specific accounts — e.g. a EUR "Bunq" account still
+  // counts toward an emergency fund measured in CNY. Target = 月支出 (主货币) × 月数.
   let fumCurrent = 0;
-  const fumCcy = mainCcy();
   entries.forEach(e => {
     if (e.cat1 !== '金融资产' || e.cat2 !== '活期现金') return;
-    if ((e.currency || 'CNY') !== fumCcy) return;
     if (s.fumScope && s.fumScope.length && !s.fumScope.includes(e.account)) return;
-    fumCurrent += (e.origAmt || 0);
+    fumCurrent += toMainCcy(e.cnhAmt || 0);
   });
   const fumTarget = toMainCcy(s.monthlyExpense || 0) * (s.fumMonths || 6);
 
@@ -2076,9 +2065,14 @@ async function runOcr(onDone) {
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': s.apiKey, 'anthropic-version': '2023-06-01' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': s.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
-        model: 'claude-opus-4-5',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1500,
         messages: [{
           role: 'user',
@@ -2491,10 +2485,6 @@ function renderSettings() {
   document.getElementById('target-1').value = s.target1 ? Math.round(toMainCcy(s.target1)) : '';
   document.getElementById('target-2').value = s.target2 ? Math.round(toMainCcy(s.target2)) : '';
   document.getElementById('monthly-expense').value = s.monthlyExpense ? Math.round(toMainCcy(s.monthlyExpense)) : '';
-  document.getElementById('target2-mode-dynamic').checked = s.target2Mode === 'dynamic';
-  document.getElementById('target2-mode-chip').classList.toggle('checked', s.target2Mode === 'dynamic');
-  document.getElementById('target-2').readOnly = s.target2Mode === 'dynamic';
-  document.getElementById('target-2').style.background = s.target2Mode === 'dynamic' ? 'var(--grey-l)' : '';
   updateFireTargetCalc();
   document.getElementById('house-support').value = Math.round(toMainCcy(s.houseSupport || 0));
   document.getElementById('house-support-from').value = s.houseSupportFrom || '2025-01';
@@ -2627,7 +2617,7 @@ async function fetchFxRates() {
   if (!codes.length) { toast('⚠️ 请先添加至少一个币种'); return; }
   try {
     toast('🌐 获取汇率中…');
-    const resp = await fetch(`https://api.frankfurter.app/${dateStr}?from=CNY&to=${codes.join(',')}`);
+    const resp = await fetch(`https://api.frankfurter.dev/v1/${dateStr}?base=CNY&symbols=${codes.join(',')}`);
     const data = await resp.json();
     const rates = data.rates || {};
     const fxRates = { ...s.fxRates };
@@ -2659,7 +2649,6 @@ function saveTargets() {
     target1: fromMainCcy(+document.getElementById('target-1').value) || 0,
     target2: fromMainCcy(+document.getElementById('target-2').value) || 0,
     monthlyExpense: fromMainCcy(+document.getElementById('monthly-expense').value) || 0,
-    target2Mode: document.getElementById('target2-mode-dynamic').checked ? 'dynamic' : 'manual',
     houseSupport: fromMainCcy(+document.getElementById('house-support').value) || 0,
     houseSupportFrom: document.getElementById('house-support-from').value || '2025-01'
   });
@@ -2674,37 +2663,14 @@ function saveMainCurrency() {
   renderDashboard();
 }
 
-// ── 25x annual expenses (4% rule) FIRE target ──
-// monthly-expense / target-2 inputs are in the user's main currency; convert
-// to/from CNY only when persisting via saveTargets().
+// ── 25x annual expenses (4% rule): shown as a suggestion only ──
+// monthly-expense input is in the user's main currency; convert to/from CNY
+// only when persisting via saveTargets(). target-2 (FIRE目标) is always a
+// plain manual value — this function never writes to it.
 function updateFireTargetCalc() {
   const expenseMain = +document.getElementById('monthly-expense').value || 0;
   const fire25xMain = expenseMain * 300; // ×12 months ×25 years
   document.getElementById('fire-25x-display').value = expenseMain ? `${mainSymbol()} ${fmt(fire25xMain,0)}` : '—';
-  if (document.getElementById('target2-mode-dynamic').checked) {
-    document.getElementById('target-2').value = fire25xMain || '';
-  }
-}
-
-function toggleTarget2Mode() {
-  const cb = document.getElementById('target2-mode-dynamic');
-  cb.checked = !cb.checked;
-  document.getElementById('target2-mode-chip').classList.toggle('checked', cb.checked);
-  document.getElementById('target-2').readOnly = cb.checked;
-  document.getElementById('target-2').style.background = cb.checked ? 'var(--grey-l)' : '';
-  if (cb.checked) updateFireTargetCalc();
-}
-
-// If the user manually edits 目标2 while dynamic mode is on, treat that as
-// "I want a fixed number now" and switch to manual (the checkbox unticks).
-function onTarget2ManualEdit() {
-  const cb = document.getElementById('target2-mode-dynamic');
-  if (cb.checked) {
-    cb.checked = false;
-    document.getElementById('target2-mode-chip').classList.remove('checked');
-    document.getElementById('target-2').readOnly = false;
-    document.getElementById('target-2').style.background = '';
-  }
 }
 
 // ── Fuck-You-Money (emergency fund) settings ──
@@ -3163,7 +3129,7 @@ function seedHistoryIfEmpty() {
     isDemoData: true,
     assetCcy: 'EUR',
     wozValue: 270000, wozRate: 4.4, carEur: 13580,
-    target1: 800000, target2: 2400000, target2Mode: 'dynamic', monthlyExpense: 8000,
+    target1: 800000, target2: 2400000, monthlyExpense: 8000,
     houseSupport: 200000, houseSupportFrom: m0,
     mainCurrency: 'EUR',
     fumMonths: 8, fumScope: [],
