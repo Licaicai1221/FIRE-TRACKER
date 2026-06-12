@@ -68,6 +68,23 @@
     color: var(--grey-d);
     font-family: var(--font-mono);
   }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar-lang-select {
+    background: rgba(255,255,255,0.12);
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: inherit;
+    padding: 3px 4px;
+  }
+  .topbar-lang-select option {
+    color: var(--navy);
+  }
 
   .nav {
     background: var(--mid);
@@ -141,6 +158,8 @@
   .kpi-blue  { background: linear-gradient(135deg, var(--blue), #1a4480); }
   .kpi-purple{ background: linear-gradient(135deg, var(--purple), #7344b3); }
   .kpi-coral { background: linear-gradient(135deg, var(--coral), #ff6b85); }
+  .kpi-mint  { background: linear-gradient(135deg, #06D6A0, #04b888); }
+  .kpi-grey  { background: linear-gradient(135deg, #607D8B, #455A64); }
 
   /* ── Progress bars ── */
   .progress-item { margin-bottom: 14px; }
@@ -184,6 +203,17 @@
     color: var(--text-light);
     transition: all 0.15s;
   }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .checkbox-chip {
+    display: flex; align-items: center; gap: 5px;
+    border: 2px solid var(--grey-m); border-radius: 20px;
+    padding: 5px 12px; font-size: 12px; font-weight: 600;
+    color: var(--text-light); cursor: pointer; transition: all 0.15s;
+    user-select: none;
+  }
+  .checkbox-chip input { accent-color: var(--mint); cursor: pointer; }
+  .checkbox-chip.checked { border-color: var(--mint); background: #e8fff5; color: #0a8060; }
+  .checkbox-chip.disabled { opacity: 0.4; cursor: not-allowed; }
   .platform-btn:hover, .platform-btn.selected {
     border-color: var(--blue);
     color: var(--blue);
@@ -295,6 +325,7 @@
   .cat-实物资产 { background: #f0e8ff; color: #533483; }
   .cat-负债 { background: #ffe0e0; color: #c0302a; }
   .cat-应收 { background: #e0f7ff; color: #0066a0; }
+  .cat-其他 { background: #f0f0f0; color: #666; }
   .row-actions { display: flex; gap: 4px; justify-content: center; }
   .row-action-btn {
     border: none; background: transparent; cursor: pointer;
@@ -337,6 +368,11 @@
   .fx-ccy { font-size: 10px; font-weight: 700; color: var(--text-light); margin-bottom: 3px; }
   .fx-val { font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: var(--navy); }
   .fx-date { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+  .fx-rate-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: var(--grey-l); border-radius: 8px; }
+  .fx-rate-row .fx-rate-code { font-weight: 700; font-size: 12px; color: var(--navy); min-width: 50px; }
+  .fx-rate-row .fx-rate-input { flex: 1; border: 1px solid var(--grey-m); border-radius: 6px; padding: 5px 8px; font-size: 12px; font-family: var(--font-mono); background: var(--white); }
+  .fx-rate-row .fx-rate-suffix { font-size: 10px; color: var(--text-light); white-space: nowrap; }
+  .fx-rate-row .fx-rate-del { border:none; background:transparent; color: var(--coral); cursor:pointer; font-size:14px; padding: 2px 6px; }
 
   /* ── Buttons ── */
   .btn {
@@ -444,24 +480,40 @@
 <div class="app">
   <div class="topbar">
     <div class="topbar-title">🌿 FIRE Tracker</div>
-    <div class="topbar-month" id="topbar-month">—</div>
+    <div class="topbar-right">
+      <div class="topbar-month" id="topbar-month">—</div>
+      <select class="topbar-lang-select" id="language-select" onchange="applyLanguage(this.value)">
+        <option value="zh">🌐 中文</option>
+        <option value="en">🌐 EN</option>
+      </select>
+    </div>
   </div>
 
   <nav class="nav">
     <button class="nav-btn active" data-screen="dashboard" onclick="showScreen('dashboard')">📊 看板</button>
     <button class="nav-btn" data-screen="upload" onclick="showScreen('upload')">📸 录入</button>
     <button class="nav-btn" data-screen="ledger" onclick="showScreen('ledger')">📋 明细</button>
-    <button class="nav-btn" data-screen="assets" onclick="showScreen('assets')">🏡 资产</button>
     <button class="nav-btn" data-screen="settings" onclick="showScreen('settings')">⚙️ 设置</button>
+    <button class="nav-btn" data-screen="help" onclick="showScreen('help')">❓ 说明</button>
   </nav>
 
   <!-- ══════════ DASHBOARD ══════════ -->
   <div id="screen-dashboard" class="screen active">
+    <div id="demo-banner" class="card" style="display:none;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border:2px solid #FFB347">
+      <div id="i18n-rich-12" style="font-size:13px;line-height:1.6;color:var(--navy)">
+        👋 这是<strong>示例数据</strong>，帮助你了解App的样子和功能。准备好记录自己的数据后，可以清除它。
+      </div>
+      <div class="btn-row" style="margin-top:8px;margin-bottom:0">
+        <button class="btn btn-primary btn-sm" onclick="clearAllData()">🗑 清除示例数据，开始使用</button>
+        <button class="btn btn-outline btn-sm" onclick="dismissDemoBanner()">稍后再说</button>
+      </div>
+    </div>
+
     <div class="kpi-grid">
       <div class="kpi-card kpi-navy">
         <div class="kpi-label">总净资产</div>
         <div class="kpi-value" id="kpi-total">—</div>
-        <div class="kpi-sub">CNY 月末汇率</div>
+        <div class="kpi-sub" id="kpi-total-sub">CNY 月末汇率</div>
       </div>
       <div class="kpi-card kpi-blue">
         <div class="kpi-label">金融资产</div>
@@ -471,12 +523,17 @@
       <div class="kpi-card kpi-purple">
         <div class="kpi-label">房产净值</div>
         <div class="kpi-value" id="kpi-prop">—</div>
-        <div class="kpi-sub">WOZ估算 − 房贷</div>
+        <div class="kpi-sub">评估价 − 房贷</div>
       </div>
       <div class="kpi-card kpi-coral">
         <div class="kpi-label">年化增速 CAGR</div>
         <div class="kpi-value" id="kpi-cagr">—</div>
-        <div class="kpi-sub">基于个人积累</div>
+        <div class="kpi-sub" id="kpi-cagr-sub">基于个人积累</div>
+      </div>
+      <div class="kpi-card kpi-grey" id="kpi-fx-card">
+        <div class="kpi-label">汇率影响</div>
+        <div class="kpi-value" id="kpi-fximpact">—</div>
+        <div class="kpi-sub" id="kpi-fximpact-sub">月末汇率 − 固定汇率</div>
       </div>
     </div>
 
@@ -500,15 +557,15 @@
       </div>
       <div class="progress-item" style="margin-bottom:0">
         <div class="progress-header">
-          <span class="progress-label">💶 Bunq欧元现金 €20k</span>
-          <span class="progress-meta" id="prog-eur-meta">—</span>
+          <span class="progress-label" id="prog-fum-label">🆘 应急资金</span>
+          <span class="progress-meta" id="prog-fum-meta">—</span>
         </div>
-        <div class="progress-track"><div class="progress-fill" id="prog-eur-bar" style="background:var(--amber);width:0%"></div></div>
-        <div class="progress-eta" id="prog-eur-eta">预计达成：计算中…</div>
+        <div class="progress-track"><div class="progress-fill" id="prog-fum-bar" style="background:var(--amber);width:0%"></div></div>
+        <div class="progress-eta" id="prog-fum-eta">预计达成：计算中…</div>
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="own-tracker-card">
       <div class="card-title">个人积累追踪</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--grey-l);border-radius:8px">
@@ -545,6 +602,36 @@
         <div class="chart-wrap-sm"><canvas id="chart-networth"></canvas></div>
       </div>
     </div>
+
+    <div class="section-divider">
+      <span class="section-divider-label">📈 财务规划</span>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 资产配置分析</div>
+      <div id="alloc-summary" class="chip-row" style="margin-top:0"></div>
+      <div id="alloc-suggestions" style="margin-top:10px;display:flex;flex-direction:column;gap:8px"></div>
+      <p style="font-size:10px;color:var(--text-light);margin-top:10px">
+        以上为基于资产配置比例的一般性观察，不构成投资建议；是否调整请结合自身风险承受能力、年龄、负债情况等综合判断。
+      </p>
+    </div>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">🎯 FIRE 完成时间预估</div>
+      <p id="i18n-rich-3" style="font-size:11px;color:var(--text-light);margin-bottom:10px">
+        输入你希望达成 FIRE 目标（<span id="planning-target2-label">—</span>）的年月，估算所需年化增速，
+        并与你的历史增速对比，给出一个粗略的可能性参考。
+      </p>
+      <div class="input-group" style="margin-bottom:10px">
+        <label class="input-label">目标达成年月</label>
+        <div style="display:flex;gap:8px;max-width:200px">
+          <select class="input-field" id="fire-goal-year" onchange="onFireGoalDateChange()" style="flex:1.4"></select>
+          <select class="input-field" id="fire-goal-month" onchange="onFireGoalDateChange()" style="flex:1"></select>
+        </div>
+      </div>
+      <div id="fire-timeline-result"></div>
+    </div>
   </div>
 
   <!-- ══════════ UPLOAD ══════════ -->
@@ -567,6 +654,13 @@
     <div class="card">
       <div class="card-title">本月上传进度 <span id="checklist-month" style="font-weight:400;color:var(--text-light)"></span></div>
       <div class="platform-grid" id="platform-checklist"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input class="input-field" type="text" id="new-account-name" placeholder="手动添加账户，如：N26 / 工商银行" style="flex:1">
+        <button class="btn btn-outline btn-sm" onclick="addTrackedAccountUI()">➕ 添加</button>
+      </div>
+      <p style="font-size:11px;color:var(--text-light);margin-top:6px">
+        💡 上传截图后，识别到的新账户会自动加入此列表；点击账户右上角 × 可移除（不影响已记录数据）。
+      </p>
     </div>
 
     <div id="ocr-section" style="display:none">
@@ -605,26 +699,28 @@
       <div class="input-row">
         <div class="input-group" style="margin-bottom:8px">
           <label class="input-label">二级分类</label>
-          <select class="input-field" id="manual-cat2">
-            <option value="公积金">公积金</option>
-            <option value="应收款">应收款</option>
-            <option value="活期现金">活期现金</option>
-            <option value="定期存款">定期存款</option>
-            <option value="理财">理财</option>
-            <option value="指数基金">指数基金</option>
-            <option value="个股">个股</option>
-            <option value="保险">保险</option>
-            <option value="信用卡负债">信用卡负债（负数）</option>
-          </select>
+          <input class="input-field" id="manual-cat2" list="cat2-options" placeholder="选择或输入自定义分类，如：朋友借款">
+          <datalist id="cat2-options">
+            <option value="活期现金">
+            <option value="定期存款">
+            <option value="理财">
+            <option value="指数基金">
+            <option value="个股">
+            <option value="保险">
+            <option value="公积金">
+            <option value="应收款">
+            <option value="信用卡负债">
+            <option value="个人借款">
+            <option value="其他负债">
+          </datalist>
+          <p style="font-size:11px;color:var(--text-light);margin-top:4px">
+            💡 可直接输入自定义名称（如"朋友借款"、"欠老王的钱"）。含"负债/借款/欠款"会自动归入🔴负债，
+            含"应收"归入⏳应收款，其他归入📦其他 — 金额都会正确计入总净资产。
+          </p>
         </div>
         <div class="input-group" style="margin-bottom:8px">
           <label class="input-label">币种</label>
-          <select class="input-field" id="manual-ccy">
-            <option value="CNY">CNY 人民币</option>
-            <option value="EUR">EUR 欧元</option>
-            <option value="USD">USD 美元</option>
-            <option value="JPY">JPY 日元</option>
-          </select>
+          <select class="input-field" id="manual-ccy"></select>
         </div>
       </div>
       <div class="input-group" style="margin-bottom:8px">
@@ -647,6 +743,83 @@
       </p>
       <div id="carry-preview" style="font-size:12px;color:var(--text-light);margin-bottom:10px"></div>
       <button class="btn btn-success btn-full" onclick="carryForwardFrozen()">⏩ 复制上月冻结项到本月</button>
+    </div>
+
+    <div class="section-divider">
+      <span class="section-divider-label">🏡 房产 / 房贷 / 车辆</span>
+      <div class="section-divider-line"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏡 房产估值</div>
+      <p style="font-size:11px;color:var(--text-light);margin-bottom:10px">
+        许多地区都有类似的官方/政府评估价格作为估值基准——例如荷兰的 WOZ、中国的不动产评估价/计税基准价、
+        美国的 Property Tax Assessed Value、英国的 Council Tax Band 对应价值等。把该官方评估价填入下方，
+        再设置一个相对该价格的市场溢价/折价百分比，即可估算市场价值。如果你的地区没有这类官方评估，
+        也可以直接填入你自己估算的市场价值，溢价填 0。
+      </p>
+      <div class="input-group" style="margin-bottom:10px">
+        <label class="input-label">房产/房贷/车辆 记账币种</label>
+        <select class="input-field" id="asset-ccy" onchange="saveAssetCcy()" style="max-width:200px"></select>
+      </div>
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">官方评估价值</label>
+          <input class="input-field" type="number" id="woz-value" placeholder="如 480000" oninput="calcHouse()">
+        </div>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">市场溢价/折价 (%，可为负)</label>
+          <input class="input-field" type="number" id="woz-rate" placeholder="如 4，折价填 -5" step="0.1" oninput="calcHouse()">
+        </div>
+      </div>
+      <div class="input-group" style="margin-top:10px;margin-bottom:0">
+        <p id="i18n-rich-0" style="font-size:11px;color:var(--text-light)">💡 每年评估价更新后，在此输入新值并保存 — 仅更新当前月份（<span id="woz-current-month"></span>）的房产记录，历史月份保持不变。</p>
+      </div>
+      <div class="calc-result" id="house-result" style="display:none">
+        <span class="calc-result-label">当前估算市值</span>
+        <span class="calc-result-value" id="house-value">—</span>
+      </div>
+      <div class="calc-result" style="margin-top:6px" id="house-cny-result" style="display:none">
+        <span class="calc-result-label">折合人民币（月末汇率）</span>
+        <span class="calc-result-value" id="house-cny">—</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveHouseAsset()">保存到本月数据</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏦 房贷余额</div>
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">当前余额 (<span id="mortgage-ccy-label">EUR</span>)</label>
+          <input class="input-field" type="number" id="mortgage-eur" placeholder="如 282000" oninput="calcMortgage()">
+        </div>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">折合人民币</label>
+          <input class="input-field" type="number" id="mortgage-cny" placeholder="自动计算" readonly style="background:var(--grey-l)">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveMortgage()">保存</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">🚗 车辆估值（每年更新）</div>
+      <div class="input-row">
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">当前市值 (<span id="car-ccy-label">EUR</span>)</label>
+          <input class="input-field" type="number" id="car-eur" placeholder="如 10000" oninput="calcCar()">
+        </div>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">折合人民币</label>
+          <input class="input-field" type="number" id="car-cny" placeholder="自动计算" readonly style="background:var(--grey-l)">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveCar()">保存</button>
+      </div>
     </div>
   </div>
 
@@ -672,74 +845,124 @@
     </div>
   </div>
 
-  <!-- ══════════ ASSETS ══════════ -->
-  <div id="screen-assets" class="screen">
-    <div class="card">
-      <div class="card-title">🏡 房产估值（WOZ方法）</div>
-      <div class="input-row">
-        <div class="input-group" style="margin-bottom:0">
-          <label class="input-label">WOZ价值 (€)</label>
-          <input class="input-field" type="number" id="woz-value" placeholder="e.g. 480000" oninput="calcHouse()">
-        </div>
-        <div class="input-group" style="margin-bottom:0">
-          <label class="input-label">市场溢价 (% 加在WOZ之上)</label>
-          <input class="input-field" type="number" id="woz-rate" placeholder="e.g. 4" step="0.1" oninput="calcHouse()">
-        </div>
-      </div>
-      <div class="input-group" style="margin-top:10px;margin-bottom:0">
-        <p style="font-size:11px;color:var(--text-light)">💡 每年WOZ更新后，在此输入新值并保存 — 仅更新当前月份（<span id="woz-current-month"></span>）的房产记录，历史月份保持不变。</p>
-      </div>
-      <div class="calc-result" id="house-result" style="display:none">
-        <span class="calc-result-label">当前估算市值</span>
-        <span class="calc-result-value" id="house-value">—</span>
-      </div>
-      <div class="calc-result" style="margin-top:6px" id="house-cny-result" style="display:none">
-        <span class="calc-result-label">折合人民币（月末汇率）</span>
-        <span class="calc-result-value" id="house-cny">—</span>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="saveHouseAsset()">保存到本月数据</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🏦 房贷余额</div>
-      <div class="input-row">
-        <div class="input-group" style="margin-bottom:0">
-          <label class="input-label">当前余额 (€)</label>
-          <input class="input-field" type="number" id="mortgage-eur" placeholder="e.g. 282000" oninput="calcMortgage()">
-        </div>
-        <div class="input-group" style="margin-bottom:0">
-          <label class="input-label">折合人民币</label>
-          <input class="input-field" type="number" id="mortgage-cny" placeholder="自动计算" readonly style="background:var(--grey-l)">
-        </div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="saveMortgage()">保存</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🚗 车辆估值（每年更新）</div>
-      <div class="input-row">
-        <div class="input-group" style="margin-bottom:0">
-          <label class="input-label">当前市值 (€)</label>
-          <input class="input-field" type="number" id="car-eur" placeholder="e.g. 10000" oninput="calcCar()">
-        </div>
-        <div class="input-group" style="margin-bottom:0">
-          <label class="input-label">折合人民币</label>
-          <input class="input-field" type="number" id="car-cny" placeholder="自动计算" readonly style="background:var(--grey-l)">
-        </div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="saveCar()">保存</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ══════════ SETTINGS ══════════ -->
   <div id="screen-settings" class="screen">
     <div class="card">
+      <div class="settings-section">
+        <div class="settings-title">💱 汇率管理</div>
+        <p style="font-size:11px;color:var(--text-light);margin-bottom:10px">
+          下方列出当前支持的币种与汇率（均为 1单位外币 = ? 人民币）。可以增加新币种（如持有英镑/港币账户），
+          或删除不再使用的币种。账户币种下拉菜单会自动包含这里的所有币种。
+        </p>
+        <div id="fx-rates-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px">
+          <div style="flex:1">
+            <label class="input-label">新币种代码</label>
+            <input class="input-field" type="text" id="new-fx-code" placeholder="如 GBP" maxlength="3" style="text-transform:uppercase">
+          </div>
+          <div style="flex:1">
+            <label class="input-label">汇率 (1单位 = ? CNY)</label>
+            <input class="input-field" type="number" id="new-fx-rate" step="0.0001" placeholder="如 9.20">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="addFxCurrency()">➕ 添加</button>
+        </div>
+
+        <div style="margin-top:6px;padding:10px 12px;background:var(--grey-l);border-radius:8px;font-size:11px;color:var(--text-light);line-height:1.6">
+          <strong style="color:var(--navy)">💡 示例：</strong>假设你在英国有一个银行账户，持有英镑(GBP)。
+          在「新币种代码」填 <code>GBP</code>，「汇率」填 <code>9.20</code>（表示 1 GBP ≈ 9.20 CNY），点击➕添加。
+          之后无论是📸截图识别还是✏️手动录入，币种选项中都会出现 <code>GBP</code>，系统会自动按 9.20 的汇率
+          把英镑金额折算成人民币计入总资产。<br>
+          🗑 删除某个币种后，已录入的对应账户数据仍会保留，但不再能正确换算 — 删除前请确认该币种已无持仓。
+        </div>
+
+        <div class="input-group" style="margin-top:12px;margin-bottom:10px">
+          <label class="input-label">汇率日期（用于自动获取）</label>
+          <input class="input-field" type="date" id="fx-date" style="max-width:200px">
+        </div>
+        <div class="btn-row" style="margin-top:0">
+          <button class="btn btn-primary btn-sm" onclick="fetchFxRates()">🌐 自动获取全部汇率</button>
+          <button class="btn btn-outline btn-sm" onclick="saveFxManual()">💾 保存手动修改</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">🎯 FIRE 目标设置</div>
+        <p id="i18n-rich-2" style="font-size:11px;color:var(--text-light);margin-bottom:10px">
+          经典FIRE法则（4%法则）：FIRE所需金额 ≈ <strong style="color:var(--navy)">年支出 × 25</strong>（即月支出 × 300）。
+          填写你的月支出，可让"FIRE目标"按此公式自动计算；也可以随时切换为手动设定固定数值。
+        </p>
+        <div class="input-group" style="margin-bottom:10px">
+          <label class="input-label">主货币（FIRE目标与汇总信息显示币种）</label>
+          <select class="input-field" id="main-currency" onchange="saveMainCurrency()" style="max-width:200px"></select>
+        </div>
+        <div class="input-row">
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">月支出 (<span class="main-ccy-label">CNY</span>)</label>
+            <input class="input-field" type="number" id="monthly-expense" placeholder="如 15000" oninput="updateFireTargetCalc()">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">25倍年支出 (自动计算)</label>
+            <input class="input-field" type="text" id="fire-25x-display" readonly style="background:var(--grey-l)">
+          </div>
+        </div>
+        <label class="checkbox-chip" id="target2-mode-chip" style="margin-top:8px" onclick="event.preventDefault(); toggleTarget2Mode()">
+          <input type="checkbox" id="target2-mode-dynamic" onclick="event.stopPropagation()" onchange="toggleTarget2Mode()">
+          🔄 FIRE目标跟随月支出自动计算（×25年支出）
+        </label>
+        <p style="font-size:11px;color:var(--text-light);margin:6px 0 0">
+          勾选后，下方"FIRE目标"会随月支出自动更新；取消勾选则变为固定值，可手动修改（修改后不再随月支出变动，
+          直到再次勾选）。
+        </p>
+        <div class="input-row" style="margin-top:10px">
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">里程碑目标 (<span class="main-ccy-label">CNY</span>)</label>
+            <input class="input-field" type="number" id="target-1" placeholder="5000000">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">FIRE目标 (<span class="main-ccy-label">CNY</span>)</label>
+            <input class="input-field" type="number" id="target-2" placeholder="10000000" oninput="onTarget2ManualEdit()">
+          </div>
+        </div>
+        <div class="input-row" style="margin-top:10px">
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">购房资助金额 (<span class="main-ccy-label">CNY</span>，可选，无则填0)</label>
+            <input class="input-field" type="number" id="house-support" placeholder="0">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">生效月份（购房月）</label>
+            <input class="input-field" type="month" id="house-support-from">
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--text-light);margin-top:6px">
+          这是一个可选项：如果有家人资助购房款等"非自己积累"的一次性资金，可填写金额，
+          系统会从该月起把它从总净资产中扣除，得到"个人积累"用于FIRE进度追踪。
+          如果不适用，填 0 即可——此时看板不会显示"个人积累"相关模块，所有目标直接基于总净资产。
+        </p>
+        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveTargets()">保存目标</button>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">🆘 应急资金 (Fuck-You-Money)</div>
+        <p style="font-size:11px;color:var(--text-light);margin-bottom:10px">
+          维持 6–12 个月基本生活的现金储备。目标金额 = 月支出（与上方"🎯 FIRE 目标设置"中的月支出共用一个数值） × 月数，
+          按主货币计算；进度按"统计范围"中所选账户、以主货币计价的活期现金计算。
+        </p>
+        <div class="input-group" style="margin-bottom:0">
+          <label class="input-label">目标月数：<span id="fum-months-label">6 个月</span></label>
+          <input type="range" id="fum-months" min="6" max="12" step="1" style="width:100%" oninput="updateFumTargetDisplay()">
+        </div>
+        <div class="input-group" style="margin-top:10px;margin-bottom:0">
+          <label class="input-label">统计范围（哪些账户的活期现金计入进度，可多选）</label>
+          <div id="fum-scope-list" class="chip-row"></div>
+        </div>
+        <div class="calc-result" style="margin-top:10px">
+          <span class="calc-result-label">目标金额</span>
+          <span class="calc-result-value" id="fum-target-display">—</span>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveFumSettings()">保存应急资金设置</button>
+      </div>
+
       <div class="settings-section">
         <div class="settings-title">🔑 Claude API Key</div>
         <div class="input-group">
@@ -758,57 +981,15 @@
       </div>
 
       <div class="settings-section">
-        <div class="settings-title">💱 月末汇率</div>
-        <div class="input-group" style="margin-bottom:10px">
-          <label class="input-label">汇率日期</label>
-          <input class="input-field" type="date" id="fx-date" style="max-width:200px">
-        </div>
-        <div class="btn-row" style="margin-top:0;margin-bottom:14px">
-          <button class="btn btn-primary btn-sm" onclick="fetchFxRates()">🌐 自动获取</button>
-          <button class="btn btn-outline btn-sm" onclick="saveFxManual()">手动保存</button>
-        </div>
-        <div class="fx-grid" id="fx-display">
-          <div class="fx-item"><div class="fx-ccy">EUR/CNY</div><div class="fx-val" id="fx-eur">—</div></div>
-          <div class="fx-item"><div class="fx-ccy">USD/CNY</div><div class="fx-val" id="fx-usd">—</div></div>
-          <div class="fx-item"><div class="fx-ccy">JPY/CNY</div><div class="fx-val" id="fx-jpy">—</div></div>
-        </div>
-        <div style="margin-top:10px">
-          <div class="fx-grid">
-            <div><label class="input-label">EUR/CNY</label><input class="input-field" type="number" id="fx-eur-in" step="0.0001" placeholder="7.81"></div>
-            <div><label class="input-label">USD/CNY</label><input class="input-field" type="number" id="fx-usd-in" step="0.0001" placeholder="7.15"></div>
-            <div><label class="input-label">JPY/CNY</label><input class="input-field" type="number" id="fx-jpy-in" step="0.00001" placeholder="0.047"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-title">🎯 FIRE 目标设置</div>
-        <div class="input-row">
-          <div class="input-group" style="margin-bottom:0">
-            <label class="input-label">里程碑目标 (CNY)</label>
-            <input class="input-field" type="number" id="target-1" placeholder="5000000">
-          </div>
-          <div class="input-group" style="margin-bottom:0">
-            <label class="input-label">FIRE目标 (CNY)</label>
-            <input class="input-field" type="number" id="target-2" placeholder="10000000">
-          </div>
-        </div>
-        <div class="input-group" style="margin-top:10px;margin-bottom:0">
-          <label class="input-label">欧元现金目标 (EUR, Bunq)</label>
-          <input class="input-field" type="number" id="target-eur" placeholder="20000">
-        </div>
-        <div class="input-row" style="margin-top:10px">
-          <div class="input-group" style="margin-bottom:0">
-            <label class="input-label">购房资助金额 (CNY)</label>
-            <input class="input-field" type="number" id="house-support" placeholder="700000">
-          </div>
-          <div class="input-group" style="margin-bottom:0">
-            <label class="input-label">生效月份（购房月）</label>
-            <input class="input-field" type="month" id="house-support-from">
-          </div>
-        </div>
-        <p style="font-size:11px;color:var(--text-light);margin-top:6px">个人积累 = 总净资产 − 购房资助（仅从生效月份起扣除，此前月份不受影响）</p>
-        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveTargets()">保存目标</button>
+        <div class="settings-title">📐 固定汇率（用于比较真实资产增减）</div>
+        <p id="i18n-rich-1" style="font-size:11px;color:var(--text-light);margin-bottom:10px">
+          <strong style="color:var(--navy)">月末汇率</strong>用于追踪每月实际资产价值（与上方一致）；
+          <strong style="color:var(--navy)">固定汇率</strong>是一组长期不变的参考汇率，用来剔除汇率波动、
+          只看资产本身的增减。默认值沿用原Excel设定：USD/CNY=7，EUR/CNY=8，JPY/CNY=0.05。
+          看板上的"汇率影响"卡片 = 月末汇率总值 − 固定汇率总值。
+        </p>
+        <div id="fixed-fx-rates-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+        <button class="btn btn-outline btn-sm" onclick="saveFixedFxRates()">💾 保存固定汇率</button>
       </div>
 
       <div class="settings-section" style="margin-bottom:0">
@@ -826,6 +1007,25 @@
       </div>
     </div>
   </div>
+
+  <div id="screen-help" class="screen">
+    <div class="card">
+      <div class="card-title">📖 应用概览</div>
+      <p id="i18n-rich-4" style="font-size:13px;line-height:1.8">
+        这是一个个人 FIRE（财务自由）追踪工具，所有数据保存在<strong>本机浏览器</strong>（localStorage），不上传任何服务器。<br><br>
+        每月流程：📸 上传截图或 ✏️ 手动录入本月数据 → 📋 在明细页确认无误 → 📊 看板自动展示净资产趋势、FIRE进度和资产配置分析。
+      </p>
+    </div>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">💾 数据备份 & 📱 添加到主屏幕</div>
+      <p id="i18n-rich-10" style="font-size:13px;line-height:1.8">
+        所有数据存在本机浏览器，<strong>换设备/换浏览器不会自动同步</strong>。⚙️设置 → 数据管理 中可导出/导入 JSON 备份；
+        把本应用分享给他人使用时，各自数据完全独立、互不可见。<br><br>
+        📱 手机上可通过浏览器菜单"添加到主屏幕"，获得类似App的全屏体验（无地址栏）。
+      </p>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -835,10 +1035,16 @@
 // DATA MODEL
 // ═══════════════════════════════════════════════════════════════
 
+// Storage namespace prefix. localStorage is shared per browser ORIGIN, not
+// per file — so if this file and the personal-data build are opened from the
+// same folder/origin, they'd otherwise read/write the SAME localStorage keys.
+// The shareable/demo build overrides this to 'demo_' so it never collides
+// with (or overwrites) anyone's personal data, regardless of where it's opened.
+const STORAGE_PREFIX = 'demo_';
 const DB = {
-  get: (k, def=null) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } },
-  set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
-  del: (k) => localStorage.removeItem(k)
+  get: (k, def=null) => { try { const v = localStorage.getItem(STORAGE_PREFIX+k); return v ? JSON.parse(v) : def; } catch { return def; } },
+  set: (k, v) => localStorage.setItem(STORAGE_PREFIX+k, JSON.stringify(v)),
+  del: (k) => localStorage.removeItem(STORAGE_PREFIX+k)
 };
 
 // Entries: array of { month:'2026-05', name, account, currency, origAmt, cnhAmt, cat1, cat2, include:true }
@@ -851,15 +1057,113 @@ const getEntries = () => {
 };
 const setEntries = (e) => DB.set('entries', e);
 
-const getSettings = () => DB.get('settings', {
-  apiKey: '', target1: 5000000, target2: 10000000, targetEur: 20000,
-  fxEur: 7.81, fxUsd: 6.71, fxJpy: 0.042, fxDate: '',
-  wozValue: 468000, wozRate: 4, carEur: 0,
-  houseSupport: 700000, houseSupportFrom: '2025-01',
-});
+const getSettings = () => {
+  const s = DB.get('settings', {
+    apiKey: '', target1: 0, target2: 0,
+    monthlyExpense: 0, target2Mode: 'manual', language: 'zh',
+    fxRates: { EUR: 7.81, USD: 6.71, JPY: 0.042 }, fxDate: '',
+    fixedFxRates: { EUR: 8, USD: 7, JPY: 0.05 },
+    wozValue: 0, wozRate: 0, carEur: 0, assetCcy: 'EUR',
+    houseSupport: 0, houseSupportFrom: '',
+    mainCurrency: 'CNY',
+    trackedAccounts: [],
+    fumMonthlyCost: 0, fumMonths: 6, fumCurrency: 'CNY', fumScope: [],
+  });
+  // ── One-time migrations from older versions ──
+  let changed = false;
+  if (!s.fxRates) {
+    s.fxRates = { EUR: s.fxEur || 7.81, USD: s.fxUsd || 6.71, JPY: s.fxJpy || 0.042 };
+    changed = true;
+  }
+  // 固定汇率 (reference rates for comparing real asset growth, excluding FX
+  // fluctuation) — defaults match the original Excel: USD 7, EUR 8, JPY 0.05
+  if (!s.fixedFxRates) {
+    s.fixedFxRates = {};
+    Object.keys(s.fxRates).forEach(c => {
+      s.fixedFxRates[c] = { EUR: 8, USD: 7, JPY: 0.05 }[c] ?? s.fxRates[c];
+    });
+    changed = true;
+  }
+  // Old "Bunq EUR cash" goal -> new flexible Fuck-You-Money goal
+  if (s.targetEur !== undefined && s.fumCurrency === undefined) {
+    s.fumCurrency = 'EUR';
+    s.fumScope = ['Bunq'];
+    s.fumMonths = 6;
+    s.fumMonthlyCost = Math.round((s.targetEur || 20000) / 6);
+    changed = true;
+  }
+  // fumScope used to be a single string ('all' or one account name) — now an
+  // array of account names; [] (empty) means "all accounts"
+  if (typeof s.fumScope === 'string') {
+    s.fumScope = (s.fumScope === 'all' || !s.fumScope) ? [] : [s.fumScope];
+    changed = true;
+  }
+  if (s.fumMonthlyCost === undefined) { s.fumMonthlyCost = 0; changed = true; }
+  if (s.fumMonths === undefined) { s.fumMonths = 6; changed = true; }
+  if (s.fumCurrency === undefined) { s.fumCurrency = 'CNY'; changed = true; }
+  if (s.fumScope === undefined) { s.fumScope = []; changed = true; }
+  if (s.assetCcy === undefined) { s.assetCcy = 'EUR'; changed = true; }
+  if (s.monthlyExpense === undefined) { s.monthlyExpense = 0; changed = true; }
+  // 月支出 and 应急资金's 月生活成本 used to be two separate numbers — merge
+  // into the single 月支出 field (in CNY, like monthlyExpense). Avoid calling
+  // toCny() here (it calls getSettings() and would recurse); convert inline
+  // using the fxRates already present on this settings object.
+  if (s.monthlyExpense === 0 && (s.fumMonthlyCost || 0) > 0) {
+    const fc = s.fumCurrency || 'CNY';
+    const rate = (fc === 'CNY') ? 1 : ((s.fxRates && s.fxRates[fc]) || 1);
+    s.monthlyExpense = Math.round(s.fumMonthlyCost * rate);
+    changed = true;
+  }
+  if (s.target2Mode === undefined) { s.target2Mode = 'manual'; changed = true; }
+  if (s.language === undefined) { s.language = 'zh'; changed = true; }
+  if (s.isDemoData === undefined) { s.isDemoData = false; changed = true; }
+  if (s.demoBannerDismissed === undefined) { s.demoBannerDismissed = false; changed = true; }
+  if (s.fireGoalDate === undefined) { s.fireGoalDate = null; changed = true; }
+  if (s.mainCurrency === undefined) { s.mainCurrency = 'CNY'; changed = true; }
+  if (!s.trackedAccounts) { s.trackedAccounts = []; changed = true; }
+  if (changed) DB.set('settings', s);
+  return s;
+};
 const saveSettings = (s) => DB.set('settings', { ...getSettings(), ...s });
 
-// Platform definitions for OCR prompts
+// ── Tracked accounts (user-managed, no hardcoded defaults) ──
+// Accounts the user wants to see in the monthly upload checklist.
+// New accounts are added automatically when OCR/manual entry introduces them,
+// and can be added/removed manually on the 录入 page.
+function getTrackedAccounts() {
+  const s = getSettings();
+  if (s.trackedAccounts && s.trackedAccounts.length) return s.trackedAccounts;
+  if (s.trackedAccountsInitialized) return [];
+  // One-time migration: seed the tracked list from any accounts already
+  // present in existing entries (e.g. imported/legacy data).
+  const names = new Set();
+  getEntries().forEach(e => {
+    const acc = e.account;
+    if (!acc || acc === '-' || acc === '历史' || acc === '现金') return;
+    names.add(acc);
+  });
+  const list = [...names].map(name => ({ name, icon: iconForAccount(name) }));
+  saveSettings({ trackedAccounts: list, trackedAccountsInitialized: true });
+  return list;
+}
+function setTrackedAccounts(list) {
+  saveSettings({ trackedAccounts: list, trackedAccountsInitialized: true });
+}
+function addTrackedAccount(name) {
+  if (!name || !name.trim()) return;
+  name = name.trim();
+  const list = getTrackedAccounts();
+  if (list.some(a => a.name === name)) return;
+  setTrackedAccounts([...list, { name, icon: iconForAccount(name) }]);
+}
+function removeTrackedAccount(name) {
+  setTrackedAccounts(getTrackedAccounts().filter(a => a.name !== name));
+}
+function iconForAccount(name) {
+  const match = OCR_PLATFORM_HINTS.find(p => name.includes(p.key));
+  return match ? match.icon : '🏦';
+}
+
 const PLATFORMS = {
   cmb:    { name:'招商银行',    lang:'zh', hint:'招商银行 活期/理财/基金余额' },
   xmib:   { name:'厦门国际银行', lang:'zh', hint:'厦门国际 活期/定期余额' },
@@ -902,15 +1206,326 @@ const ACCOUNT_CATS = {
 };
 
 // Maps a specific 二级分类 to its broad display group for badge styling
+const I18N = {
+  "📊 看板": "📊 Dashboard",
+  "📸 录入": "📸 Upload",
+  "📋 明细": "📋 Ledger",
+  "🏡 资产": "🏡 Assets",
+  "⚙️ 设置": "⚙️ Settings",
+  "📈 规划": "📈 Planning",
+  "❓ 说明": "❓ Help",
+  "总净资产": "Net Worth",
+  "金融资产": "Financial Assets",
+  "房产净值": "Property Equity",
+  "年化增速 CAGR": "Annualized CAGR",
+  "汇率影响": "FX Impact",
+  "CNY 月末汇率": "CNY, month-end rate",
+  "不含房产车辆": "Excl. property & vehicle",
+  "评估价 − 房贷": "Assessed value − mortgage",
+  "基于个人积累": "Based on personal accumulation",
+  "− 购房资助": "− House Support",
+  "= 个人积累（自有贡献）": "= Personal Accumulation",
+  "基于总净资产": "Based on net worth",
+  "月末汇率 − 固定汇率": "Month-end rate − fixed rate",
+  "固定汇率净资产": "Fixed-rate net worth",
+  "💰 500万 里程碑": "💰 ¥5M Milestone",
+  "🚀 1000万 FIRE目标": "🚀 ¥10M FIRE Target",
+  "🆘 应急资金": "🆘 Emergency Fund",
+  "应急资金": "Emergency Fund",
+  "个月生活费": " mo. living cost",
+  "里程碑": "Milestone",
+  "FIRE目标": "FIRE Target",
+  "FIRE 目标进度": "FIRE Goal Progress",
+  "⏩ 快速结转 — 冻结/不变项": "⏩ Carry Forward — Fixed Items",
+  "上传截图 — 自动识别平台": "Upload Screenshot — Auto-Detect",
+  "个人积累追踪": "Personal Accumulation",
+  "净资产构成": "Net Worth Composition",
+  "净资产走势": "Net Worth Trend",
+  "币种分布": "Currency Breakdown",
+  "截图预览": "Screenshot Preview",
+  "手动添加 — 公积金 / 应收账款 / 未兑付收益等": "Manual Entry — Provident Fund / Receivables / etc.",
+  "本月上传进度": "This Month's Progress",
+  "识别结果 — 请确认或修改": "Recognition Results — Confirm or Edit",
+  "资产类别": "Asset Categories",
+  "🆘 应急资金 (Fuck-You-Money)": "🆘 Emergency Fund (Fuck-You-Money)",
+  "🎯 FIRE 完成时间预估": "🎯 FIRE Completion Estimate",
+  "🎯 FIRE 目标设置": "🎯 FIRE Goal Settings",
+  "🏡 房产估值": "🏡 Property Valuation",
+  "🏦 房贷余额": "🏦 Mortgage Balance",
+  "💱 汇率管理": "💱 Exchange Rate Management",
+  "📊 资产配置分析": "📊 Asset Allocation Analysis",
+  "📐 固定汇率（用于比较真实资产增减）": "📐 Fixed Rates (for comparing real growth)",
+  "📖 应用概览": "📖 App Overview",
+  "🗑 清除示例数据，开始使用": "🗑 Clear Demo Data & Start",
+  "稍后再说": "Later",
+  "💾 数据备份 & 📱 添加到主屏幕": "💾 Data Backup & 📱 Add to Home Screen",
+  "🗑 数据管理": "🗑 Data Management",
+  "🚗 车辆估值（每年更新）": "🚗 Vehicle Valuation (yearly)",
+  "25倍年支出 (自动计算)": "25x Annual Expenses (auto)",
+  "API Key（用于截图OCR识别）": "API Key (for screenshot OCR)",
+  "FIRE目标 (": "FIRE Target (",
+  "二级分类": "Subcategory",
+  "官方评估价值": "Official Assessed Value",
+  "币种": "Currency",
+  "市场溢价/折价 (%，可为负)": "Market premium/discount (%, can be negative)",
+  "当前余额 (": "Current Balance (",
+  "当前市值 (": "Current Value (",
+  "房产/房贷/车辆 记账币种": "Property/Mortgage/Vehicle Currency",
+  "折合人民币": "In CNY",
+  "原币金额": "Original Amount", "折人民币": "In CNY", "类别": "Category", "操作": "Actions",
+  "新币种代码": "New Currency Code",
+  "月支出 (": "Monthly Expenses (",
+  "月生活成本": "Monthly Living Cost",
+  "汇率 (1单位 = ? CNY)": "Rate (1 unit = ? CNY)",
+  "汇率日期（用于自动获取）": "Rate Date (for auto-fetch)",
+  "生效月份（购房月）": "Effective Month (purchase)",
+  "目标月数：": "Target months: ",
+  "目标达成年月": "Target Year-Month",
+  "统计范围（哪些账户的活期现金计入进度，可多选）": "Scope (which accounts' cash counts, multi-select)",
+  "账户": "Account",
+  "购房资助金额 (": "House-Purchase Support (",
+  "，可选，无则填0)": ", optional, 0 if N/A)",
+  "资产名称": "Asset Name",
+  "里程碑目标 (": "Milestone Target (",
+  "金额（原币，负债填负数）": "Amount (original currency, negative for debts)",
+  "🌐 语言 / Language": "🌐 Language / 语言",
+  "↩ 重新上传": "↩ Re-upload",
+  "⏩ 复制上月冻结项到本月": "⏩ Copy Last Month's Fixed Items",
+  "✓ 确认保存": "✓ Confirm & Save",
+  "➕ 添加": "➕ Add",
+  "⬆ 导入数据备份": "⬆ Import Backup",
+  "⬇ 导出 Excel": "⬇ Export Excel",
+  "⬇ 导出数据备份 (JSON)": "⬇ Export Backup (JSON)",
+  "保存": "Save",
+  "保存 API Key": "Save API Key",
+  "保存到本月数据": "Save to This Month",
+  "保存应急资金设置": "Save Emergency Fund Settings",
+  "保存目标": "Save Goals",
+  "清除所有数据": "Clear All Data",
+  "＋ 添加到本月": "＋ Add to This Month",
+  "🌐 自动获取全部汇率": "🌐 Fetch All Rates",
+  "💾 保存固定汇率": "💾 Save Fixed Rates",
+  "💾 保存手动修改": "💾 Save Manual Changes",
+  "✏️ 手动录入": "✏️ Manual Entry",
+  "🏡 房产 / 房贷 / 车辆": "🏡 Property / Mortgage / Vehicle",
+  "📈 财务规划": "📈 Financial Planning",
+  "当前估算市值": "Estimated Market Value",
+  "折合人民币（月末汇率）": "In CNY (month-end rate)",
+  "目标金额": "Target Amount",
+  "资产名称（表头）": "Asset Name",
+  "币种（表头）": "Currency",
+  "🔄 FIRE目标跟随月支出自动计算（×25年支出）": "🔄 FIRE target follows monthly expenses (×25 annual)",
+  "全部账户（活期现金）": "All accounts (cash)",
+  "全部账户": "All accounts",
+  "请先在🎯FIRE目标设置中填写月支出": "Please set your monthly expenses in 🎯 FIRE Goals above first",
+  "月份：": "Month: ",
+  "💧 流动资金": "💧 Liquid",
+  '总净资产(万,月末汇率)': 'Net Worth (¥10k, month-end rate)',
+  '个人积累(万)': 'Personal Accumulation (¥10k)',
+  '总净资产(万,固定汇率)': 'Net Worth (¥10k, fixed rate)',
+  "🏦 固定收益类": "🏦 Fixed Income",
+  "🏦 固定收益": "🏦 Fixed Income",
+  "📈 理财类": "📈 Wealth Mgmt",
+  "📈 理财": "📈 Wealth Mgmt",
+  "🚀 风险投资": "🚀 Risk Assets",
+  "⏳ 应收款": "⏳ Receivables",
+  "🔴 负债": "🔴 Liabilities",
+  "🏡 实物资产": "🏡 Physical Assets",
+  "📦 其他": "📦 Other",
+  "流动资金": "Liquid",
+  "固定收益": "Fixed Income",
+  "理财": "Wealth Mgmt",
+  "风险投资": "Risk Assets",
+  "车辆": "Vehicle",
+  "项目数": "Items",
+  "项": "items",
+  "净资产": "Net Worth",
+  "本月暂无数据 — 请到 📸 录入 页面添加": "No data this month — add some on the 📸 Upload page",
+  "还没有追踪的账户 — 上传一张截图后会自动添加，或在下方手动添加": "No tracked accounts yet — upload a screenshot to auto-add, or add manually below",
+  "请先在⚙️设置中设定 FIRE 目标": "Please set a FIRE target in ⚙️ Settings first",
+  "当前净资产为零或负数，暂无法估算": "Net worth is zero or negative — cannot estimate yet",
+  "请选择目标年月": "Please select a target date",
+  "⚠️ 请选择一个未来的日期": "⚠️ Please choose a future date",
+  "🎉 已达成 FIRE 目标！": "🎉 FIRE target achieved!",
+  "距目标还需": "Remaining to target",
+  "达成所需年化增速": "Required annual growth rate",
+  "你的历史年化增速": "Your historical annual growth rate",
+  "达成可能性（粗略参考）": "Likelihood (rough reference)",
+  "按当前历史增速预计：": "At your current historical rate: ",
+  "数据不足": "Not enough data",
+  "较低（历史增速为负或零）": "Low (historical growth is zero or negative)",
+  "较高": "High",
+  "中高": "Medium-high",
+  "中等，需适度提速": "Medium — needs some acceleration",
+  "较低，差距较大": "Low — gap is significant",
+  "🌿 FIRE Tracker": "🌿 FIRE Tracker",
+  "增长数据不足，无法估算": "Not enough growth data to estimate",
+  "本月暂无金融资产数据，添加数据后将显示配置分析。": "No financial asset data for this month yet — allocation analysis will appear once you add some.",
+  "流动资金（活期现金等）占金融资产的 ": "Liquid assets (cash, etc.) make up ",
+  "%，比例偏高。除了覆盖🆘应急资金目标所需的部分，长期闲置的现金可能跑不赢通胀；可以了解一下定期存款、货币基金、指数基金等选项。": "% of your financial assets — on the higher side. Beyond what's needed for your 🆘 Emergency Fund target, cash sitting idle long-term may not keep pace with inflation; you might look into options like time deposits, money market funds, or index funds.",
+  "风险资产（指数基金/个股）占比仅 ": "Risk assets (index funds/stocks) make up only ",
+  "%。长期历史数据显示，权益类资产的平均回报通常高于现金类资产，如果投资期限较长且能承受短期波动，可以了解一下逐步提高这类配置的可能性。": "% of your portfolio. Historically, equities have tended to outperform cash over the long run — if your time horizon is long and you can tolerate short-term swings, you might explore gradually increasing this allocation.",
+  "风险资产占比达到 ": "Risk assets make up ",
+  "%，净资产短期波动可能会比较明显。可以核对一下🆘应急资金等流动性储备是否足以覆盖意外支出。": "% of your portfolio — short-term swings in net worth could be significant. It may be worth checking whether your 🆘 Emergency Fund and other liquid reserves are enough to cover unexpected expenses.",
+  "定期存款/保险/公积金等固定收益类占比 ": "Fixed-income assets (time deposits, insurance, provident fund, etc.) make up ",
+  "%，相对稳健但增值有限，可以结合资金的使用计划判断是否需要部分调整。": "% of your portfolio — relatively stable but with limited upside; whether to adjust depends on your plans for this money.",
+  "银行理财类占比 ": "Bank wealth-management products make up ",
+  "%，建议留意这类产品的实际费率与历史净值波动情况。": "% of your portfolio — worth keeping an eye on the actual fees and historical volatility of these products.",
+  "当前资产在流动性、稳健收益与风险资产之间分布相对均衡，暂无明显观察点。": "Your current allocation across liquidity, stable income, and risk assets looks relatively balanced — no notable observations for now.",
+  "目前记录的月份还不足两个，暂时无法对比历史增速 — 多记录几个月数据后这里会更准确。": "You currently have fewer than two months of data, so there isn't enough history to compare growth rates yet — this will become more accurate as you record more months.",
+  "若想按所选日期达成目标，年化增速需要比你的历史水平再提高约 ": "To reach your goal by the selected date, your annual growth rate would need to be about ",
+  " 个百分点。一般来说可以考虑的方向包括：提高每月储蓄/投资金额、在自己能承受的风险范围内适度调整资产配置、或者发展额外收入来源。": " percentage points higher than your historical rate. General directions worth considering include increasing your monthly savings/investment amount, adjusting your asset allocation within your risk tolerance, or finding additional income sources.",
+  "另一种思路是保持当前节奏不变，把目标日期适当延后 — 按你的历史增速，预计达成时间见上方\"按当前历史增速预计\"一行。": "Another approach is to keep your current pace and push the target date back a bit — based on your historical rate, the estimated completion time is shown in the \"At your current historical rate\" line above.",
+  "按你目前的历史增速推算，已经能够满足这个目标日期，甚至有机会提前达成。": "Based on your current historical growth rate, you should already be on track to meet this target date — possibly even ahead of schedule.",
+  "💡 上传截图后，识别到的新账户会自动加入此列表；点击账户右上角 × 可移除（不影响已记录数据）。": "💡 After uploading a screenshot, newly-recognized accounts are added to this list automatically; click the × in the top-right of an account to remove it (doesn't affect recorded data).",
+  "💡 可直接输入自定义名称（如\"朋友借款\"、\"欠老王的钱\"）。含\"负债/借款/欠款\"会自动归入🔴负债，\n            含\"应收\"归入⏳应收款，其他归入📦其他 — 金额都会正确计入总净资产。": "💡 You can type any custom name (e.g. \"loan from a friend\", \"owed to Bob\"). Names containing \"debt/loan/owed\" are auto-grouped into 🔴 Liabilities, \"receivable\" into ⏳ Receivables, and anything else into 📦 Other — the amount is always correctly counted toward your net worth.",
+  "将上月的 公积金、应收款、保险、房产市值/净值、房贷余额、车辆价值 等项目一键复制到本月（金额不变，汇率重新换算）。\n        若本月已通过 🏡资产 页面或手动录入填写过同名项目，该项会自动跳过，不会覆盖你的修改 — 可放心先编辑再结转，或先结转再编辑。": "Copy items like Provident Fund, Receivables, Insurance, Property Value/Equity, Mortgage Balance, and Vehicle Value from last month to this month with one click (amounts unchanged, FX re-converted). If you've already entered an item with the same name this month via 🏡 Assets or manual entry, it will be skipped automatically and won't overwrite your changes — feel free to edit first then carry forward, or vice versa.",
+  "💡 应收账款、房贷余额等结转后仍可在下方 📋明细 页面用 ✏️ 编辑或 🗑 删除。": "💡 Receivables, mortgage balance, etc. can still be ✏️ edited or 🗑 deleted on the 📋 Ledger page below after carrying forward.",
+  "许多地区都有类似的官方/政府评估价格作为估值基准——例如荷兰的 WOZ、中国的不动产评估价/计税基准价、\n        美国的 Property Tax Assessed Value、英国的 Council Tax Band 对应价值等。把该官方评估价填入下方，\n        再设置一个相对该价格的市场溢价/折价百分比，即可估算市场价值。如果你的地区没有这类官方评估，\n        也可以直接填入你自己估算的市场价值，溢价填 0。": "Many regions have an official/government assessed value used as a valuation baseline — e.g. the Netherlands' WOZ, China's real-estate assessed value / tax-basis price, the US Property Tax Assessed Value, or the UK Council Tax Band value. Enter that official figure below, then set a market premium/discount percentage relative to it to estimate market value. If your region doesn't have this kind of official assessment, you can simply enter your own estimated market value and set the premium to 0.",
+  "下方列出当前支持的币种与汇率（均为 1单位外币 = ? 人民币）。可以增加新币种（如持有英镑/港币账户），\n          或删除不再使用的币种。账户币种下拉菜单会自动包含这里的所有币种。": "Below are the currently supported currencies and rates (each is 1 unit of foreign currency = ? CNY). You can add new currencies (e.g. if you hold GBP/HKD accounts) or remove ones you no longer use. The account currency dropdown automatically includes all currencies listed here.",
+  "勾选后，下方\"FIRE目标\"会随月支出自动更新；取消勾选则变为固定值，可手动修改（修改后不再随月支出变动，\n          直到再次勾选）。": "When checked, the \"FIRE Target\" below updates automatically with your monthly expenses; unchecking it turns it into a fixed value you can edit manually (it won't change with monthly expenses again until you check the box).",
+  "这是一个可选项：如果有家人资助购房款等\"非自己积累\"的一次性资金，可填写金额，\n          系统会从该月起把它从总净资产中扣除，得到\"个人积累\"用于FIRE进度追踪。\n          如果不适用，填 0 即可——此时看板不会显示\"个人积累\"相关模块，所有目标直接基于总净资产。": "This is optional: if family helped fund part of a home purchase or similar one-time, \"not self-accumulated\" money, enter the amount — the system will deduct it from your net worth starting that month to get your \"Personal Accumulation\" for FIRE tracking. If this doesn't apply, leave it at 0 — the dashboard will then hide the \"Personal Accumulation\" module and all goals will be based directly on net worth.",
+  "维持 6–12 个月基本生活的现金储备。目标金额 = 月支出（与上方\"🎯 FIRE 目标设置\"中的月支出共用一个数值） × 月数，\n          按主货币计算；进度按\"统计范围\"中所选账户、以主货币计价的活期现金计算。": "A cash reserve covering 6–12 months of basic living costs. Target = monthly expenses (shares the same value as \"Monthly Expenses\" in 🎯 FIRE Goals above) × number of months, in your main currency; progress is measured against main-currency cash in the account(s) chosen under \"Scope\".",
+  "💡 在不同设备/浏览器间转移数据：先在这里\"导出数据备份\"，再在另一台设备打开本应用并\"导入数据备份\"。": "💡 To move data between devices/browsers: \"Export Backup\" here first, then open this app on the other device and \"Import Backup\".",
+  "以上为基于资产配置比例的一般性观察，不构成投资建议；是否调整请结合自身风险承受能力、年龄、负债情况等综合判断。": "The above are general observations based on your allocation percentages and do not constitute investment advice; whether to make any changes is up to you, based on your risk tolerance, age, debt situation, and overall circumstances.",
+};
+
+const I18N_RICH_EN = {
+  "i18n-rich-0": "💡 Once the assessed value updates each year, enter the new figure and save — this only updates the property record for the current month (<span id=\"woz-current-month\"></span>); past months remain unchanged.",
+  "i18n-rich-1": "<strong style=\"color:var(--navy)\">Month-end rate</strong> is the actual exchange rate each month, used to track real asset value (same as above); <strong style=\"color:var(--navy)\">Fixed rate</strong> is a long-term reference rate that stays constant, used to strip out FX fluctuations and compare pure asset growth. Defaults match the original spreadsheet: USD/CNY=7, EUR/CNY=8, JPY/CNY=0.05. The dashboard's \"FX Impact\" card = month-end-rate total − fixed-rate total.",
+  "i18n-rich-2": "Classic FIRE rule (4% rule): the amount needed for FIRE ≈ <strong style=\"color:var(--navy)\">annual expenses × 25</strong> (i.e. monthly expenses × 300). Enter your monthly expenses to have the \"FIRE target\" calculated automatically by this formula — or switch to a fixed manual value at any time.",
+  "i18n-rich-3": "Enter the year-month you'd like to reach your FIRE target (<span id=\"planning-target2-label\">—</span>) to estimate the required annual growth rate and compare it with your historical rate for a rough likelihood reference.",
+  "i18n-rich-4": "This is a personal FIRE (Financial Independence, Retire Early) tracker. All data is stored in <strong>your local browser</strong> (localStorage) — nothing is uploaded to any server.<br><br>Monthly routine: 📸 upload screenshots or ✏️ manually enter this month's data → 📋 double-check it on the Ledger page → 📊 the Dashboard automatically shows your net worth trend, FIRE progress, and asset allocation analysis.",
+  "i18n-rich-10": "All data lives in your local browser — <strong>switching devices/browsers does not sync automatically</strong>. ⚙️ Settings → Data Management lets you export/import a JSON backup; if you share this app with someone else, each person's data is completely independent and invisible to the other.<br><br>📱 On mobile, use your browser menu's \"Add to Home Screen\" for an app-like fullscreen experience (no address bar).",
+  "i18n-rich-12": "👋 This is <strong>demo data</strong> to help you see what the app looks like and what it can do. Once you're ready to record your own data, you can clear it."
+
+};
+
+// ═══════════════════════════════════════════════════════════════
+// i18n — 中文 / English
+// ═══════════════════════════════════════════════════════════════
+let CURRENT_LANG = 'zh';
+let I18N_CAPTURED = [];   // [{node, type, original, trimmed}] — simple text/placeholder/title
+let I18N_CAPTURE_DONE = false;
+
+// Translate a dynamically-generated string (used in JS-built innerHTML,
+// chart labels, toasts, etc). Falls back to the original Chinese if no
+// translation exists or current language is zh.
+function tr(str) {
+  if (CURRENT_LANG === 'en' && I18N[str]) return I18N[str];
+  return str;
+}
+
+function getLang() {
+  return CURRENT_LANG;
+}
+
+// Chart target-line label: "500万目标" (zh) vs "¥5M Target" (en)
+function fmtTargetLabel(wan) {
+  if (CURRENT_LANG === 'en') {
+    const m = wan / 100;
+    return `¥${Number.isInteger(m) ? m : m.toFixed(1)}M Target`;
+  }
+  return `${wan}万目标`;
+}
+
+// "500万" (zh) vs "¥5M" (en) — wan is a value already in units of 万 (10k CNY)
+function fmtWanAmount(wan) {
+  if (CURRENT_LANG === 'en') {
+    const m = wan / 100;
+    return `¥${Number.isInteger(m) ? m : m.toFixed(1)}M`;
+  }
+  return `${wan}万`;
+}
+
+// Walk the whole document body once, caching every text node / placeholder /
+// title attribute whose (trimmed) value has a translation. Runs only once —
+// later language switches just look up the cached original Chinese text.
+function i18nCaptureOriginals() {
+  if (I18N_CAPTURE_DONE) return;
+  I18N_CAPTURE_DONE = true;
+  // Guard for minimal/non-browser DOM stubs (e.g. test harnesses) that don't
+  // implement createTreeWalker/NodeFilter — real browsers always have these.
+  if (typeof document.createTreeWalker !== 'function' || typeof NodeFilter === 'undefined') return;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while ((node = walker.nextNode())) {
+    const text = node.nodeValue;
+    const trimmed = text.trim();
+    if (trimmed && I18N[trimmed]) {
+      I18N_CAPTURED.push({ node, type: 'text', original: text, trimmed });
+    }
+  }
+  document.querySelectorAll('[placeholder]').forEach(el => {
+    const ph = el.getAttribute('placeholder');
+    if (ph && I18N[ph]) I18N_CAPTURED.push({ node: el, type: 'placeholder', original: ph, trimmed: ph });
+  });
+  document.querySelectorAll('[title]').forEach(el => {
+    const ti = el.getAttribute('title');
+    if (ti && I18N[ti]) I18N_CAPTURED.push({ node: el, type: 'title', original: ti, trimmed: ti });
+  });
+}
+
+// Apply (or revert) translations across the whole document, then re-render
+// the active screen so dynamically-generated content (charts, toasts,
+// ledger/group labels, planning suggestions, etc.) picks up the new language too.
+function applyLanguage(lang) {
+  CURRENT_LANG = lang;
+  i18nCaptureOriginals();
+
+  I18N_CAPTURED.forEach(item => {
+    if (item.type === 'text') {
+      if (lang === 'en') {
+        const leading = item.original.match(/^\s*/)[0];
+        const trailing = item.original.match(/\s*$/)[0];
+        item.node.nodeValue = leading + I18N[item.trimmed] + trailing;
+      } else {
+        item.node.nodeValue = item.original;
+      }
+    } else if (item.type === 'placeholder') {
+      item.node.setAttribute('placeholder', lang === 'en' ? I18N[item.trimmed] : item.original);
+    } else if (item.type === 'title') {
+      item.node.setAttribute('title', lang === 'en' ? I18N[item.trimmed] : item.original);
+    }
+  });
+
+  // Rich (mixed-markup) paragraphs: swap whole innerHTML, caching the
+  // original Chinese the first time we touch each element.
+  Object.keys(I18N_RICH_EN).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.dataset.zhCache === undefined) el.dataset.zhCache = el.innerHTML;
+    el.innerHTML = (lang === 'en') ? I18N_RICH_EN[id] : el.dataset.zhCache;
+  });
+
+  saveSettings({ language: lang });
+  const langSelect = document.getElementById('language-select');
+  if (langSelect) langSelect.value = lang;
+
+  // Re-render the active screen so JS-generated text (via t()) updates too
+  const activeBtn = [...document.querySelectorAll('.nav-btn')].find(b => b.classList.contains('active'));
+  const screen = activeBtn ? activeBtn.dataset.screen : 'dashboard';
+  showScreen(screen);
+}
+
+
 const CAT2_GROUP = {
   '活期现金':'流动资金', '应收款':'应收',
   '定期存款':'固定收益类', '保险':'固定收益类', '公积金':'固定收益类',
   '理财':'理财类',
   '指数基金':'风险投资', '个股':'风险投资',
-  '信用卡负债':'负债',
+  '信用卡负债':'负债', '个人借款':'负债', '朋友借款':'负债', '其他负债':'负债',
   '房产市值':'实物资产', '房产净值':'实物资产', '房贷余额':'实物资产', '车辆价值':'实物资产',
 };
-function cat2Group(cat2) { return CAT2_GROUP[cat2] || '流动资金'; }
+// Fallback for any custom/未列出 二级分类 (e.g. user-typed "欠老王的钱"):
+// keyword-match for debt/receivable, otherwise bucket into a generic "其他" group.
+function cat2Group(cat2) {
+  if (CAT2_GROUP[cat2]) return CAT2_GROUP[cat2];
+  if (!cat2) return '流动资金';
+  if (/负债|借款|欠款|贷款|欠/.test(cat2)) return '负债';
+  if (/应收|借出|借给/.test(cat2)) return '应收';
+  return '其他';
+}
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
@@ -937,12 +1552,96 @@ function toast(msg, dur=2500) {
   setTimeout(() => el.classList.remove('show'), dur);
 }
 function toCny(amt, ccy) {
+  if (!ccy || ccy === 'CNY') return amt;
   const s = getSettings();
-  if (ccy === 'CNY') return amt;
-  if (ccy === 'EUR') return amt * s.fxEur;
-  if (ccy === 'USD') return amt * s.fxUsd;
-  if (ccy === 'JPY') return amt * s.fxJpy;
-  return amt;
+  const rate = s.fxRates && s.fxRates[ccy];
+  return rate != null ? amt * rate : amt; // unknown currency: fall back to 1:1 (flagged elsewhere)
+}
+// 固定汇率换算 — 用于剔除汇率波动后比较资产真实增减
+function toCnyFixed(amt, ccy) {
+  if (!ccy || ccy === 'CNY') return amt;
+  const s = getSettings();
+  const rate = s.fixedFxRates && s.fixedFxRates[ccy];
+  return rate != null ? amt * rate : toCny(amt, ccy); // fall back to month-end rate if no fixed rate set
+}
+// Currency display symbols (extend freely; unknown currencies just show the code)
+const CCY_SYMBOLS = { CNY:'¥', EUR:'€', USD:'$', JPY:'¥', GBP:'£', HKD:'HK$', SGD:'S$', AUD:'A$', CAD:'C$' };
+function ccySymbol(c) { return CCY_SYMBOLS[c] || (c ? c + ' ' : ''); }
+// All currencies the app currently knows rates for, plus CNY
+function knownCurrencies() {
+  const s = getSettings();
+  return ['CNY', ...Object.keys(s.fxRates || {})];
+}
+
+// ── Main currency: FIRE goals and aggregate dashboard figures display in
+// this currency (everything is still stored/summed internally in CNY). ──
+function mainCcy() { return getSettings().mainCurrency || 'CNY'; }
+function mainSymbol() { return ccySymbol(mainCcy()); }
+// CNY amount -> main-currency amount (for display)
+function toMainCcy(cnyAmt) {
+  const mc = mainCcy();
+  if (mc === 'CNY' || cnyAmt == null) return cnyAmt;
+  const rate = (getSettings().fxRates || {})[mc];
+  return rate ? cnyAmt / rate : cnyAmt;
+}
+// Main-currency amount -> CNY amount (for saving target inputs)
+function fromMainCcy(mainAmt) {
+  const mc = mainCcy();
+  if (mc === 'CNY' || mainAmt == null) return mainAmt;
+  const rate = (getSettings().fxRates || {})[mc];
+  return rate ? mainAmt * rate : mainAmt;
+}
+// Full formatted amount with main-currency symbol, e.g. "¥5,000,000" / "€640,000" / "-€8,175"
+function fmtMain(cnyAmt, decimals=0) {
+  if (cnyAmt == null || isNaN(cnyAmt)) return '—';
+  const val = toMainCcy(cnyAmt);
+  const neg = val < 0 ? '-' : '';
+  return neg + mainSymbol() + fmt(Math.abs(val), decimals);
+}
+// Compact KPI-style amount: CNY keeps the existing 万-based fmtShort
+// (unchanged for backward compatibility); other currencies show a full
+// formatted number with symbol (no 万, since that's a CNY-specific unit).
+function fmtMainShort(cnyAmt) {
+  if (mainCcy() === 'CNY') return fmtShort(cnyAmt);
+  if (cnyAmt == null || isNaN(cnyAmt)) return '—';
+  const val = toMainCcy(cnyAmt);
+  const neg = val < 0 ? '-' : '';
+  return neg + mainSymbol() + fmt(Math.abs(val), 0);
+}
+// Like fmtMainShort but always includes the symbol (for "current / target" meta lines)
+function fmtMainMeta(cnyAmt) {
+  if (mainCcy() === 'CNY') return '¥' + fmtShort(cnyAmt);
+  return fmtMainShort(cnyAmt);
+}
+// FIRE progress-bar label, e.g. "500万" (zh-CNY) / "¥5M" (en-CNY) / "€640,000" (EUR)
+function fmtMainLabel(cnyAmt) {
+  if (mainCcy() === 'CNY') return fmtWanAmount(Math.round(cnyAmt/10000));
+  return fmtMain(cnyAmt);
+}
+// Chart target-line label, e.g. "500万目标" / "¥5M Target" / "€640,000 Target"
+function fmtMainTargetLabel(cnyAmt) {
+  if (mainCcy() === 'CNY') return fmtTargetLabel(Math.round(cnyAmt/10000));
+  return fmtMain(cnyAmt) + (CURRENT_LANG === 'en' ? ' Target' : '目标');
+}
+// "CNY 月末汇率" / "EUR, month-end rate" — top KPI card sub-label
+function mainCcySubLabel() {
+  return CURRENT_LANG === 'en' ? `${mainCcy()}, month-end rate` : `${mainCcy()} 月末汇率`;
+}
+// Net-worth chart series label, mainCcy-aware. kind: 'total' | 'own' | 'fixed'
+function chartSeriesLabel(kind) {
+  if (mainCcy() === 'CNY') {
+    return { total: tr('总净资产(万,月末汇率)'), own: tr('个人积累(万)'), fixed: tr('总净资产(万,固定汇率)') }[kind];
+  }
+  const sym = mainSymbol();
+  if (CURRENT_LANG === 'en') {
+    return { total: `Net Worth (${sym}, month-end rate)`, own: `Personal Accumulation (${sym})`, fixed: `Net Worth (${sym}, fixed rate)` }[kind];
+  }
+  return { total: `总净资产(${sym},月末汇率)`, own: `个人积累(${sym})`, fixed: `总净资产(${sym},固定汇率)` }[kind];
+}
+// CNY amount -> chart-scale value (万 for CNY, raw main-currency units otherwise)
+function toChartScale(cnyAmt, decimals) {
+  if (mainCcy() === 'CNY') return +(cnyAmt/10000).toFixed(decimals);
+  return +toMainCcy(cnyAmt).toFixed(decimals);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -954,9 +1653,8 @@ function showScreen(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
   document.getElementById('screen-' + name).classList.add('active');
   if (name === 'dashboard') renderDashboard();
-  if (name === 'upload') { renderCarryPreview(); renderChecklist(); }
+  if (name === 'upload') { renderCarryPreview(); renderChecklist(); populateCcySelect('manual-ccy', 'CNY'); renderAssets(); }
   if (name === 'ledger') renderLedger();
-  if (name === 'assets') renderAssets();
   if (name === 'settings') renderSettings();
 }
 
@@ -971,8 +1669,7 @@ function calcTotals(month) {
   const s = getSettings();
 
   let liquid=0, fixed=0, wealth=0, risk=0, debt=0;
-  let eur=0, usd=0, jpy=0, cny=0;
-  let bunqEur = 0;
+  const ccyTotals = {}; // currency code -> CNY-equivalent total (financial assets only)
 
   entries.forEach(e => {
     const v = e.cnhAmt || 0;
@@ -984,16 +1681,33 @@ function calcTotals(month) {
       else if (['指数基金','个股'].includes(cat2)) risk += v;
       else if (cat2 === '信用卡负债') debt += v;
       else if (cat2 === '应收款') liquid += v;
+      // Fallback for custom/未列出 二级分类 (e.g. "朋友借款", "欠老王的钱"):
+      // keyword-match for debt/receivable; otherwise count as liquid so the
+      // amount is never silently dropped from 总净资产.
+      else if (/负债|借款|欠款|贷款|欠/.test(cat2)) debt += v;
+      else if (/应收|借出|借给/.test(cat2)) liquid += v;
+      else liquid += v;
       // Currency breakdown: financial assets only (实物资产 excluded)
-      if (e.currency === 'EUR') eur += v;
-      else if (e.currency === 'USD') usd += v;
-      else if (e.currency === 'JPY') jpy += v;
-      else if (e.currency === 'CNY') cny += v;
+      const ccy = e.currency || 'CNY';
+      ccyTotals[ccy] = (ccyTotals[ccy] || 0) + v;
     }
-    if (e.account === 'Bunq' && e.currency === 'EUR') bunqEur += (e.origAmt || 0);
   });
 
   const fin = liquid + fixed + wealth + risk + debt;
+
+  // ── Fuck-You-Money (emergency fund) progress ──
+  // Sums 活期现金 entries denominated in the main currency, optionally scoped
+  // to specific accounts. Target = 月支出 (主货币) × 月数.
+  let fumCurrent = 0;
+  const fumCcy = mainCcy();
+  entries.forEach(e => {
+    if (e.cat1 !== '金融资产' || e.cat2 !== '活期现金') return;
+    if ((e.currency || 'CNY') !== fumCcy) return;
+    if (s.fumScope && s.fumScope.length && !s.fumScope.includes(e.account)) return;
+    fumCurrent += (e.origAmt || 0);
+  });
+  const fumTarget = toMainCcy(s.monthlyExpense || 0) * (s.fumMonths || 6);
+
 
   // Property: read directly from this month's entries.
   // 房产市值 + 房产净值(direct net, used for older months where only net is known) + 房贷余额(negative)
@@ -1015,9 +1729,20 @@ function calcTotals(month) {
   const support = (month >= (s.houseSupportFrom || '2025-01')) ? (s.houseSupport || 0) : 0;
   const ownTotal = total - support;
 
-  return { liquid, fixed, wealth, risk, fin, propNet, carCny, total, support, ownTotal, eur, usd, jpy, cny, bunqEur,
-           catData: [liquid, fixed, wealth, risk],
-           ccyData: [cny, eur, usd, jpy] };
+  // ── 固定汇率总值 (用于剔除汇率波动后比较真实资产增减) ──
+  // total = sum of cnhAmt (月末汇率) over all included 金融资产+实物资产 entries.
+  // totalFixed mirrors that but converts each entry's original-currency amount
+  // using the FIXED reference rates instead.
+  const totalFixed = entries
+    .filter(e => e.cat1 === '金融资产' || e.cat1 === '实物资产')
+    .reduce((sum, e) => sum + toCnyFixed(e.origAmt, e.currency), 0);
+  const ownTotalFixed = totalFixed - support;
+  const fxImpact = total - totalFixed; // 汇率影响：月末汇率总值 − 固定汇率总值
+
+  return { liquid, fixed, wealth, risk, fin, propNet, carCny, total, support, ownTotal,
+           totalFixed, ownTotalFixed, fxImpact,
+           ccyTotals, fumCurrent, fumTarget,
+           catData: [liquid, fixed, wealth, risk] };
 }
 
 function computeCagr() {
@@ -1030,7 +1755,7 @@ function computeCagr() {
   // ¥700,000 house-support deduction only from the purchase month onward.
   const history = months.map(m => {
     const t = calcTotals(m);
-    return { month: m, total: t.total, ownTotal: t.ownTotal };
+    return { month: m, total: t.total, ownTotal: t.ownTotal, totalFixed: t.totalFixed };
   });
   const n = history.length;
   const months_elapsed = (new Date(history[n-1].month+'-01') - new Date(history[0].month+'-01')) / (30.44*24*3600*1000);
@@ -1049,7 +1774,22 @@ function estimateEta(current, target, cagr) {
   return `预计 ${eta.getFullYear()}年${eta.getMonth()+1}月`;
 }
 
+// ── Demo data banner (only relevant for the shared/empty-start build) ──
+function renderDemoBanner() {
+  const s = getSettings();
+  const banner = document.getElementById('demo-banner');
+  if (!banner) return;
+  banner.style.display = (s.isDemoData && !s.demoBannerDismissed) ? 'block' : 'none';
+}
+
+function dismissDemoBanner() {
+  saveSettings({ demoBannerDismissed: true });
+  renderDemoBanner();
+}
+
 function renderDashboard() {
+  renderDemoBanner();
+  renderPlanning();
   const months = [...new Set(getEntries().map(e => e.month))].sort();
   const latestMonth = months[months.length-1] || currentMonth();
   document.getElementById('topbar-month').textContent = latestMonth || '无数据';
@@ -1058,54 +1798,91 @@ function renderDashboard() {
   const { cagr, history } = computeCagr();
   const s = getSettings();
 
-  document.getElementById('kpi-total').textContent = fmtShort(t.total);
-  document.getElementById('kpi-fin').textContent = fmtShort(t.fin);
-  document.getElementById('kpi-prop').textContent = fmtShort(t.propNet);
+  document.getElementById('kpi-total').textContent = fmtMainShort(t.total);
+  document.getElementById('kpi-total-sub').textContent = mainCcySubLabel();
+  document.getElementById('kpi-fin').textContent = fmtMainShort(t.fin);
+  document.getElementById('kpi-prop').textContent = fmtMainShort(t.propNet);
   document.getElementById('kpi-cagr').textContent = cagr != null ? (cagr*100).toFixed(1)+'%' : '—';
 
-  // Personal accumulation tracking
-  document.getElementById('own-total').textContent = '¥ ' + fmt(t.total, 0);
-  document.getElementById('own-support').textContent = '− ¥ ' + fmt(t.support, 0);
-  document.getElementById('own-net').textContent = '¥ ' + fmt(t.ownTotal, 0);
+  // 汇率影响 = 月末汇率总值 − 固定汇率总值。正值=汇率波动增加了账面资产；负值=汇率波动减少了账面资产
+  const fxCard = document.getElementById('kpi-fx-card');
+  const sign = t.fxImpact >= 0 ? '+' : '';
+  document.getElementById('kpi-fximpact').textContent = sign + fmtMainShort(t.fxImpact);
+  fxCard.className = 'kpi-card ' + (t.fxImpact >= 0 ? 'kpi-mint' : 'kpi-coral');
+  document.getElementById('kpi-fximpact-sub').textContent =
+    `${tr('固定汇率净资产')} ${fmtMain(t.totalFixed)}`;
+
+  // 购房资助是可选项；为0时个人积累 = 总净资产，相关追踪模块和标签都简化掉
+  const hasSupport = (s.houseSupport || 0) > 0;
+  document.getElementById('own-tracker-card').style.display = hasSupport ? 'block' : 'none';
+  document.getElementById('kpi-cagr-sub').textContent =
+    hasSupport ? tr('基于个人积累') : tr('基于总净资产');
+  if (hasSupport) {
+    document.getElementById('own-total').textContent = fmtMain(t.total);
+    document.getElementById('own-support').textContent = '− ' + fmtMain(t.support);
+    document.getElementById('own-net').textContent = fmtMain(t.ownTotal);
+  }
 
   // Progress bars — measured on PERSONAL ACCUMULATION (total − house support).
   // Second target stays hidden until the first is reached.
-  const target1Reached = t.ownTotal >= s.target1;
+  const target1Reached = s.target1 > 0 && t.ownTotal >= s.target1;
   document.getElementById('prog-1000-item').style.display = target1Reached ? 'block' : 'none';
-  document.getElementById('prog-500-label').textContent = `💰 ${Math.round(s.target1/10000)}万 里程碑（个人积累）`;
-  document.getElementById('prog-1000-label').textContent = `🚀 ${Math.round(s.target2/10000)}万 FIRE目标（个人积累）`;
+  const suffix = hasSupport ? (CURRENT_LANG === 'en' ? ' (Personal)' : '（个人积累）') : '';
+  document.getElementById('prog-500-label').textContent = `💰 ${fmtMainLabel(s.target1)} ${tr('里程碑')}${suffix}`;
+  document.getElementById('prog-1000-label').textContent = `🚀 ${fmtMainLabel(s.target2)} ${tr('FIRE目标')}${suffix}`;
 
   const bars = [
     { pct: t.ownTotal/s.target1, cur: t.ownTotal, tgt: s.target1, bar: 'prog-500-bar', meta: 'prog-500-meta', eta: 'prog-500-eta', color: 'var(--mint)' },
     { pct: t.ownTotal/s.target2, cur: t.ownTotal, tgt: s.target2, bar: 'prog-1000-bar', meta: 'prog-1000-meta', eta: 'prog-1000-eta', color: 'var(--coral)' },
-    { pct: t.bunqEur/s.targetEur, cur: t.bunqEur, tgt: s.targetEur, bar: 'prog-eur-bar', meta: 'prog-eur-meta', eta: 'prog-eur-eta', color: 'var(--amber)', isCcy: true },
   ];
   bars.forEach(b => {
     const pct = Math.min(b.pct || 0, 1);
     document.getElementById(b.bar).style.width = (pct*100)+'%';
     document.getElementById(b.bar).style.background = b.color;
-    document.getElementById(b.meta).textContent = b.isCcy
-      ? `€${fmt(b.cur,0)} / €${fmt(b.tgt,0)} (${(pct*100).toFixed(1)}%)`
-      : `¥${fmtShort(b.cur)} / ¥${fmtShort(b.tgt)} (${(pct*100).toFixed(1)}%)`;
-    document.getElementById(b.eta).textContent = estimateEta(b.isCcy ? b.cur : b.cur, b.isCcy ? b.tgt : b.tgt, cagr);
+    document.getElementById(b.meta).textContent = `${fmtMainMeta(b.cur)} / ${fmtMainMeta(b.tgt)} (${(pct*100).toFixed(1)}%)`;
+    document.getElementById(b.eta).textContent = estimateEta(b.cur, b.tgt, cagr);
   });
+
+  // ── Fuck-You-Money (emergency fund) progress ──
+  const sym = mainSymbol();
+  const fumPct = t.fumTarget > 0 ? Math.min(t.fumCurrent / t.fumTarget, 1) : 0;
+  const scopeLabel = (s.fumScope && s.fumScope.length) ? s.fumScope.join('+') : tr('全部账户');
+  document.getElementById('prog-fum-label').textContent = `🆘 ${tr('应急资金')} (${s.fumMonths}${tr('个月生活费')} · ${scopeLabel})`;
+  document.getElementById('prog-fum-bar').style.width = (fumPct*100)+'%';
+  document.getElementById('prog-fum-bar').style.background = 'var(--amber)';
+  if (t.fumTarget > 0) {
+    document.getElementById('prog-fum-meta').textContent =
+      `${sym}${fmt(t.fumCurrent,0)} / ${sym}${fmt(t.fumTarget,0)} (${(fumPct*100).toFixed(1)}%)`;
+    document.getElementById('prog-fum-eta').textContent = estimateEta(t.fumCurrent, t.fumTarget, cagr);
+  } else {
+    document.getElementById('prog-fum-meta').textContent = `${sym}${fmt(t.fumCurrent,0)} — ${tr('请先在🎯FIRE目标设置中填写月支出')}`;
+    document.getElementById('prog-fum-eta').textContent = '';
+  }
 
   // Trend chart
   const ctx1 = document.getElementById('chart-trend').getContext('2d');
   if (chartTrend) chartTrend.destroy();
   const histLabels = history.map(h => h.month);
-  const histTotals = history.map(h => +(h.total/10000).toFixed(1));
-  const histOwn = history.map(h => +(h.ownTotal/10000).toFixed(1));
-  const tgt1Wan = +(s.target1/10000).toFixed(0);
-  const tgt2Wan = +(s.target2/10000).toFixed(0);
+  const histTotals = history.map(h => toChartScale(h.total, 1));
+  const histOwn = history.map(h => toChartScale(h.ownTotal, 1));
+  const histFixed = history.map(h => toChartScale(h.totalFixed, 1));
+  const tgt1Scaled = toChartScale(s.target1, 0);
+  const tgt2Scaled = toChartScale(s.target2, 0);
   const datasets = [
-    { label:'总净资产(万)', data: histTotals, borderColor:'#0f3460', backgroundColor:'rgba(15,52,96,0.08)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:3 },
-    { label:'个人积累(万)', data: histOwn, borderColor:'#06d6a0', borderWidth:2, fill:false, tension:0.3, pointRadius:2 },
-    { label:`${tgt1Wan}万目标`, data: histLabels.map(()=>tgt1Wan), borderColor:'#ffb347', borderWidth:1.5, borderDash:[5,5], fill:false, pointRadius:0 },
+    { label:chartSeriesLabel('total'), data: histTotals, borderColor:'#0f3460', backgroundColor:'rgba(15,52,96,0.08)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:3 },
   ];
+  // 个人积累 line only adds information when 购房资助 > 0 (otherwise it's
+  // identical to 总净资产 and would just duplicate the line above)
+  if (hasSupport) {
+    datasets.push({ label:chartSeriesLabel('own'), data: histOwn, borderColor:'#06d6a0', borderWidth:2, fill:false, tension:0.3, pointRadius:2 });
+  }
+  datasets.push(
+    { label:chartSeriesLabel('fixed'), data: histFixed, borderColor:'#9e9e9e', borderWidth:1.5, borderDash:[2,2], fill:false, tension:0.3, pointRadius:1 },
+    { label:fmtMainTargetLabel(s.target1), data: histLabels.map(()=>tgt1Scaled), borderColor:'#ffb347', borderWidth:1.5, borderDash:[5,5], fill:false, pointRadius:0 }
+  );
   // Second target line activates only after the first milestone is reached
   if (target1Reached) {
-    datasets.push({ label:`${tgt2Wan}万目标`, data: histLabels.map(()=>tgt2Wan), borderColor:'#e94560', borderWidth:1.5, borderDash:[5,5], fill:false, pointRadius:0 });
+    datasets.push({ label:fmtMainTargetLabel(s.target2), data: histLabels.map(()=>tgt2Scaled), borderColor:'#e94560', borderWidth:1.5, borderDash:[5,5], fill:false, pointRadius:0 });
   }
   chartTrend = new Chart(ctx1, {
     type: 'line',
@@ -1135,20 +1912,31 @@ function renderDashboard() {
   chartAlloc = new Chart(ctx2, {
     type: 'doughnut',
     data: {
-      labels: pctLabels(['流动资金','固定收益','理财','风险投资'], t.catData),
+      labels: pctLabels([tr('流动资金'),tr('固定收益'),tr('理财'),tr('风险投资')], t.catData),
       datasets: [{ data: t.catData, backgroundColor: ['#4FC3F7','#C8FFE3','#FFD54F','#EF9A9A'], borderWidth:1 }]
     },
     options: pieOpts
   });
 
-  // Currency pie
+  // Currency pie — dynamic over whatever currencies appear this month
   const ctx3 = document.getElementById('chart-ccy').getContext('2d');
   if (chartCcy) chartCcy.destroy();
+  const CCY_COLOR_PALETTE = ['#4CAF50','#2196F3','#FF9800','#E91E63','#9C27B0','#00BCD4','#795548','#607D8B'];
+  // Preferred order: CNY first, then everything else by descending value
+  const ccyEntries = Object.entries(t.ccyTotals).filter(([,v]) => Math.abs(v) > 0.5);
+  ccyEntries.sort((a,b) => {
+    if (a[0] === 'CNY') return -1;
+    if (b[0] === 'CNY') return 1;
+    return b[1] - a[1];
+  });
+  const ccyLabelsRaw = ccyEntries.map(([c]) => c);
+  const ccyValues = ccyEntries.map(([,v]) => v);
+  const ccyColors = ccyLabelsRaw.map((_,i) => CCY_COLOR_PALETTE[i % CCY_COLOR_PALETTE.length]);
   chartCcy = new Chart(ctx3, {
     type: 'doughnut',
     data: {
-      labels: pctLabels(['CNY','EUR','USD','JPY'], t.ccyData),
-      datasets: [{ data: t.ccyData, backgroundColor: ['#4CAF50','#2196F3','#FF9800','#E91E63'], borderWidth:1 }]
+      labels: pctLabels(ccyLabelsRaw, ccyValues),
+      datasets: [{ data: ccyValues, backgroundColor: ccyColors, borderWidth:1 }]
     },
     options: pieOpts
   });
@@ -1160,7 +1948,7 @@ function renderDashboard() {
   chartNetworth = new Chart(ctx4, {
     type: 'doughnut',
     data: {
-      labels: pctLabels(['金融资产','房产净值','车辆'], nwData),
+      labels: pctLabels([tr('金融资产'),tr('房产净值'),tr('车辆')], nwData),
       datasets: [{ data: nwData, backgroundColor: ['#0F3460','#533483','#78909C'], borderWidth:1 }]
     },
     options: pieOpts
@@ -1176,7 +1964,10 @@ let pendingOcrResults = [];
 let uploadQueue = [];
 
 // Known platforms for the checklist + auto-detection
-const KNOWN_PLATFORMS = [
+// Common platform names + icons — used as OCR hints and for icon lookup.
+// This is NOT a restrictive list: any account name (recognized or not) can be
+// tracked. New/unrecognized platforms just get a default 🏦 icon.
+const OCR_PLATFORM_HINTS = [
   { key:'招商银行',       icon:'🏦' },
   { key:'厦门国际',       icon:'🏦' },
   { key:'中国银行',       icon:'🏦' },
@@ -1197,31 +1988,39 @@ function renderChecklist() {
   document.getElementById('checklist-month').textContent = `(${month})`;
   const monthEntries = getEntries().filter(e => e.month === month);
   const grid = document.getElementById('platform-checklist');
+  const tracked = getTrackedAccounts();
 
-  let html = KNOWN_PLATFORMS.map(p => {
-    const done = monthEntries.some(e => (e.account||'').includes(p.key) || (e.name||'').includes(p.key));
-    return `<div class="platform-btn" style="cursor:default;${done ? 'border-color:var(--mint);background:#e8fff5;color:#0a8060' : 'opacity:0.55'}">
-      <span class="platform-icon">${done ? '✅' : p.icon}</span>${p.key}
+  if (!tracked.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-light);font-size:12px">
+      还没有追踪的账户 — 上传一张截图后会自动添加，或在下方手动添加
     </div>`;
-  }).join('');
-
-  // Auto-discover accounts that appeared this month but aren't in the known list
-  // (e.g. a newly uploaded platform like N26, 工商银行, Degiro)
-  const knownKeys = KNOWN_PLATFORMS.map(p => p.key);
-  const seenExtra = new Set();
-  monthEntries.forEach(e => {
-    const acc = e.account;
-    if (!acc || acc === '-' || acc === '历史' || acc === '现金') return;
-    if (knownKeys.some(k => acc.includes(k))) return;
-    seenExtra.add(acc);
-  });
-  if (seenExtra.size) {
-    html += [...seenExtra].map(acc => `<div class="platform-btn" style="cursor:default;border-color:var(--mint);background:#e8fff5;color:#0a8060">
-      <span class="platform-icon">✅</span>${acc}
-    </div>`).join('');
+  } else {
+    grid.innerHTML = tracked.map(p => {
+      const done = monthEntries.some(e => (e.account||'') === p.name);
+      return `<div class="platform-btn" style="position:relative;cursor:default;${done ? 'border-color:var(--mint);background:#e8fff5;color:#0a8060' : 'opacity:0.55'}">
+        <span class="platform-icon">${done ? '✅' : p.icon}</span>${p.name}
+        <span onclick="event.stopPropagation(); removeTrackedAccountUI('${p.name.replace(/'/g,"\\'")}')"
+              style="position:absolute;top:-4px;right:-4px;background:var(--coral);color:#fff;border-radius:50%;
+                     width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;cursor:pointer;opacity:0.85">×</span>
+      </div>`;
+    }).join('');
   }
+}
 
-  grid.innerHTML = html;
+function removeTrackedAccountUI(name) {
+  if (!confirm(`不再追踪「${name}」账户？（不会删除已记录的数据，只是从清单中移除）`)) return;
+  removeTrackedAccount(name);
+  renderChecklist();
+}
+
+function addTrackedAccountUI() {
+  const input = document.getElementById('new-account-name');
+  const name = input.value.trim();
+  if (!name) { toast('⚠️ 请输入账户名称'); return; }
+  addTrackedAccount(name);
+  input.value = '';
+  renderChecklist();
+  toast(`✓ 已添加账户「${name}」`);
 }
 
 function handleDrop(e) {
@@ -1302,7 +2101,10 @@ async function runOcr(onDone) {
 }
 
 function buildOcrPrompt() {
-  const known = KNOWN_PLATFORMS.map(p => p.key).join(', ');
+  // Combine generic platform hints with this user's own tracked accounts —
+  // helps Claude match against names the user has already used before.
+  const trackedNames = getTrackedAccounts().map(a => a.name);
+  const known = [...new Set([...OCR_PLATFORM_HINTS.map(p => p.key), ...trackedNames])].join(', ');
   return `You are reading a financial app screenshot. Two tasks:
 
 1. IDENTIFY the platform from logos, UI style, app name, or language.
@@ -1351,7 +2153,7 @@ function parseOcrResponse(text) {
 function saveManualEntry() {
   const name = document.getElementById('manual-name').value.trim();
   const account = document.getElementById('manual-account').value.trim();
-  const cat2 = document.getElementById('manual-cat2').value;
+  const cat2 = document.getElementById('manual-cat2').value.trim() || '活期现金';
   const ccy = document.getElementById('manual-ccy').value;
   const amt = +document.getElementById('manual-amount').value;
   if (!name) { toast('⚠️ 请填写资产名称'); return; }
@@ -1362,10 +2164,12 @@ function saveManualEntry() {
     origAmt: amt, cnhAmt: toCny(amt, ccy),
     cat1: '金融资产', cat2, include: true
   });
+  if (account) addTrackedAccount(account);
   toast(`✓ 已添加：${name}`);
   document.getElementById('manual-name').value = '';
   document.getElementById('manual-account').value = '';
   document.getElementById('manual-amount').value = '';
+  document.getElementById('manual-cat2').value = '';
   renderCarryPreview();
   renderChecklist();
 }
@@ -1452,7 +2256,30 @@ function saveOcrResults() {
   const existing = entries.filter(e => e.month !== month || !pendingOcrResults.find(p => p.name === e.name));
   const newEntries = pendingOcrResults.map(p => ({ ...p, month, id: genId() }));
   setEntries([...existing, ...newEntries]);
-  toast(`✓ 已保存 ${newEntries.length} 条记录到 ${month}`);
+
+  // Auto-register any unrecognized currencies (rate=1 placeholder) so totals
+  // don't silently break — flagged via toast so the user can fix the rate.
+  const s = getSettings();
+  const newCcys = [...new Set(newEntries.map(e => e.currency).filter(c => c && c !== 'CNY' && !(s.fxRates && c in s.fxRates)))];
+  if (newCcys.length) {
+    const fxRates = { ...(s.fxRates || {}) };
+    newCcys.forEach(c => { fxRates[c] = 1; });
+    saveSettings({ fxRates });
+  }
+
+  // Auto-add any new accounts to the tracked list
+  const newAccounts = [...new Set(newEntries.map(e => e.account).filter(Boolean))];
+  const tracked = getTrackedAccounts();
+  const trackedNames = new Set(tracked.map(a => a.name));
+  const added = newAccounts.filter(a => !trackedNames.has(a));
+  if (added.length) {
+    setTrackedAccounts([...tracked, ...added.map(name => ({ name, icon: iconForAccount(name) }))]);
+  }
+
+  let msg = `✓ 已保存 ${newEntries.length} 条记录到 ${month}`;
+  if (added.length) msg += ` · 新增账户: ${added.join(', ')}`;
+  if (newCcys.length) msg += ` · ⚠️新币种 ${newCcys.join(',')} 已添加(汇率暂设1.0，请到设置修改)`;
+  toast(msg, newCcys.length ? 4500 : 2500);
   resetUpload();
   renderDashboard();
   renderChecklist();
@@ -1484,25 +2311,25 @@ function renderLedger() {
   const t = month ? calcTotals(month) : {};
   const summary = document.getElementById('ledger-summary');
   summary.innerHTML = [
-    ['总净资产', fmtShort(t.total), '#1a1a2e'],
-    ['金融资产', fmtShort(t.fin), '#0f3460'],
-    ['房产净值', fmtShort(t.propNet), '#533483'],
-    ['车辆', fmtShort(t.carCny), '#2E4057'],
-    ['项目数', monthEntries.length+' 项', '#06d6a0'],
+    [tr('总净资产'), fmtMainShort(t.total), '#1a1a2e'],
+    [tr('金融资产'), fmtMainShort(t.fin), '#0f3460'],
+    [tr('房产净值'), fmtMainShort(t.propNet), '#533483'],
+    [tr('车辆'), fmtMainShort(t.carCny), '#2E4057'],
+    [tr('项目数'), monthEntries.length+' '+tr('项'), '#06d6a0'],
   ].map(([l,v,c]) => `<div style="background:${c};color:#fff;border-radius:8px;padding:6px 12px;font-size:11px">
     <div style="opacity:.7;font-size:9px;font-weight:700">${l}</div><div style="font-weight:800;font-family:monospace">${v}</div></div>`).join('');
 
   const tbody = document.getElementById('ledger-body');
   if (!monthEntries.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#999">本月暂无数据 — 请到 📸 录入 页面添加</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:#999">${tr('本月暂无数据 — 请到 📸 录入 页面添加')}</td></tr>`;
     return;
   }
 
   // Group entries by broad category for readability, sorted by group then by amount desc
-  const groupOrder = ['流动资金','固定收益类','理财类','风险投资','应收','负债','实物资产'];
+  const groupOrder = ['流动资金','固定收益类','理财类','风险投资','应收','负债','实物资产','其他'];
   const groupLabels = {
-    '流动资金':'💧 流动资金', '固定收益类':'🏦 固定收益类', '理财类':'📈 理财类',
-    '风险投资':'🚀 风险投资', '应收':'⏳ 应收款', '负债':'🔴 负债', '实物资产':'🏡 实物资产'
+    '流动资金':tr('💧 流动资金'), '固定收益类':tr('🏦 固定收益类'), '理财类':tr('📈 理财类'),
+    '风险投资':tr('🚀 风险投资'), '应收':tr('⏳ 应收款'), '负债':tr('🔴 负债'), '实物资产':tr('🏡 实物资产'), '其他':tr('📦 其他')
   };
   const grouped = {};
   monthEntries.forEach(e => {
@@ -1573,38 +2400,48 @@ function deleteEntry(id) {
 
 function renderAssets() {
   const s = getSettings();
+  populateCcySelect('asset-ccy', s.assetCcy);
+  document.getElementById('mortgage-ccy-label').textContent = s.assetCcy;
+  document.getElementById('car-ccy-label').textContent = s.assetCcy;
   document.getElementById('woz-value').value = s.wozValue || '';
-  document.getElementById('woz-rate').value  = s.wozRate || 4;
+  document.getElementById('woz-rate').value  = s.wozRate;
   document.getElementById('car-eur').value   = s.carEur || '';
   document.getElementById('woz-current-month').textContent = currentMonth();
-  calcHouse(); calcCar();
+  calcHouse(); calcCar(); calcMortgage();
 }
 
 function calcHouse() {
   const woz  = +document.getElementById('woz-value').value || 0;
   const rate = +document.getElementById('woz-rate').value  || 0;
   const s    = getSettings();
-  // Flat premium on top of WOZ — WOZ refreshes yearly, no compounding
-  const estEur = woz * (1 + rate/100);
-  const estCny = estEur * s.fxEur;
+  // Flat premium on top of the official assessed value — refreshes yearly, no compounding
+  const est = woz * (1 + rate/100);
+  const estCny = toCny(est, s.assetCcy);
   if (woz) {
     document.getElementById('house-result').style.display = 'flex';
     document.getElementById('house-cny-result').style.display = 'flex';
-    document.getElementById('house-value').textContent = '€ ' + fmt(estEur, 0);
+    document.getElementById('house-value').textContent = ccySymbol(s.assetCcy) + ' ' + fmt(est, 0);
     document.getElementById('house-cny').textContent   = '¥ ' + fmt(estCny, 0);
   }
 }
 
 function calcMortgage() {
-  const eur = +document.getElementById('mortgage-eur').value || 0;
+  const amt = +document.getElementById('mortgage-eur').value || 0;
   const s = getSettings();
-  document.getElementById('mortgage-cny').value = Math.round(-eur * s.fxEur);
+  document.getElementById('mortgage-cny').value = Math.round(-toCny(amt, s.assetCcy));
 }
 
 function calcCar() {
-  const eur = +document.getElementById('car-eur').value || 0;
+  const amt = +document.getElementById('car-eur').value || 0;
   const s = getSettings();
-  document.getElementById('car-cny').value = Math.round(eur * s.fxEur);
+  document.getElementById('car-cny').value = Math.round(toCny(amt, s.assetCcy));
+}
+
+function saveAssetCcy() {
+  const ccy = document.getElementById('asset-ccy').value;
+  saveSettings({ assetCcy: ccy });
+  renderAssets();
+  toast(`✓ 房产/房贷/车辆记账币种已设为 ${ccy}`);
 }
 
 function saveHouseAsset() {
@@ -1612,25 +2449,25 @@ function saveHouseAsset() {
   const rate = +document.getElementById('woz-rate').value || 0;
   const s    = getSettings();
   saveSettings({ wozValue: woz, wozRate: rate });
-  const estEur = woz * (1 + rate/100);
-  const estCny = estEur * s.fxEur;
+  const est = woz * (1 + rate/100);
+  const estCny = toCny(est, s.assetCcy);
   // Updates the CURRENT month's 房产市值 entry only (other months keep their own recorded values)
-  upsertEntry({ name:'房产市值', account:'-', currency:'EUR', origAmt: estEur, cnhAmt: estCny, cat1:'实物资产', cat2:'房产市值', include: true });
-  toast(`✓ 房产估值已更新为 €${fmt(estEur,0)}（本月）`);
+  upsertEntry({ name:'房产市值', account:'-', currency: s.assetCcy, origAmt: est, cnhAmt: estCny, cat1:'实物资产', cat2:'房产市值', include: true });
+  toast(`✓ 房产估值已更新为 ${ccySymbol(s.assetCcy)}${fmt(est,0)}（本月）`);
 }
 
 function saveMortgage() {
-  const eur = +document.getElementById('mortgage-eur').value;
+  const amt = +document.getElementById('mortgage-eur').value;
   const s = getSettings();
-  upsertEntry({ name:'房贷余额', account:'-', currency:'EUR', origAmt: -eur, cnhAmt: -eur*s.fxEur, cat1:'实物资产', cat2:'房贷余额', include: true });
+  upsertEntry({ name:'房贷余额', account:'-', currency: s.assetCcy, origAmt: -amt, cnhAmt: -toCny(amt, s.assetCcy), cat1:'实物资产', cat2:'房贷余额', include: true });
   toast('✓ 房贷余额已更新');
 }
 
 function saveCar() {
-  const eur = +document.getElementById('car-eur').value;
+  const amt = +document.getElementById('car-eur').value;
   const s = getSettings();
-  saveSettings({ carEur: eur });
-  upsertEntry({ name:'车辆', account:'-', currency:'EUR', origAmt: eur, cnhAmt: eur*s.fxEur, cat1:'实物资产', cat2:'车辆价值', include: true });
+  saveSettings({ carEur: amt });
+  upsertEntry({ name:'车辆', account:'-', currency: s.assetCcy, origAmt: amt, cnhAmt: toCny(amt, s.assetCcy), cat1:'实物资产', cat2:'车辆价值', include: true });
   toast('✓ 车辆价值已更新');
 }
 
@@ -1649,18 +2486,29 @@ function upsertEntry(data) {
 
 function renderSettings() {
   const s = getSettings();
+  document.getElementById('language-select').value = s.language || 'zh';
   document.getElementById('api-key-input').value = s.apiKey || '';
-  document.getElementById('target-1').value = s.target1 || 5000000;
-  document.getElementById('target-2').value = s.target2 || 10000000;
-  document.getElementById('target-eur').value = s.targetEur || 20000;
-  document.getElementById('house-support').value = s.houseSupport != null ? s.houseSupport : 700000;
+  document.getElementById('target-1').value = s.target1 ? Math.round(toMainCcy(s.target1)) : '';
+  document.getElementById('target-2').value = s.target2 ? Math.round(toMainCcy(s.target2)) : '';
+  document.getElementById('monthly-expense').value = s.monthlyExpense ? Math.round(toMainCcy(s.monthlyExpense)) : '';
+  document.getElementById('target2-mode-dynamic').checked = s.target2Mode === 'dynamic';
+  document.getElementById('target2-mode-chip').classList.toggle('checked', s.target2Mode === 'dynamic');
+  document.getElementById('target-2').readOnly = s.target2Mode === 'dynamic';
+  document.getElementById('target-2').style.background = s.target2Mode === 'dynamic' ? 'var(--grey-l)' : '';
+  updateFireTargetCalc();
+  document.getElementById('house-support').value = Math.round(toMainCcy(s.houseSupport || 0));
   document.getElementById('house-support-from').value = s.houseSupportFrom || '2025-01';
-  document.getElementById('fx-eur-in').value = s.fxEur || 7.81;
-  document.getElementById('fx-usd-in').value = s.fxUsd || 7.15;
-  document.getElementById('fx-jpy-in').value = s.fxJpy || 0.047;
-  document.getElementById('fx-eur').textContent = s.fxEur || '—';
-  document.getElementById('fx-usd').textContent = s.fxUsd || '—';
-  document.getElementById('fx-jpy').textContent = s.fxJpy || '—';
+
+  populateCcySelect('main-currency', s.mainCurrency || 'CNY');
+  document.querySelectorAll('.main-ccy-label').forEach(el => { el.textContent = mainCcy(); });
+
+  renderFxRatesList();
+
+  // FUM (Fuck-You-Money / emergency fund) settings
+  document.getElementById('fum-months').value = s.fumMonths || 6;
+  document.getElementById('fum-months-label').textContent = `${s.fumMonths || 6} 个月`;
+  populateFumScopeSelect(s.fumScope);
+  updateFumTargetDisplay();
 
   // Default FX date to last day of previous month
   if (!document.getElementById('fx-date').value) {
@@ -1669,38 +2517,477 @@ function renderSettings() {
   }
 }
 
-function saveApiKey() { saveSettings({ apiKey: document.getElementById('api-key-input').value.trim() }); toast('✓ API Key 已保存'); }
-function saveTargets() {
-  saveSettings({ target1: +document.getElementById('target-1').value, target2: +document.getElementById('target-2').value, targetEur: +document.getElementById('target-eur').value, houseSupport: +document.getElementById('house-support').value || 0, houseSupportFrom: document.getElementById('house-support-from').value || '2025-01' });
-  toast('✓ 目标已更新');
+// ── Dynamic currency rate list (settings) ──
+function renderFxRatesList() {
+  const s = getSettings();
+  const list = document.getElementById('fx-rates-list');
+  const codes = Object.keys(s.fxRates || {});
+  if (!codes.length) {
+    list.innerHTML = `<div style="font-size:11px;color:var(--text-light);text-align:center;padding:8px">暂无外币汇率，添加一个币种开始</div>`;
+  } else {
+    list.innerHTML = codes.map(code => `
+      <div class="fx-rate-row">
+        <span class="fx-rate-code">${ccySymbol(code)} ${code}</span>
+        <input class="fx-rate-input" type="number" step="0.0001" id="fx-rate-${code}" value="${s.fxRates[code]}">
+        <span class="fx-rate-suffix">CNY / ${code}</span>
+        <button class="fx-rate-del" title="删除此币种" onclick="removeFxCurrency('${code}')">🗑</button>
+      </div>`).join('');
+  }
+  renderFixedFxRatesList();
 }
+
+function renderFixedFxRatesList() {
+  const s = getSettings();
+  const list = document.getElementById('fixed-fx-rates-list');
+  const codes = Object.keys(s.fxRates || {});
+  if (!codes.length) {
+    list.innerHTML = `<div style="font-size:11px;color:var(--text-light);text-align:center;padding:8px">暂无外币，请先在上方添加币种</div>`;
+    return;
+  }
+  list.innerHTML = codes.map(code => `
+    <div class="fx-rate-row">
+      <span class="fx-rate-code">${ccySymbol(code)} ${code}</span>
+      <input class="fx-rate-input" type="number" step="0.0001" id="fixed-fx-rate-${code}" value="${(s.fixedFxRates && s.fixedFxRates[code]) ?? ''}">
+      <span class="fx-rate-suffix">固定 CNY / ${code}</span>
+    </div>`).join('');
+}
+
+function saveFixedFxRates() {
+  const s = getSettings();
+  const fixedFxRates = { ...(s.fixedFxRates || {}) };
+  Object.keys(s.fxRates || {}).forEach(code => {
+    const el = document.getElementById(`fixed-fx-rate-${code}`);
+    if (!el) return;
+    const v = parseFloat(el.value);
+    if (!isNaN(v) && v > 0) fixedFxRates[code] = v;
+  });
+  saveSettings({ fixedFxRates });
+  renderDashboard();
+  toast('✓ 固定汇率已保存');
+}
+
+function addFxCurrency() {
+  const codeInput = document.getElementById('new-fx-code');
+  const rateInput = document.getElementById('new-fx-rate');
+  const code = codeInput.value.trim().toUpperCase();
+  const rate = parseFloat(rateInput.value);
+  if (!/^[A-Z]{3}$/.test(code)) { toast('⚠️ 请输入3位币种代码，如 GBP'); return; }
+  if (code === 'CNY') { toast('⚠️ CNY 是基准货币，无需添加'); return; }
+  if (isNaN(rate) || rate <= 0) { toast('⚠️ 请输入有效汇率'); return; }
+  const s = getSettings();
+  const fxRates = { ...(s.fxRates || {}), [code]: rate };
+  // Default fixed rate for the new currency: use a known reference if available,
+  // otherwise start equal to the month-end rate (user can adjust below)
+  const fixedFxRates = { ...(s.fixedFxRates || {}) };
+  if (fixedFxRates[code] == null) {
+    fixedFxRates[code] = { EUR: 8, USD: 7, JPY: 0.05 }[code] ?? rate;
+  }
+  saveSettings({ fxRates, fixedFxRates });
+  codeInput.value = ''; rateInput.value = '';
+  renderSettings();
+  toast(`✓ 已添加 ${code}，账户币种选项中现已可选`);
+}
+
+function removeFxCurrency(code) {
+  const inUse = getEntries().some(e => e.currency === code);
+  const msg = inUse
+    ? `已有账户使用 ${code} 计价，删除后这些金额将无法正确换算（按1:1计算）。仍要删除「${code}」吗？`
+    : `删除币种「${code}」？`;
+  if (!confirm(msg)) return;
+  const s = getSettings();
+  const fxRates = { ...(s.fxRates || {}) };
+  delete fxRates[code];
+  const fixedFxRates = { ...(s.fixedFxRates || {}) };
+  delete fixedFxRates[code];
+  const updates = { fxRates, fixedFxRates };
+  if ((s.mainCurrency || 'CNY') === code) updates.mainCurrency = 'CNY';
+  saveSettings(updates);
+  renderSettings();
+  toast(`✓ 已删除 ${code}`);
+}
+
 function saveFxManual() {
-  saveSettings({ fxEur: +document.getElementById('fx-eur-in').value, fxUsd: +document.getElementById('fx-usd-in').value, fxJpy: +document.getElementById('fx-jpy-in').value });
-  renderSettings(); toast('✓ 汇率已保存');
+  const s = getSettings();
+  const fxRates = {};
+  Object.keys(s.fxRates || {}).forEach(code => {
+    const v = parseFloat(document.getElementById(`fx-rate-${code}`).value);
+    fxRates[code] = isNaN(v) ? s.fxRates[code] : v;
+  });
+  saveSettings({ fxRates });
+  renderSettings();
+  renderDashboard();
+  toast('✓ 汇率已保存');
 }
 
 async function fetchFxRates() {
   const dateStr = document.getElementById('fx-date').value;
   if (!dateStr) { toast('⚠️ 请选择日期'); return; }
+  const s = getSettings();
+  const codes = Object.keys(s.fxRates || {});
+  if (!codes.length) { toast('⚠️ 请先添加至少一个币种'); return; }
   try {
     toast('🌐 获取汇率中…');
-    const resp = await fetch(`https://api.frankfurter.app/${dateStr}?from=CNY&to=EUR,USD,JPY`);
+    const resp = await fetch(`https://api.frankfurter.app/${dateStr}?from=CNY&to=${codes.join(',')}`);
     const data = await resp.json();
-    const rates = data.rates;
-    // frankfurter returns CNY→EUR/USD/JPY, we need EUR/USD/JPY→CNY
-    const eurCny = 1 / rates.EUR;
-    const usdCny = 1 / rates.USD;
-    const jpyCny = 1 / rates.JPY;
-    document.getElementById('fx-eur-in').value = eurCny.toFixed(4);
-    document.getElementById('fx-usd-in').value = usdCny.toFixed(4);
-    document.getElementById('fx-jpy-in').value = jpyCny.toFixed(5);
-    saveSettings({ fxEur: eurCny, fxUsd: usdCny, fxJpy: jpyCny, fxDate: dateStr });
+    const rates = data.rates || {};
+    const fxRates = { ...s.fxRates };
+    let updated = [];
+    codes.forEach(code => {
+      if (rates[code]) { fxRates[code] = +(1 / rates[code]).toFixed(6); updated.push(code); }
+    });
+    saveSettings({ fxRates, fxDate: dateStr });
     renderSettings();
-    toast(`✓ ${dateStr} 汇率已更新`);
+    renderDashboard();
+    toast(updated.length ? `✓ ${dateStr} 汇率已更新 (${updated.join(', ')})` : '❌ 未获取到汇率，请手动输入');
   } catch (e) {
     toast('❌ 获取失败，请手动输入');
   }
 }
+
+// ── Populate a <select> with all known currencies ──
+function populateCcySelect(elId, selected) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const codes = knownCurrencies();
+  el.innerHTML = codes.map(c => `<option value="${c}" ${c===selected?'selected':''}>${ccySymbol(c)} ${c}</option>`).join('');
+}
+
+function saveApiKey() { saveSettings({ apiKey: document.getElementById('api-key-input').value.trim() }); toast('✓ API Key 已保存'); }
+
+function saveTargets() {
+  saveSettings({
+    target1: fromMainCcy(+document.getElementById('target-1').value) || 0,
+    target2: fromMainCcy(+document.getElementById('target-2').value) || 0,
+    monthlyExpense: fromMainCcy(+document.getElementById('monthly-expense').value) || 0,
+    target2Mode: document.getElementById('target2-mode-dynamic').checked ? 'dynamic' : 'manual',
+    houseSupport: fromMainCcy(+document.getElementById('house-support').value) || 0,
+    houseSupportFrom: document.getElementById('house-support-from').value || '2025-01'
+  });
+  toast('✓ 目标已更新');
+  updateFumTargetDisplay();
+  renderDashboard();
+}
+
+function saveMainCurrency() {
+  saveSettings({ mainCurrency: document.getElementById('main-currency').value });
+  renderSettings();
+  renderDashboard();
+}
+
+// ── 25x annual expenses (4% rule) FIRE target ──
+// monthly-expense / target-2 inputs are in the user's main currency; convert
+// to/from CNY only when persisting via saveTargets().
+function updateFireTargetCalc() {
+  const expenseMain = +document.getElementById('monthly-expense').value || 0;
+  const fire25xMain = expenseMain * 300; // ×12 months ×25 years
+  document.getElementById('fire-25x-display').value = expenseMain ? `${mainSymbol()} ${fmt(fire25xMain,0)}` : '—';
+  if (document.getElementById('target2-mode-dynamic').checked) {
+    document.getElementById('target-2').value = fire25xMain || '';
+  }
+}
+
+function toggleTarget2Mode() {
+  const cb = document.getElementById('target2-mode-dynamic');
+  cb.checked = !cb.checked;
+  document.getElementById('target2-mode-chip').classList.toggle('checked', cb.checked);
+  document.getElementById('target-2').readOnly = cb.checked;
+  document.getElementById('target-2').style.background = cb.checked ? 'var(--grey-l)' : '';
+  if (cb.checked) updateFireTargetCalc();
+}
+
+// If the user manually edits 目标2 while dynamic mode is on, treat that as
+// "I want a fixed number now" and switch to manual (the checkbox unticks).
+function onTarget2ManualEdit() {
+  const cb = document.getElementById('target2-mode-dynamic');
+  if (cb.checked) {
+    cb.checked = false;
+    document.getElementById('target2-mode-chip').classList.remove('checked');
+    document.getElementById('target-2').readOnly = false;
+    document.getElementById('target-2').style.background = '';
+  }
+}
+
+// ── Fuck-You-Money (emergency fund) settings ──
+function populateFumScopeSelect(selected) {
+  const el = document.getElementById('fum-scope-list');
+  if (!el) return;
+  const accounts = getTrackedAccounts().map(a => a.name);
+  const isAll = !selected || !selected.length;
+  let html = `<label class="checkbox-chip ${isAll?'checked':''}">
+    <input type="checkbox" id="fum-scope-all" ${isAll?'checked':''} onchange="onFumScopeAllChange()"> ${tr('全部账户（活期现金）')}
+  </label>`;
+  html += accounts.map(name => {
+    const checked = !isAll && selected.includes(name);
+    return `<label class="checkbox-chip ${checked?'checked':''} ${isAll?'disabled':''}">
+      <input type="checkbox" class="fum-scope-account" value="${name}" ${checked?'checked':''} ${isAll?'disabled':''} onchange="onFumScopeChipChange(this)"> ${name}
+    </label>`;
+  }).join('');
+  el.innerHTML = html;
+}
+
+function onFumScopeAllChange() {
+  const all = document.getElementById('fum-scope-all').checked;
+  document.querySelectorAll('.fum-scope-account').forEach(cb => {
+    cb.disabled = all;
+    if (all) cb.checked = false;
+    cb.closest('.checkbox-chip').classList.toggle('disabled', all);
+    cb.closest('.checkbox-chip').classList.toggle('checked', cb.checked);
+  });
+  document.getElementById('fum-scope-all').closest('.checkbox-chip').classList.toggle('checked', all);
+}
+
+function onFumScopeChipChange(cb) {
+  cb.closest('.checkbox-chip').classList.toggle('checked', cb.checked);
+}
+
+function getFumScopeValue() {
+  const all = document.getElementById('fum-scope-all').checked;
+  if (all) return [];
+  return [...document.querySelectorAll('.fum-scope-account')].filter(cb => cb.checked).map(cb => cb.value);
+}
+
+function updateFumTargetDisplay() {
+  const s = getSettings();
+  const months = +document.getElementById('fum-months').value || 6;
+  document.getElementById('fum-months-label').textContent = `${months} 个月`;
+  if (s.monthlyExpense > 0) {
+    const target = toMainCcy(s.monthlyExpense) * months;
+    document.getElementById('fum-target-display').textContent = `${mainSymbol()}${fmt(target,0)}`;
+  } else {
+    document.getElementById('fum-target-display').textContent = tr('请先在🎯FIRE目标设置中填写月支出');
+  }
+}
+
+function saveFumSettings() {
+  saveSettings({
+    fumMonths: +document.getElementById('fum-months').value || 6,
+    fumScope: getFumScopeValue(),
+  });
+  updateFumTargetDisplay();
+  renderDashboard();
+  toast('✓ 应急资金目标已更新');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PLANNING / 资产配置分析 + FIRE 完成时间预估
+// ═══════════════════════════════════════════════════════════════
+
+// General, rule-based observations about the current asset mix.
+// These are informational framings of basic allocation tradeoffs, not
+// personalized investment advice — always paired with a disclaimer in the UI.
+function assessAllocation(t) {
+  const fin = t.fin || 0;
+  if (fin <= 0) return [{ icon:'ℹ️', text: tr('本月暂无金融资产数据，添加数据后将显示配置分析。') }];
+  const liquidPct = t.liquid / fin;
+  const fixedPct  = t.fixed  / fin;
+  const wealthPct = t.wealth / fin;
+  const riskPct   = t.risk   / fin;
+  const items = [];
+
+  if (liquidPct > 0.35) {
+    items.push({ icon:'💧', text:
+      tr('流动资金（活期现金等）占金融资产的 ') + (liquidPct*100).toFixed(0) +
+      tr('%，比例偏高。除了覆盖🆘应急资金目标所需的部分，长期闲置的现金可能跑不赢通胀；可以了解一下定期存款、货币基金、指数基金等选项。') });
+  }
+  if (riskPct < 0.15) {
+    items.push({ icon:'🚀', text:
+      tr('风险资产（指数基金/个股）占比仅 ') + (riskPct*100).toFixed(0) +
+      tr('%。长期历史数据显示，权益类资产的平均回报通常高于现金类资产，如果投资期限较长且能承受短期波动，可以了解一下逐步提高这类配置的可能性。') });
+  } else if (riskPct > 0.65) {
+    items.push({ icon:'⚠️', text:
+      tr('风险资产占比达到 ') + (riskPct*100).toFixed(0) +
+      tr('%，净资产短期波动可能会比较明显。可以核对一下🆘应急资金等流动性储备是否足以覆盖意外支出。') });
+  }
+  if (fixedPct > 0.5) {
+    items.push({ icon:'🏦', text:
+      tr('定期存款/保险/公积金等固定收益类占比 ') + (fixedPct*100).toFixed(0) +
+      tr('%，相对稳健但增值有限，可以结合资金的使用计划判断是否需要部分调整。') });
+  }
+  if (wealthPct > 0.3) {
+    items.push({ icon:'📈', text:
+      tr('银行理财类占比 ') + (wealthPct*100).toFixed(0) +
+      tr('%，建议留意这类产品的实际费率与历史净值波动情况。') });
+  }
+  if (!items.length) {
+    items.push({ icon:'✅', text: tr('当前资产在流动性、稳健收益与风险资产之间分布相对均衡，暂无明显观察点。') });
+  }
+  return items;
+}
+
+function buildFireSuggestions(requiredCagr, cagr, current, target) {
+  const tips = [];
+  if (cagr == null) {
+    tips.push(tr('目前记录的月份还不足两个，暂时无法对比历史增速 — 多记录几个月数据后这里会更准确。'));
+    return tips;
+  }
+  const gap = requiredCagr - cagr;
+  if (gap > 0.001) {
+    tips.push(
+      tr('若想按所选日期达成目标，年化增速需要比你的历史水平再提高约 ') + (gap*100).toFixed(1) +
+      tr(' 个百分点。一般来说可以考虑的方向包括：提高每月储蓄/投资金额、在自己能承受的风险范围内适度调整资产配置、或者发展额外收入来源。')
+    );
+    tips.push(tr('另一种思路是保持当前节奏不变，把目标日期适当延后 — 按你的历史增速，预计达成时间见上方"按当前历史增速预计"一行。'));
+  } else {
+    tips.push(tr('按你目前的历史增速推算，已经能够满足这个目标日期，甚至有机会提前达成。'));
+  }
+  return tips;
+}
+
+// ── FIRE goal date: year/month dropdown selectors ──
+function populateFireGoalSelectors(latestMonth) {
+  const yearSel = document.getElementById('fire-goal-year');
+  const monthSel = document.getElementById('fire-goal-month');
+  // Guard for minimal/non-browser DOM stubs (e.g. test harnesses) that don't
+  // implement createElement/appendChild — real browsers always have these.
+  if (!yearSel || !monthSel || typeof monthSel.appendChild !== 'function') return;
+  if (monthSel.options.length === 0) {
+    for (let m = 1; m <= 12; m++) {
+      const mm = String(m).padStart(2, '0');
+      const opt = document.createElement('option');
+      opt.value = mm; opt.textContent = mm;
+      monthSel.appendChild(opt);
+    }
+  }
+  if (yearSel.options.length === 0) {
+    const latestYear = parseInt((latestMonth || '').split('-')[0], 10) || new Date().getFullYear();
+    const startYear = Math.min(new Date().getFullYear(), latestYear);
+    for (let y = startYear; y <= startYear + 60; y++) {
+      const opt = document.createElement('option');
+      opt.value = String(y); opt.textContent = String(y);
+      yearSel.appendChild(opt);
+    }
+  }
+}
+
+function onFireGoalDateChange() {
+  const y = document.getElementById('fire-goal-year').value;
+  const m = document.getElementById('fire-goal-month').value;
+  if (y && m) saveSettings({ fireGoalDate: y + '-' + m });
+  renderPlanning();
+}
+
+function renderPlanning() {
+  // Match renderDashboard: base analysis on the latest month that actually has
+  // data, not necessarily "today" (which may not have any entries yet).
+  const months = [...new Set(getEntries().map(e => e.month))].sort();
+  const month = months[months.length-1] || currentMonth();
+  const t = calcTotals(month);
+  const s = getSettings();
+  const { cagr } = computeCagr();
+
+  // ── 资产配置分析 ──
+  const fin = t.fin || 0;
+  const cats = [
+    [tr('💧 流动资金'), t.liquid], [tr('🏦 固定收益'), t.fixed],
+    [tr('📈 理财'), t.wealth], [tr('🚀 风险投资'), t.risk],
+  ];
+  document.getElementById('alloc-summary').innerHTML = cats.map(([label, v]) => {
+    const pct = fin > 0 ? (v/fin*100).toFixed(1) : '0.0';
+    return `<span class="checkbox-chip checked" style="cursor:default">${label}: ${pct}%</span>`;
+  }).join('');
+
+  document.getElementById('alloc-suggestions').innerHTML = assessAllocation(t).map(item =>
+    `<div style="display:flex;gap:8px;padding:8px 10px;background:var(--grey-l);border-radius:8px;font-size:12px;line-height:1.6">
+      <span>${item.icon}</span><span>${item.text}</span>
+    </div>`).join('');
+
+  // ── FIRE 完成时间预估 ──
+  const target = s.target2 || 0;
+  const current = (s.houseSupport || 0) > 0 ? t.ownTotal : t.total;
+  document.getElementById('planning-target2-label').textContent = fmtMain(target);
+  const resultEl = document.getElementById('fire-timeline-result');
+
+  populateFireGoalSelectors(month);
+  const yearSel = document.getElementById('fire-goal-year');
+  const monthSel = document.getElementById('fire-goal-month');
+  let goalDate = s.fireGoalDate;
+  if (!goalDate) {
+    // Sensible default: 10 years out from the latest data month, so the
+    // dashboard shows a meaningful estimate without requiring the user to
+    // pick a date first.
+    const [ly, lm] = month.split('-').map(Number);
+    goalDate = (ly + 10) + '-' + String(lm).padStart(2, '0');
+    saveSettings({ fireGoalDate: goalDate });
+  }
+  const [goalYear, goalMonthNum] = goalDate.split('-');
+  if (yearSel && typeof yearSel.querySelector === 'function' && yearSel.querySelector(`option[value="${goalYear}"]`)) yearSel.value = goalYear;
+  if (monthSel) monthSel.value = goalMonthNum;
+
+  if (target <= 0) {
+    resultEl.innerHTML = `<p style="font-size:12px;color:var(--text-light);text-align:center;padding:12px">${tr('请先在⚙️设置中设定 FIRE 目标')}</p>`;
+    return;
+  }
+  if (current <= 0) {
+    resultEl.innerHTML = `<p style="font-size:12px;color:var(--text-light);text-align:center;padding:12px">${tr('当前净资产为零或负数，暂无法估算')}</p>`;
+    return;
+  }
+  if (current >= target) {
+    resultEl.innerHTML = `<div style="padding:12px;background:linear-gradient(135deg,var(--mint),#04b888);border-radius:8px;text-align:center;font-weight:700;color:var(--navy)">${tr('🎉 已达成 FIRE 目标！')}</div>`;
+    return;
+  }
+  if (!goalDate) {
+    resultEl.innerHTML = `<p style="font-size:12px;color:var(--text-light);text-align:center;padding:12px">${tr('请选择目标年月')}</p>`;
+    return;
+  }
+
+  const now = new Date(month+'-01');
+  const targetD = new Date(goalDate+'-01');
+  const monthsToTarget = (targetD - now) / (30.44*24*3600*1000);
+  if (monthsToTarget <= 0) {
+    resultEl.innerHTML = `<p style="font-size:12px;color:var(--coral);text-align:center;padding:12px">${tr('⚠️ 请选择一个未来的日期')}</p>`;
+    return;
+  }
+
+  const requiredCagr = Math.pow(target/current, 12/monthsToTarget) - 1;
+  const etaStr = (cagr != null) ? estimateEta(current, target, cagr) : tr('增长数据不足，无法估算');
+
+  let likelihood, likelihoodColor;
+  if (cagr == null) {
+    likelihood = tr('数据不足'); likelihoodColor = '#9e9e9e';
+  } else if (cagr <= 0 && requiredCagr > 0) {
+    likelihood = tr('较低（历史增速为负或零）'); likelihoodColor = 'var(--coral)';
+  } else {
+    const ratio = requiredCagr / cagr;
+    if (ratio <= 0.7) { likelihood = tr('较高'); likelihoodColor = '#06d6a0'; }
+    else if (ratio <= 1.05) { likelihood = tr('中高'); likelihoodColor = '#8bc34a'; }
+    else if (ratio <= 1.3) { likelihood = tr('中等，需适度提速'); likelihoodColor = '#ffb347'; }
+    else { likelihood = tr('较低，差距较大'); likelihoodColor = 'var(--coral)'; }
+  }
+
+  resultEl.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--grey-l);border-radius:8px">
+        <span style="font-size:12px;color:var(--text-light)">${tr('距目标还需')}</span>
+        <span style="font-size:13px;font-weight:700;font-family:var(--font-mono)">${fmtMain(target-current)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--grey-l);border-radius:8px">
+        <span style="font-size:12px;color:var(--text-light)">${tr('达成所需年化增速')}</span>
+        <span style="font-size:13px;font-weight:700;font-family:var(--font-mono)">${(requiredCagr*100).toFixed(1)}%</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--grey-l);border-radius:8px">
+        <span style="font-size:12px;color:var(--text-light)">${tr('你的历史年化增速')}</span>
+        <span style="font-size:13px;font-weight:700;font-family:var(--font-mono)">${cagr!=null?(cagr*100).toFixed(1)+'%':'—'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:${likelihoodColor};border-radius:8px">
+        <span style="font-size:12px;color:#fff;font-weight:700">${tr('达成可能性（粗略参考）')}</span>
+        <span style="font-size:14px;font-weight:800;color:#fff">${likelihood}</span>
+      </div>
+      <div style="padding:8px 12px;background:var(--grey-l);border-radius:8px;font-size:12px;color:var(--text-light)">
+        ${tr('按当前历史增速预计：')}${etaStr}
+      </div>
+    </div>
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+      ${buildFireSuggestions(requiredCagr, cagr, current, target).map(x =>
+        `<div style="display:flex;gap:8px;padding:8px 10px;background:#fff8e3;border-radius:8px;font-size:12px;line-height:1.6"><span>💡</span><span>${x}</span></div>`
+      ).join('')}
+    </div>
+    <p style="font-size:10px;color:var(--text-light);margin-top:8px">
+      "达成可能性"是根据所需增速与历史增速的比值给出的粗略参考，并非严格的统计概率或投资建议，仅供你自行判断时参考。
+    </p>
+  `;
+}
+
+
 
 // ═══════════════════════════════════════════════════════════════
 // EXCEL EXPORT
@@ -1713,14 +3000,15 @@ function exportExcel() {
   // Sheet 1: 01_月度录入
   const ws1Data = [['月份','资产名称','账户','一级分类','二级分类','币种','原币金额','月末汇率','折人民币(月末)','折人民币(固定)','月末折CNY','是否计入']];
   entries.forEach(e => {
-    const fxRate = e.currency==='EUR' ? s.fxEur : e.currency==='USD' ? s.fxUsd : e.currency==='JPY' ? s.fxJpy : 1;
+    const fxRate = (e.currency && e.currency !== 'CNY') ? (s.fxRates[e.currency] ?? 1) : 1;
     ws1Data.push([e.month, e.name, e.account, e.cat1, e.cat2, e.currency, e.origAmt, fxRate, e.cnhAmt, e.cnhAmt, e.cnhAmt, e.include ? '是' : '否']);
   });
 
-  // Sheet 2: 02_汇率表
-  const fxRows = [['月份','CNY','EUR/CNY','USD/CNY','JPY/CNY']];
+  // Sheet 2: 02_汇率表 — one column per known currency
+  const ccyCodes = Object.keys(s.fxRates || {});
+  const fxRows = [['月份','CNY', ...ccyCodes.map(c => `${c}/CNY`)]];
   const fxMonths = [...new Set(entries.map(e => e.month))].sort();
-  fxMonths.forEach(m => fxRows.push([m, 1, s.fxEur, s.fxUsd, s.fxJpy]));
+  fxMonths.forEach(m => fxRows.push([m, 1, ...ccyCodes.map(c => s.fxRates[c])]));
 
   // Sheet 3: 03_历史数据库
   const histData = [['月份','金融资产(固定)','金融资产(月末)','房产(固定)','房产(月末)','车辆(固定)','车辆(月末)','总净资产(固定)','总净资产(月末)','购房资助','个人积累']];
@@ -1791,7 +3079,11 @@ function importJSON(event) {
 
 function clearAllData() {
   if (confirm('确认清除所有本地数据？此操作不可撤销。')) {
-    localStorage.clear();
+    // Only remove THIS build's keys — localStorage is shared per browser
+    // origin, so a blanket localStorage.clear() could wipe another build's
+    // (e.g. your personal-data file's) data too if both share an origin.
+    DB.del('entries');
+    DB.del('settings');
     toast('数据已清除');
     renderDashboard();
   }
@@ -1820,18 +3112,69 @@ const SEEDED_MONTHS = [
 ];
 
 function seedHistoryIfEmpty() {
-  // This is the clean/hostable build: no personal financial data is baked in.
-  // First-time users start with an empty ledger and can either:
-  //   (a) add data via 📸录入 / ✏️手动录入 each month, or
-  //   (b) restore a previous backup via ⚙️设置 → 导入数据备份 (JSON exported
-  //       from another instance of this app, e.g. your local copy).
+  // This is the clean/hostable build: instead of personal financial data, we
+  // seed a small set of FABRICATED demo entries (4 months) so a first-time
+  // user can see what a populated dashboard looks like before entering their
+  // own data. The demo banner (dashboard) lets them clear it with one click.
+  const existing = getEntries();
   const s = getSettings();
-  if ((s.seedVersionApplied || 0) < SEED_VERSION) {
-    saveSettings({ carEur: s.carEur || 10000, seedVersionApplied: SEED_VERSION });
-  }
+  if (existing.length > 0 || (s.seedVersionApplied || 0) >= SEED_VERSION) return;
+
+  const m3 = getPrevMonth(currentMonth()); // most recent demo month (last month)
+  const m2 = getPrevMonth(m3);
+  const m1 = getPrevMonth(m2);
+  const m0 = getPrevMonth(m1);
+
+  // [month, 示例银行-活期(CNY), 示例钱包-欧元(EUR), 示例理财(CNY), 公积金(CNY),
+  //  示例券商-指数基金(USD), 朋友借款(CNY,负), 房产市值(EUR), 房贷余额(EUR,负), 车辆(EUR)]
+  const rows = [
+    [m0, 45000, 2000, 25000, 60000, 4000, -8000, 280000, -170000, 14000],
+    [m1, 46000, 2050, 25600, 60200, 4100, -8000, 280000, -169500, 13860],
+    [m2, 47500, 2100, 26300, 60400, 4300, -8000, 282000, -169000, 13720],
+    [m3, 49000, 2200, 27000, 60600, 4600, -8000, 282000, -168500, 13580],
+  ];
+
+  const entries = [];
+  rows.forEach(([month, cash, eur, wealth, fund, idx, debt, house, mortgage, car]) => {
+    const items = [
+      ['示例银行-活期', '示例银行', 'CNY', cash,   '活期现金'],
+      ['示例钱包-欧元', '示例钱包', 'EUR', eur,    '活期现金'],
+      ['示例理财',     '示例理财', 'CNY', wealth, '理财'],
+      ['公积金',       '公积金',   'CNY', fund,   '公积金'],
+      ['示例券商-指数基金', '示例券商', 'USD', idx, '指数基金'],
+      ['朋友借款',     '现金',     'CNY', debt,   '朋友借款'],
+    ];
+    items.forEach(([name, account, ccy, amt, cat2]) => {
+      entries.push({ month, name, account, currency: ccy,
+                     origAmt: amt, cnhAmt: toCny(amt, ccy), cat1:'金融资产', cat2, include: true });
+    });
+    entries.push({ month, name:'房产市值', account:'-', currency:'EUR',
+                   origAmt: house, cnhAmt: toCny(house,'EUR'), cat1:'实物资产', cat2:'房产市值', include: true });
+    entries.push({ month, name:'房贷余额', account:'-', currency:'EUR',
+                   origAmt: mortgage, cnhAmt: toCny(mortgage,'EUR'), cat1:'实物资产', cat2:'房贷余额', include: true });
+    entries.push({ month, name:'车辆', account:'-', currency:'EUR',
+                   origAmt: car, cnhAmt: toCny(car,'EUR'), cat1:'实物资产', cat2:'车辆价值', include: true });
+  });
+  entries.forEach(e => { e.id = genId(); });
+  setEntries(entries);
+
+  saveSettings({
+    seedVersionApplied: SEED_VERSION,
+    isDemoData: true,
+    assetCcy: 'EUR',
+    wozValue: 270000, wozRate: 4.4, carEur: 13580,
+    target1: 800000, target2: 2400000, target2Mode: 'dynamic', monthlyExpense: 8000,
+    houseSupport: 200000, houseSupportFrom: m0,
+    mainCurrency: 'EUR',
+    fumMonths: 8, fumScope: [],
+  });
 }
 seedHistoryIfEmpty();
-renderDashboard();
+// applyLanguage() calls showScreen('dashboard') -> renderDashboard() itself,
+// so a separate initial renderDashboard() call here would be redundant —
+// and if it threw (e.g. Chart.js failed to load), applyLanguage() below
+// would never run, silently dropping the user's saved language.
+applyLanguage(getSettings().language || 'zh');
 </script>
 </body>
 </html>
