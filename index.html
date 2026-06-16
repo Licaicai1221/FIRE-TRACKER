@@ -279,6 +279,15 @@
     font-weight: 600;
     min-width: 32px;
   }
+  .qe-group-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--grey-m);
+    padding: 5px 10px;
+    border-radius: 6px;
+    margin: 10px 0 4px;
+  }
 
   /* ── Ledger ── */
   .month-selector {
@@ -510,6 +519,50 @@
   }
   .section-divider-label { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.7px; white-space: nowrap; }
   .section-divider-line { flex: 1; height: 1px; background: var(--grey-m); }
+
+  .calendar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 10px;
+  }
+  .calendar-nav-btn {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--grey-m);
+    background: var(--white);
+    color: var(--navy);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .calendar-nav-btn:hover { background: var(--grey-l); }
+  .calendar-year-label { font-size: 14px; font-weight: 700; color: var(--navy); min-width: 64px; text-align: center; }
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .calendar-tile {
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+  }
+  .calendar-tile-label { font-size: 11px; font-weight: 600; }
+  .calendar-tile-value { font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
+  .calendar-tile-empty { background: var(--grey-l); color: var(--text-light); opacity: 0.5; }
+  .calendar-tile-gain { background: #fbe4e2; color: #b3402f; }
+  .calendar-tile-loss { background: #dcf0e6; color: #1f8a5c; }
+  .calendar-tile-current { box-shadow: 0 0 0 2px var(--blue) inset; }
+  .calendar-tile-current.calendar-tile-gain { background: #b3402f; color: #fff; }
+  .calendar-tile-current.calendar-tile-loss { background: #1f8a5c; color: #fff; }
 </style>
 </head>
 <body>
@@ -625,6 +678,19 @@
       <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
     </div>
 
+    <div class="card">
+      <div class="card-title">📅 收益日历</div>
+      <p id="i18n-rich-18" style="font-size:11px;color:var(--text-light);margin:-6px 0 10px">
+        按固定汇率计算的月度净资产变化（含新增存入/支出，并非纯投资收益）。红色为增加，绿色为减少。
+      </p>
+      <div class="calendar-nav">
+        <button class="calendar-nav-btn" onclick="changeCalendarYear(-1)">‹</button>
+        <span class="calendar-year-label" id="calendar-year-label">—</span>
+        <button class="calendar-nav-btn" onclick="changeCalendarYear(1)">›</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+
     <div class="charts-row">
       <div class="card" style="margin-bottom:0">
         <div class="card-title">资产类别</div>
@@ -685,15 +751,18 @@
       <div id="quickentry-empty" style="display:none;text-align:center;padding:20px;color:var(--text-light);font-size:12px">
         <span id="i18n-rich-17">上月（<span id="quickentry-prev-month"></span>）暂无可复制的数据 — 直接在下方添加本月第一批数据吧。</span>
       </div>
+      <div id="quickentry-groupby-row" style="display:none;margin-bottom:8px">
+        <select class="input-field" id="quickentry-groupby" onchange="renderQuickEntryRows()" style="font-size:12px;padding:7px 8px;max-width:160px">
+          <option value="account">按账户分组</option>
+          <option value="cat2">按分类分组</option>
+          <option value="none">不分组</option>
+        </select>
+      </div>
       <div id="quickentry-rows"></div>
 
       <div class="qe-row qe-new-row">
-        <input class="qe-input" id="qe-new-name" type="text" placeholder="资产名称，如：公积金 / 朋友借款">
-        <input class="qe-input" id="qe-new-account" type="text" placeholder="账户（可选）">
-        <select class="qe-input" id="qe-new-ccy" style="min-width:64px"></select>
-      </div>
-      <div class="qe-row qe-new-row" style="margin-top:-4px">
-        <input class="qe-input" id="qe-new-cat2" list="cat2-options" placeholder="分类，如：活期现金 / 朋友借款（不填默认活期现金）" style="grid-column:1/3">
+        <input class="qe-input" id="qe-new-account" type="text" placeholder="账户，如：招行 / 现金">
+        <input class="qe-input" id="qe-new-cat2" list="cat2-options" placeholder="分类，如：活期现金 / 朋友借款">
         <datalist id="cat2-options">
           <option value="活期现金">
           <option value="定期存款">
@@ -707,7 +776,10 @@
           <option value="个人借款">
           <option value="其他负债">
         </datalist>
-        <input class="qe-input" id="qe-new-amount" type="number" step="0.01" placeholder="金额（负债填负数）">
+        <select class="qe-input" id="qe-new-ccy" style="min-width:64px"></select>
+      </div>
+      <div class="qe-row qe-new-row" style="margin-top:-4px">
+        <input class="qe-input" id="qe-new-amount" type="number" step="0.01" placeholder="金额（负债填负数）" style="grid-column:1/3">
       </div>
       <div class="btn-row">
         <button class="btn btn-outline btn-sm" onclick="addQuickEntryRow()">➕ 添加这一项</button>
@@ -1024,6 +1096,47 @@ function normalizeAccountNamesIfNeeded() {
   saveSettings({ accountNamesNormalized: true });
 }
 
+// Auto-generate a display name from 账户+分类 now that 资产名称 is no longer
+// a user-entered field. "-" account (used by 房产/房贷/车辆, which have no
+// real account) just falls back to the category name on its own.
+function deriveEntryName(account, cat2) {
+  if (!account || account === '-') return cat2 || '';
+  return `${account}-${cat2 || ''}`;
+}
+
+// Identity changed from name+account to account+cat2+currency (录入/明细
+// no longer show or collect 资产名称, so it can no longer disambiguate two
+// items). Entries that collide under the new identity are merged by summing
+// their amounts — e.g. 招行's 纳指ETF + 标普ETF (both 指数基金+CNY) become
+// one combined 指数基金 row. Runs once per month-group; gated by a settings
+// flag so it never re-fights entries the user adds afterward.
+function mergeEntriesByNewIdentityIfNeeded() {
+  const s = getSettings();
+  if (s.entriesMergedByIdentity) return;
+  const entries = DB.get('entries', []);
+  const months = [...new Set(entries.map(e => e.month))];
+  const kept = [];
+  months.forEach(month => {
+    const monthEntries = entries.filter(e => e.month === month);
+    const groups = {};
+    monthEntries.forEach(e => {
+      const key = `${e.account||''}\u0001${e.cat2||''}\u0001${e.currency||'CNY'}`;
+      (groups[key] = groups[key] || []).push(e);
+    });
+    Object.values(groups).forEach(items => {
+      if (items.length === 1) { kept.push(items[0]); return; }
+      // Merge: sum origAmt/cnhAmt, keep the rest of the fields from the first item
+      const merged = { ...items[0] };
+      merged.origAmt = items.reduce((sum, e) => sum + (e.origAmt||0), 0);
+      merged.cnhAmt = items.reduce((sum, e) => sum + (e.cnhAmt||0), 0);
+      merged.name = deriveEntryName(merged.account, merged.cat2);
+      kept.push(merged);
+    });
+  });
+  DB.set('entries', kept);
+  saveSettings({ entriesMergedByIdentity: true });
+}
+
 // Entries: array of { month:'2026-05', name, account, currency, origAmt, cnhAmt, cat1, cat2, include:true }
 const getEntries = () => {
   const entries = DB.get('entries', []);
@@ -1212,7 +1325,16 @@ const I18N = {
   "✓ 保存本月数据": "✓ Save This Month's Data",
   "固定": "Fixed",
   "暂无外币，请先在上方添加币种": "No foreign currencies yet — add one above first",
-  "⚠️ 请填写资产名称": "⚠️ Please enter an asset name",
+  "⚠️ 请填写账户": "⚠️ Please enter an account",
+  "⚠️ 请填写分类": "⚠️ Please enter a category",
+  "⚠️ 该账户下已有相同分类和币种的项目，请直接在上方修改": "⚠️ This account already has an item with the same category and currency — edit it directly above instead",
+  "（无账户）": "(No account)",
+  "（无分类）": "(No category)",
+  "按账户分组": "Group by account",
+  "按分类分组": "Group by category",
+  "账户，如：招行 / 现金": "Account, e.g. ICBC / Cash",
+  "分类，如：活期现金 / 朋友借款": "Category, e.g. Cash / Loan from a friend",
+  "金额（负债填负数）": "Amount (use a negative number for debt)",
   "⚠️ 请填写金额": "⚠️ Please enter an amount",
   "⚠️ 已有同名项目，请直接在上方修改": "⚠️ An item with this name already exists — edit it directly above instead",
   "已加入本月列表，记得点保存": "added to this month's list — don't forget to save",
@@ -1220,7 +1342,11 @@ const I18N = {
   "项数据": "item(s) of data for this month",
   "⚠️ 请输入有效数字": "⚠️ Please enter a valid number",
   "已更新": "Updated",
+  "修改": "Edit",
+  "的原币金额": "'s original-currency amount",
   "已删除": "Deleted",
+  "确认删除": "Delete",
+  "这一条记录？": " — are you sure?",
   "房产/房贷/车辆记账币种已设为": "Property/Mortgage/Vehicle currency set to",
   "房产估值已更新为": "Property valuation updated to",
   "（本月）": " (this month)",
@@ -1257,6 +1383,7 @@ const I18N = {
   "个人积累追踪": "Personal Accumulation",
   "净资产构成": "Net Worth Composition",
   "净资产走势": "Net Worth Trend",
+  "📅 收益日历": "📅 Return Calendar",
   "按固定汇率计算，剔除汇率波动，反映资产的真实增长趋势": "Calculated at a fixed exchange rate, excluding FX fluctuation, to show the real growth trend of your assets",
   "币种分布": "Currency Breakdown",
   "截图预览": "Screenshot Preview",
@@ -1349,6 +1476,7 @@ const I18N = {
   "↩ 重置": "↩ Reset",
   "🔍 搜索": "🔍 Search",
   "上月": "Last month",
+  "本月": "This month",
   "✅ 本月数据已全部保存": "✅ All data saved for this month",
   "➕ 添加这一项": "➕ Add this item",
   "保存房产估值": "Save Property Valuation",
@@ -1373,6 +1501,7 @@ const I18N = {
   "流动资金": "Liquid",
   "固定收益": "Fixed Income",
   "理财": "Wealth Mgmt",
+  "保险": "Insurance",
   "活期现金": "Cash",
   "定期存款": "Time Deposit",
   "指数基金": "Index Fund",
@@ -1450,7 +1579,8 @@ const I18N_RICH_EN = {
   "i18n-rich-14": "Each amount is pre-filled with last month's value — just update it to this month's latest balance (edited rows are highlighted). The bottom row lets you add anything new this month (a new account, a loan from a friend, etc). When you're done, click 「✓ Save This Month's Data」 once to save everything together.",
   "i18n-rich-15": "Enter the official assessed value (e.g. Dutch WOZ, property tax assessment, etc) plus a market premium/discount percentage to estimate market value. If there's no official assessment available where you live, just enter your own estimated market value directly and leave the premium at 0.",
   "i18n-rich-16": "<strong style=\"color:var(--navy)\">💡 Example:</strong> say you have a UK bank account holding British pounds (GBP).<br>Enter <code>GBP</code> in 「New currency code」 and <code>9.20</code> in 「Exchange rate」 (meaning 1 GBP ≈ 9.20 CNY), then click ➕ Add.<br>After that, <code>GBP</code> will show up as a currency option in both 「Monthly Quick Entry」 and manual entry, and the app will automatically convert GBP amounts into CNY at a rate of 9.20 when totaling your net worth.<br>🗑 If you delete a currency, any account data already recorded in it stays, but will no longer convert correctly — make sure you no longer hold that currency before deleting it.",
-  "i18n-rich-17": "Last month (<span id=\"quickentry-prev-month\"></span>) has no data to copy — just add this month's first batch of data below."
+  "i18n-rich-17": "Last month (<span id=\"quickentry-prev-month\"></span>) has no data to copy — just add this month's first batch of data below.",
+  "i18n-rich-18": "Month-over-month net worth change at fixed exchange rates (includes new deposits/withdrawals, not pure investment return). Red = increase, green = decrease."
 
 };
 
@@ -1578,6 +1708,22 @@ function cat2Group(cat2) {
   if (/负债|借款|欠款|贷款|欠/.test(cat2)) return '负债';
   if (/应收|借出|借给/.test(cat2)) return '应收';
   return '其他';
+}
+
+// Single source of truth for the logical category ordering — used by both
+// 明细(Ledger) and 录入(Upload quick-entry) so the two screens never drift
+// apart: liquid cash first, then fixed income, wealth mgmt, risk investment,
+// receivables, debt, physical assets, and an "other" catch-all last.
+const CAT2_GROUP_ORDER = ['流动资金','固定收益类','理财类','风险投资','应收','负债','实物资产','其他'];
+const CAT2_GROUP_LABELS = {
+  '流动资金': '💧 流动资金', '固定收益类': '🏦 固定收益类', '理财类': '📈 理财类',
+  '风险投资': '🚀 风险投资', '应收': '⏳ 应收款', '负债': '🔴 负债', '实物资产': '🏡 实物资产', '其他': '📦 其他'
+};
+// Sort index for an entry's broad group (lower = shown first); falls back to
+// the end of the list for anything unrecognized.
+function cat2GroupSortIndex(cat2) {
+  const idx = CAT2_GROUP_ORDER.indexOf(cat2Group(cat2));
+  return idx === -1 ? CAT2_GROUP_ORDER.length : idx;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1820,6 +1966,88 @@ function calcTotals(month) {
            catData: [liquid, fixed, wealth, risk] };
 }
 
+// Month-over-month net worth change at FIXED exchange rates (same basis as
+// the 净资产走势 trend chart, so the two stay consistent) — keyed by month
+// string for O(1) lookup. The very first month in the data has no prior
+// month to diff against, so it's simply omitted (not zero — there's no
+// "change" to report for it). This is a CHANGE-IN-NET-WORTH figure, not a
+// pure investment return: it includes new deposits/withdrawals same as the
+// 投资回报 discussion earlier, so the calendar deliberately labels it that
+// way rather than implying it's a return rate.
+function computeMonthlyDeltas() {
+  const entries = getEntries();
+  const months = [...new Set(entries.map(e => e.month))].sort();
+  const deltas = {};
+  for (let i = 1; i < months.length; i++) {
+    const prevFixed = calcTotals(months[i-1]).totalFixed;
+    const curFixed = calcTotals(months[i]).totalFixed;
+    deltas[months[i]] = curFixed - prevFixed;
+  }
+  return deltas;
+}
+
+// ── 收益日历 (Return Calendar) — year view, one tile per month ──
+let calendarViewYear = null; // null until first render, then tracks the user's navigation
+
+function changeCalendarYear(delta) {
+  calendarViewYear += delta;
+  renderReturnCalendar();
+}
+
+function renderReturnCalendar() {
+  const grid = document.getElementById('calendar-grid');
+  const yearLabel = document.getElementById('calendar-year-label');
+  if (!grid || !yearLabel) return;
+
+  const deltas = computeMonthlyDeltas();
+  const entries = getEntries();
+  const allMonths = [...new Set(entries.map(e => e.month))].sort();
+  const curMonth = currentMonth();
+  const curYear = +curMonth.slice(0,4);
+
+  if (calendarViewYear === null) calendarViewYear = curYear;
+
+  yearLabel.textContent = CURRENT_LANG === 'en' ? `${calendarViewYear}` : `${calendarViewYear}年`;
+
+  // Disable navigating earlier than the first month on record, or later
+  // than the current month — there's no data outside that range anyway.
+  const earliestYear = allMonths.length ? +allMonths[0].slice(0,4) : curYear;
+  const prevBtn = (typeof document.querySelector === 'function')
+    ? document.querySelector('.calendar-nav-btn[onclick="changeCalendarYear(-1)"]') : null;
+  const nextBtn = (typeof document.querySelector === 'function')
+    ? document.querySelector('.calendar-nav-btn[onclick="changeCalendarYear(1)"]') : null;
+  if (prevBtn) {
+    prevBtn.disabled = calendarViewYear <= earliestYear;
+    prevBtn.style.opacity = prevBtn.disabled ? '0.35' : '1';
+  }
+  if (nextBtn) {
+    nextBtn.disabled = calendarViewYear >= curYear;
+    nextBtn.style.opacity = nextBtn.disabled ? '0.35' : '1';
+  }
+
+  let html = '';
+  for (let m = 1; m <= 12; m++) {
+    const monthStr = `${calendarViewYear}-${String(m).padStart(2,'0')}`;
+    const isCurrent = monthStr === curMonth;
+    const hasData = Object.prototype.hasOwnProperty.call(deltas, monthStr);
+    const monthLabel = CURRENT_LANG === 'en'
+      ? new Date(calendarViewYear, m-1, 1).toLocaleDateString('en-US', { month: 'short' })
+      : `${m}月`;
+    const label = isCurrent ? tr('本月') : monthLabel;
+
+    if (!hasData) {
+      html += `<div class="calendar-tile calendar-tile-empty"><div class="calendar-tile-label">${label}</div><div class="calendar-tile-value">—</div></div>`;
+      continue;
+    }
+    const delta = deltas[monthStr];
+    const isGain = delta >= 0;
+    const cls = `calendar-tile ${isGain ? 'calendar-tile-gain' : 'calendar-tile-loss'} ${isCurrent ? 'calendar-tile-current' : ''}`;
+    const sign = isGain ? '+' : '';
+    html += `<div class="${cls}"><div class="calendar-tile-label">${label}</div><div class="calendar-tile-value">${sign}${fmtMainShort(delta)}</div></div>`;
+  }
+  grid.innerHTML = html;
+}
+
 function computeCagr() {
   const entries = getEntries();
   const months = [...new Set(entries.map(e => e.month))].sort();
@@ -1866,6 +2094,7 @@ function dismissDemoBanner() {
 function renderDashboard() {
   renderDemoBanner();
   renderPlanning();
+  renderReturnCalendar();
   const months = [...new Set(getEntries().map(e => e.month))].sort();
   const latestMonth = months[months.length-1] || currentMonth();
   document.getElementById('topbar-month').textContent = latestMonth || '无数据';
@@ -2083,18 +2312,22 @@ function renderQuickEntry() {
   const entries = getEntries();
   const prevItems = entries.filter(e => e.month === prev && !ASSET_CARD_CATS.includes(e.cat2));
   const thisMonthByKey = {};
-  entries.filter(e => e.month === month).forEach(e => { thisMonthByKey[`${e.name}\u0001${e.account||''}`] = e; });
+  entries.filter(e => e.month === month).forEach(e => {
+    thisMonthByKey[`${e.account||''}\u0001${e.cat2||''}\u0001${e.currency||'CNY'}`] = e;
+  });
 
   // Each draft row: prefer this month's own saved value if it already exists
   // (e.g. user already edited & saved, then came back to this screen);
   // otherwise prefill with last month's amount as the starting point.
-  // Keyed by name+account (not name alone) so two different accounts that
-  // happen to use the same item name — e.g. two "应收款" entries on
-  // different platforms — don't collide and silently overwrite each other.
-  quickEntryDraft = prevItems.map(p => {
-    const existing = thisMonthByKey[`${p.name}\u0001${p.account||''}`];
+  // Keyed by account+分类+币种 (the same identity upsertEntry now uses) since
+  // 资产名称 is no longer collected — two different accounts holding the
+  // same category, or the same account holding two different currencies,
+  // must not collide.
+  quickEntryDraft = prevItems.map((p, i) => {
+    const key = `${p.account||''}\u0001${p.cat2||''}\u0001${p.currency||'CNY'}`;
+    const existing = thisMonthByKey[key];
     return {
-      name: p.name, account: p.account, currency: p.currency,
+      rowId: 'r' + i, account: p.account, currency: p.currency,
       cat1: p.cat1, cat2: p.cat2,
       prevAmt: p.origAmt,
       origAmt: existing ? existing.origAmt : p.origAmt,
@@ -2104,34 +2337,88 @@ function renderQuickEntry() {
 
   const container = document.getElementById('quickentry-rows');
   const empty = document.getElementById('quickentry-empty');
+  const groupbyRow = document.getElementById('quickentry-groupby-row');
   if (!quickEntryDraft.length) {
     container.innerHTML = '';
     empty.style.display = 'block';
+    groupbyRow.style.display = 'none';
   } else {
     empty.style.display = 'none';
+    groupbyRow.style.display = quickEntryDraft.length > 4 ? 'block' : 'none';
     renderQuickEntryRows();
   }
   updateQuickEntryStatus();
   populateCcySelect('qe-new-ccy', 'CNY');
 }
 
-function renderQuickEntryRows() {
-  const container = document.getElementById('quickentry-rows');
-  container.innerHTML = quickEntryDraft.map((row, i) => `
+function qeRowHtml(row) {
+  return `
     <div class="qe-row">
-      <div class="qe-label">${row.name}<br><span class="qe-label-sub">${row.account||'—'} · ${tr('上月')} ${fmt(row.prevAmt,2)}</span></div>
+      <div class="qe-label">${row.account||'—'}<br><span class="qe-label-sub">${tr(row.cat2)||row.cat2||'—'} · ${tr('上月')} ${fmt(row.prevAmt,2)}</span></div>
       <input class="qe-input ${row.touched ? 'qe-changed' : ''}" type="number" step="0.01" value="${row.origAmt}"
-             id="qe-input-${i}" oninput="onQuickEntryEdit(${i}, this.value)">
+             id="qe-input-${row.rowId}" oninput="onQuickEntryEdit('${row.rowId}', this.value)">
       <span class="qe-ccy">${row.currency}</span>
     </div>
+  `;
+}
+
+// Stable sort: by logical category order first (same taxonomy as Ledger),
+// then by account name, so the row order is consistent and predictable
+// instead of reflecting whatever order items happened to be saved in.
+function qeSortRows(rows) {
+  return [...rows].sort((a, b) => {
+    const ci = cat2GroupSortIndex(a.cat2) - cat2GroupSortIndex(b.cat2);
+    if (ci !== 0) return ci;
+    return (a.account||'').localeCompare(b.account||'');
+  });
+}
+
+function renderQuickEntryRows() {
+  const container = document.getElementById('quickentry-rows');
+  const groupBy = document.getElementById('quickentry-groupby').value || 'account';
+
+  if (groupBy === 'none' || quickEntryDraft.length <= 4) {
+    container.innerHTML = qeSortRows(quickEntryDraft).map(qeRowHtml).join('');
+    return;
+  }
+
+  if (groupBy === 'cat2') {
+    // Group headers follow the same logical category order as Ledger;
+    // rows within each group sorted by account name.
+    const groups = {};
+    quickEntryDraft.forEach(row => {
+      const key = cat2Group(row.cat2);
+      (groups[key] = groups[key] || []).push(row);
+    });
+    container.innerHTML = CAT2_GROUP_ORDER.filter(g => groups[g] && groups[g].length).map(g => `
+      <div class="qe-group-header">${tr(CAT2_GROUP_LABELS[g])}</div>
+      ${groups[g].sort((a,b) => (a.account||'').localeCompare(b.account||'')).map(qeRowHtml).join('')}
+    `).join('');
+    return;
+  }
+
+  // Grouped by account: account groups sorted alphabetically (no inherent
+  // logical order between accounts), but rows WITHIN each account follow
+  // the same category order as everywhere else.
+  const groups = {};
+  quickEntryDraft.forEach(row => {
+    const key = row.account || tr('（无账户）');
+    (groups[key] = groups[key] || []).push(row);
+  });
+  const groupNames = Object.keys(groups).sort();
+  container.innerHTML = groupNames.map(name => `
+    <div class="qe-group-header">${name}</div>
+    ${qeSortRows(groups[name]).map(qeRowHtml).join('')}
   `).join('');
 }
 
-function onQuickEntryEdit(i, value) {
+function onQuickEntryEdit(rowId, value) {
+  const row = quickEntryDraft.find(r => r.rowId === rowId);
+  if (!row) return;
   const amt = parseFloat(value);
-  quickEntryDraft[i].origAmt = isNaN(amt) ? 0 : amt;
-  quickEntryDraft[i].touched = true;
-  document.getElementById(`qe-input-${i}`).classList.add('qe-changed');
+  row.origAmt = isNaN(amt) ? 0 : amt;
+  row.touched = true;
+  document.getElementById(`qe-input-${rowId}`).classList.add('qe-changed');
   updateQuickEntryStatus();
 }
 
@@ -2139,31 +2426,33 @@ function onQuickEntryEdit(i, value) {
 // the SAME draft array, so it gets saved together with everything else in
 // one click — no separate "manual add" flow to context-switch to.
 function addQuickEntryRow() {
-  const name = document.getElementById('qe-new-name').value.trim();
   const account = document.getElementById('qe-new-account').value.trim();
+  const cat2 = document.getElementById('qe-new-cat2').value.trim();
   const ccy = document.getElementById('qe-new-ccy').value;
-  const cat2 = document.getElementById('qe-new-cat2').value.trim() || '活期现金';
   const amt = +document.getElementById('qe-new-amount').value;
-  if (!name) { toast(tr('⚠️ 请填写资产名称')); return; }
+  if (!account) { toast(tr('⚠️ 请填写账户')); return; }
+  if (!cat2) { toast(tr('⚠️ 请填写分类')); return; }
   if (!document.getElementById('qe-new-amount').value) { toast(tr('⚠️ 请填写金额')); return; }
 
-  if (quickEntryDraft.some(r => r.name === name)) { toast(tr('⚠️ 已有同名项目，请直接在上方修改')); return; }
+  if (quickEntryDraft.some(r => r.account === account && r.cat2 === cat2 && r.currency === ccy)) {
+    toast(tr('⚠️ 该账户下已有相同分类和币种的项目，请直接在上方修改')); return;
+  }
 
   quickEntryDraft.push({
-    name, account: account || '-', currency: ccy,
+    rowId: 'new' + Date.now() + Math.random(), account: account || '-', currency: ccy,
     cat1: '金融资产', cat2,
     prevAmt: 0, origAmt: amt, touched: true,
   });
 
   document.getElementById('quickentry-empty').style.display = 'none';
+  if (quickEntryDraft.length > 4) document.getElementById('quickentry-groupby-row').style.display = 'block';
   renderQuickEntryRows();
   updateQuickEntryStatus();
 
-  document.getElementById('qe-new-name').value = '';
   document.getElementById('qe-new-account').value = '';
   document.getElementById('qe-new-cat2').value = '';
   document.getElementById('qe-new-amount').value = '';
-  toast(`✓ 「${name}」${tr('已加入本月列表，记得点保存')}`);
+  toast(`✓ 「${account} · ${tr(cat2)||cat2}」${tr('已加入本月列表，记得点保存')}`);
 }
 
 function updateQuickEntryStatus() {
@@ -2179,7 +2468,7 @@ function saveQuickEntry() {
   if (!quickEntryDraft.length) return;
   quickEntryDraft.forEach(row => {
     upsertEntry({
-      name: row.name, account: row.account, currency: row.currency,
+      account: row.account, currency: row.currency,
       origAmt: row.origAmt, cnhAmt: toCny(row.origAmt, row.currency),
       cat1: row.cat1, cat2: row.cat2, include: true,
     });
@@ -2210,13 +2499,8 @@ function populateLedgerFilterOptions(monthEntries) {
   // Category filter: broad groups, same set used for the grouped view
   const catSel = document.getElementById('ledger-filter-cat');
   const curCat = catSel.value;
-  const groupLabelsAll = {
-    '流动资金':tr('💧 流动资金'), '固定收益类':tr('🏦 固定收益类'), '理财类':tr('📈 理财类'),
-    '风险投资':tr('🚀 风险投资'), '应收':tr('⏳ 应收款'), '负债':tr('🔴 负债'), '实物资产':tr('🏡 实物资产'), '其他':tr('📦 其他')
-  };
-  const groupOrder = ['流动资金','固定收益类','理财类','风险投资','应收','负债','实物资产','其他'];
   catSel.innerHTML = `<option value="">${tr('全部类别')}</option>` +
-    groupOrder.map(g => `<option value="${g}" ${g===curCat?'selected':''}>${groupLabelsAll[g]}</option>`).join('');
+    CAT2_GROUP_ORDER.map(g => `<option value="${g}" ${g===curCat?'selected':''}>${tr(CAT2_GROUP_LABELS[g])}</option>`).join('');
   if (curCat) catSel.value = curCat;
 
   // Account filter: whatever accounts actually appear this month
@@ -2251,17 +2535,6 @@ function toggleLedgerMoreFilters() {
   const showing = el.style.display !== 'none';
   el.style.display = showing ? 'none' : 'block';
   btn.textContent = showing ? '⌄ ' + tr('更多筛选') : '⌃ ' + tr('更多筛选');
-}
-
-// If the account name is just a repeat of (or contained in) the item name —
-// e.g. name="Paypal-活期", account="Paypal" — showing both is redundant on a
-// narrow phone screen, so we only show the account as separate metadata when
-// it actually adds information.
-function accountAddsInfo(name, account) {
-  if (!account || account === '-') return false;
-  const n = (name||'').toLowerCase();
-  const a = account.toLowerCase();
-  return !n.includes(a);
 }
 
 function renderLedger() {
@@ -2300,7 +2573,7 @@ function renderLedger() {
 
   let filtered = monthEntries.filter(e => {
     if (searchTerm) {
-      const haystack = `${e.name||''} ${e.account||''}`.toLowerCase();
+      const haystack = `${e.account||''} ${e.cat2||''} ${tr(e.cat2)||''}`.toLowerCase();
       if (!haystack.includes(searchTerm)) return false;
     }
     if (filterCat && cat2Group(e.cat2) !== filterCat) return false;
@@ -2314,26 +2587,28 @@ function renderLedger() {
     return;
   }
 
-  const groupLabelsAll = {
-    '流动资金':tr('💧 流动资金'), '固定收益类':tr('🏦 固定收益类'), '理财类':tr('📈 理财类'),
-    '风险投资':tr('🚀 风险投资'), '应收':tr('⏳ 应收款'), '负债':tr('🔴 负债'), '实物资产':tr('🏡 实物资产'), '其他':tr('📦 其他')
-  };
-  const groupOrder = ['流动资金','固定收益类','理财类','风险投资','应收','负债','实物资产','其他'];
+  const groupLabelsAll = {};
+  CAT2_GROUP_ORDER.forEach(g => { groupLabelsAll[g] = tr(CAT2_GROUP_LABELS[g]); });
+  const groupOrder = CAT2_GROUP_ORDER;
 
   // One compact row per item: name (+account only if it adds info) on the
   // left, CNY amount as the primary number on the right with the original-
   // currency amount as a small subtitle (omitted entirely when the item is
   // already CNY, since showing the same number twice is just noise).
-  function rowHtml(e, g) {
-    const showAccount = accountAddsInfo(e.name, e.account);
+  function rowHtml(e, g, primary) {
     const ccy = e.currency || 'CNY';
     const showOrig = ccy !== 'CNY';
+    const catLabel = tr(e.cat2||e.cat1||'—') || e.cat2 || e.cat1 || '—';
+    const acctLabel = (e.account && e.account !== '-') ? e.account : catLabel;
+    // When grouped by category, the category is already the group header, so
+    // show the account as the row's primary line (and vice-versa) — avoids
+    // showing the exact same text twice for every row in a group.
+    const primaryText = primary === 'cat2' ? catLabel : acctLabel;
     return `<div class="ledger-row">
         <div class="ledger-row-main">
-          <div class="ledger-row-name">${e.name||'—'}</div>
+          <div class="ledger-row-name">${primaryText}</div>
           <div class="ledger-row-meta">
-            ${showAccount ? `<span>${e.account}</span><span>·</span>` : ''}
-            <span class="cat-badge cat-${g}">${tr(e.cat2||e.cat1||'—')}</span>
+            <span class="cat-badge cat-${g}">${catLabel}</span>
           </div>
         </div>
         <div class="ledger-row-amounts">
@@ -2355,7 +2630,7 @@ function renderLedger() {
   if (groupBy === 'none') {
     // Flat list, sorted by absolute CNY value descending
     filtered.sort((a,b) => Math.abs(b.cnhAmt||0) - Math.abs(a.cnhAmt||0));
-    filtered.forEach(e => { html += rowHtml(e, cat2Group(e.cat2)); });
+    filtered.forEach(e => { html += rowHtml(e, cat2Group(e.cat2), 'account'); });
   } else if (groupBy === 'account') {
     const grouped = {};
     filtered.forEach(e => { (grouped[e.account || tr('（无账户）')] = grouped[e.account || tr('（无账户）')] || []).push(e); });
@@ -2368,7 +2643,7 @@ function renderLedger() {
       const items = grouped[acc];
       html += groupHeaderHtml(acc, items);
       items.sort((a,b) => Math.abs(b.cnhAmt||0) - Math.abs(a.cnhAmt||0));
-      items.forEach(e => { html += rowHtml(e, cat2Group(e.cat2)); });
+      items.forEach(e => { html += rowHtml(e, cat2Group(e.cat2), 'cat2'); });
     });
   } else {
     // Default: group by broad category (original behavior)
@@ -2382,7 +2657,7 @@ function renderLedger() {
       if (!items || !items.length) return;
       html += groupHeaderHtml(groupLabelsAll[g], items);
       items.sort((a,b) => Math.abs(b.cnhAmt||0) - Math.abs(a.cnhAmt||0));
-      items.forEach(e => { html += rowHtml(e, g); });
+      items.forEach(e => { html += rowHtml(e, g, 'account'); });
     });
   }
   list.innerHTML = html;
@@ -2393,14 +2668,15 @@ function editEntry(id) {
   const idx = entries.findIndex(e => e.id === id);
   if (idx < 0) return;
   const e = entries[idx];
-  const input = prompt(`修改「${e.name}」的原币金额 (${e.currency}):`, e.origAmt);
+  const label = `${e.account && e.account !== '-' ? e.account + ' · ' : ''}${tr(e.cat2)||e.cat2||''}`;
+  const input = prompt(`${tr('修改')}「${label}」${tr('的原币金额')} (${e.currency}):`, e.origAmt);
   if (input === null) return;
   const amt = parseFloat(input);
   if (isNaN(amt)) { toast(tr('⚠️ 请输入有效数字')); return; }
   e.origAmt = amt;
   e.cnhAmt = toCny(amt, e.currency);
   setEntries(entries);
-  toast(`✓ ${tr('已更新')}「${e.name}」`);
+  toast(`✓ ${tr('已更新')}「${label}」`);
   renderLedger();
   renderDashboard();
 }
@@ -2409,9 +2685,10 @@ function deleteEntry(id) {
   const entries = getEntries();
   const e = entries.find(x => x.id === id);
   if (!e) return;
-  if (!confirm(`确认删除「${e.name}」(${e.account||''}) 这一条记录？`)) return;
+  const label = `${e.account && e.account !== '-' ? e.account + ' · ' : ''}${tr(e.cat2)||e.cat2||''}`;
+  if (!confirm(`${tr('确认删除')}「${label}」${tr('这一条记录？')}`)) return;
   setEntries(entries.filter(x => x.id !== id));
-  toast(`✓ ${tr('已删除')}「${e.name}」`);
+  toast(`✓ ${tr('已删除')}「${label}」`);
   renderLedger();
   renderDashboard();
 }
@@ -2496,9 +2773,13 @@ function saveCar() {
 function upsertEntry(data) {
   const month = currentMonth();
   const entries = getEntries();
-  const idx = entries.findIndex(e => e.month === month && e.name === data.name && (e.account||'') === (data.account||''));
-  if (idx >= 0) entries[idx] = { ...entries[idx], ...data, month };
-  else entries.push({ ...data, month, id: genId() });
+  const idx = entries.findIndex(e => e.month === month
+    && (e.account||'') === (data.account||'')
+    && (e.cat2||'') === (data.cat2||'')
+    && (e.currency||'CNY') === (data.currency||'CNY'));
+  const name = data.name || deriveEntryName(data.account, data.cat2);
+  if (idx >= 0) entries[idx] = { ...entries[idx], ...data, name, month };
+  else entries.push({ ...data, name, month, id: genId() });
   setEntries(entries);
 }
 
@@ -3162,6 +3443,7 @@ function seedHistoryIfEmpty() {
 }
 seedHistoryIfEmpty();
 normalizeAccountNamesIfNeeded();
+mergeEntriesByNewIdentityIfNeeded();
 // applyLanguage() calls showScreen('dashboard') -> renderDashboard() itself,
 // so a separate initial renderDashboard() call here would be redundant —
 // and if it threw (e.g. Chart.js failed to load), applyLanguage() below
