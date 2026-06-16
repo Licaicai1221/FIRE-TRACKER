@@ -675,7 +675,7 @@
   <div id="screen-upload" class="screen">
     <div class="card" id="upload-zone-card">
       <div class="card-title">📋 本月数据录入 <span id="quickentry-month" style="font-weight:400;color:var(--text-light)"></span></div>
-      <p style="font-size:11px;color:var(--text-light);margin-bottom:10px">
+      <p id="i18n-rich-14" style="font-size:11px;color:var(--text-light);margin-bottom:10px">
         每项金额已预填上月数值，直接改成本月最新余额即可（改过的会高亮）。最下面一行可以添加本月新增的项目
         （比如新开的账户、朋友借款等）。改完后点一次「✓ 保存本月数据」统一写入。
       </p>
@@ -683,7 +683,7 @@
         ✅ 本月数据已全部保存
       </div>
       <div id="quickentry-empty" style="display:none;text-align:center;padding:20px;color:var(--text-light);font-size:12px">
-        上月（<span id="quickentry-prev-month"></span>）暂无可复制的数据 — 直接在下方添加本月第一批数据吧。
+        <span id="i18n-rich-17">上月（<span id="quickentry-prev-month"></span>）暂无可复制的数据 — 直接在下方添加本月第一批数据吧。</span>
       </div>
       <div id="quickentry-rows"></div>
 
@@ -731,7 +731,7 @@
 
       <div class="settings-section" style="margin-bottom:14px">
         <div class="settings-title" style="font-size:13px">🏡 房产估值</div>
-        <p style="font-size:11px;color:var(--text-light);margin-bottom:8px">
+        <p id="i18n-rich-15" style="font-size:11px;color:var(--text-light);margin-bottom:8px">
           填入官方评估价（如荷兰WOZ、不动产评估价等）+ 市场溢价/折价百分比，自动估算市值。没有官方评估的话，
           市值直接填官方评估价，溢价填0即可。
         </p>
@@ -845,7 +845,7 @@
           <button class="btn btn-outline btn-sm" onclick="addFxCurrency()">➕ 添加</button>
         </div>
 
-        <div style="margin-top:6px;padding:10px 12px;background:var(--grey-l);border-radius:8px;font-size:11px;color:var(--text-light);line-height:1.6">
+        <div id="i18n-rich-16" style="margin-top:6px;padding:10px 12px;background:var(--grey-l);border-radius:8px;font-size:11px;color:var(--text-light);line-height:1.6">
           <strong style="color:var(--navy)">💡 示例：</strong>假设你在英国有一个银行账户，持有英镑(GBP)。
           在「新币种代码」填 <code>GBP</code>，「汇率」填 <code>9.20</code>（表示 1 GBP ≈ 9.20 CNY），点击➕添加。
           之后无论是📋本月数据录入还是✏️手动录入，币种选项中都会出现 <code>GBP</code>，系统会自动按 9.20 的汇率
@@ -998,6 +998,31 @@ const DB = {
   set: (k, v) => localStorage.setItem(STORAGE_PREFIX+k, JSON.stringify(v)),
   del: (k) => localStorage.removeItem(STORAGE_PREFIX+k)
 };
+
+// Account names accumulated inconsistently over time (e.g. some entries use
+// the full formal name "招商银行" while the asset name itself already uses
+// the short form "招行-活期"). This map standardizes account names to the
+// SAME short form used as the name prefix, so "account adds info beyond the
+// name" comparisons in the ledger/quick-entry work consistently. Runs once;
+// gated by settings.accountNamesNormalized so it never re-fights manual edits.
+const ACCOUNT_NAME_STANDARDIZE = {
+  '招商银行': '招行', '中国银行': '中行', '建设银行': '建行',
+  'Trade Republic': 'TR',
+};
+function normalizeAccountNamesIfNeeded() {
+  const s = getSettings();
+  if (s.accountNamesNormalized) return;
+  const entries = DB.get('entries', []);
+  let changed = false;
+  entries.forEach(e => {
+    if (e.account && ACCOUNT_NAME_STANDARDIZE[e.account]) {
+      e.account = ACCOUNT_NAME_STANDARDIZE[e.account];
+      changed = true;
+    }
+  });
+  if (changed) DB.set('entries', entries);
+  saveSettings({ accountNamesNormalized: true });
+}
 
 // Entries: array of { month:'2026-05', name, account, currency, origAmt, cnhAmt, cat1, cat2, include:true }
 const getEntries = () => {
@@ -1184,6 +1209,46 @@ const I18N = {
   "🆘 应急资金": "🆘 Emergency Fund",
   "应急资金": "Emergency Fund",
   "个月生活费": " mo. living cost",
+  "✓ 保存本月数据": "✓ Save This Month's Data",
+  "固定": "Fixed",
+  "暂无外币，请先在上方添加币种": "No foreign currencies yet — add one above first",
+  "⚠️ 请填写资产名称": "⚠️ Please enter an asset name",
+  "⚠️ 请填写金额": "⚠️ Please enter an amount",
+  "⚠️ 已有同名项目，请直接在上方修改": "⚠️ An item with this name already exists — edit it directly above instead",
+  "已加入本月列表，记得点保存": "added to this month's list — don't forget to save",
+  "已保存本月": "Saved",
+  "项数据": "item(s) of data for this month",
+  "⚠️ 请输入有效数字": "⚠️ Please enter a valid number",
+  "已更新": "Updated",
+  "已删除": "Deleted",
+  "房产/房贷/车辆记账币种已设为": "Property/Mortgage/Vehicle currency set to",
+  "房产估值已更新为": "Property valuation updated to",
+  "（本月）": " (this month)",
+  "✓ 房贷余额已更新": "✓ Mortgage balance updated",
+  "✓ 车辆价值已更新": "✓ Vehicle value updated",
+  "✓ 固定汇率已保存": "✓ Fixed rates saved",
+  "⚠️ 请输入3位币种代码，如 GBP": "⚠️ Please enter a 3-letter currency code, e.g. GBP",
+  "⚠️ CNY 是基准货币，无需添加": "⚠️ CNY is the base currency, no need to add it",
+  "⚠️ 请输入有效汇率": "⚠️ Please enter a valid exchange rate",
+  "已添加": "Added",
+  "，账户币种选项中现已可选": " — it's now available as a currency option for accounts",
+  "✓ 汇率已保存": "✓ Exchange rate saved",
+  "⚠️ 请选择日期": "⚠️ Please select a date",
+  "⚠️ 请先添加至少一个币种": "⚠️ Please add at least one currency first",
+  "🌐 获取汇率中…": "🌐 Fetching exchange rates…",
+  "汇率已更新": "exchange rate(s) updated",
+  "❌ 未获取到汇率，请手动输入": "❌ Couldn't fetch exchange rates — please enter manually",
+  "❌ 获取失败，请手动输入": "❌ Fetch failed — please enter manually",
+  "✓ 目标已更新": "✓ Goals updated",
+  "✓ 应急资金目标已更新": "✓ Emergency fund goal updated",
+  "✓ Excel 已导出": "✓ Excel exported",
+  "✓ 数据备份已下载": "✓ Backup downloaded",
+  "已导入": "Imported",
+  "条记录": "record(s)",
+  "❌ 导入失败：文件格式不正确": "❌ Import failed: invalid file format",
+  "数据已清除": "Data cleared",
+  "✓ 数据已自动更新至最新版本": "✓ Data automatically updated to the latest version",
+  "主货币（FIRE目标与汇总信息显示币种）": "Main Currency (used for FIRE goals and summary figures)",
   "里程碑": "Milestone",
   "FIRE目标": "FIRE Target",
   "FIRE 目标进度": "FIRE Goal Progress",
@@ -1218,7 +1283,7 @@ const I18N = {
   "二级分类": "Subcategory",
   "官方评估价值": "Official Assessed Value",
   "币种": "Currency",
-  "市场溢价/折价 (%，可为负)": "Market premium/discount (%, can be negative)",
+  "溢价/折价 (%，可负)": "Premium/discount (%, can be negative)",
   "当前余额 (": "Current Balance (",
   "当前市值 (": "Current Value (",
   "房产/房贷/车辆 记账币种": "Property/Mortgage/Vehicle Currency",
@@ -1246,6 +1311,7 @@ const I18N = {
   "➕ 添加": "➕ Add",
   "⬆ 导入数据备份": "⬆ Import Backup",
   "⬇ 导出 Excel": "⬇ Export Excel",
+  "⬇ 导出": "⬇ Export",
   "⬇ 导出数据备份 (JSON)": "⬇ Export Backup (JSON)",
   "保存": "Save",
   "保存到本月数据": "Save to This Month",
@@ -1266,6 +1332,9 @@ const I18N = {
   "币种（表头）": "Currency",
   "全部账户（活期现金）": "All accounts (cash)",
   "全部账户": "All accounts",
+  "需更多历史数据": "Need more historical data",
+  "已达成 ✓": "Achieved ✓",
+  "\"达成可能性\"是根据所需增速与历史增速的比值给出的粗略参考，并非严格的统计概率或投资建议，仅供你自行判断时参考。": "\"Likelihood\" is a rough reference based on the ratio of required growth rate to historical growth rate — it's not a strict statistical probability or investment advice, just something to help inform your own judgment.",
   "更多筛选": "More filters",
   "⌄ 更多筛选": "⌄ More filters",
   "全部类别": "All categories",
@@ -1304,6 +1373,18 @@ const I18N = {
   "流动资金": "Liquid",
   "固定收益": "Fixed Income",
   "理财": "Wealth Mgmt",
+  "活期现金": "Cash",
+  "定期存款": "Time Deposit",
+  "指数基金": "Index Fund",
+  "个股": "Stocks",
+  "信用卡负债": "Credit Card Debt",
+  "个人借款": "Personal Loan",
+  "其他负债": "Other Debt",
+  "应收款": "Receivable",
+  "房产市值": "Property Value",
+  "房产净值": "Property Equity",
+  "房贷余额": "Mortgage Balance",
+  "车辆价值": "Vehicle Value",
   "风险投资": "Risk Assets",
   "车辆": "Vehicle",
   "项目数": "Items",
@@ -1365,7 +1446,11 @@ const I18N_RICH_EN = {
   "i18n-rich-3": "Enter the year-month you'd like to reach your FIRE target (<span id=\"planning-target2-label\">—</span>) to estimate the required annual growth rate and compare it with your historical rate for a rough likelihood reference.",
   "i18n-rich-4": "This is a personal FIRE (Financial Independence, Retire Early) tracker. All data is stored in <strong>your local browser</strong> (localStorage) — nothing is uploaded to any server.<br><br>Monthly routine: 📸 update last month's values in 「Monthly Quick Entry」 or ✏️ manually add new items → 📋 double-check it on the Ledger page → 📊 the Dashboard automatically shows your net worth trend, FIRE progress, and asset allocation analysis.",
   "i18n-rich-10": "All data lives in your local browser — <strong>switching devices/browsers does not sync automatically</strong>. ⚙️ Settings → Data Management lets you export/import a JSON backup; if you share this app with someone else, each person's data is completely independent and invisible to the other.<br><br>📱 On mobile, use your browser menu's \"Add to Home Screen\" for an app-like fullscreen experience (no address bar).",
-  "i18n-rich-12": "👋 This is <strong>demo data</strong> to help you see what the app looks like and what it can do. Once you're ready to record your own data, you can clear it."
+  "i18n-rich-12": "👋 This is <strong>demo data</strong> to help you see what the app looks like and what it can do. Once you're ready to record your own data, you can clear it.",
+  "i18n-rich-14": "Each amount is pre-filled with last month's value — just update it to this month's latest balance (edited rows are highlighted). The bottom row lets you add anything new this month (a new account, a loan from a friend, etc). When you're done, click 「✓ Save This Month's Data」 once to save everything together.",
+  "i18n-rich-15": "Enter the official assessed value (e.g. Dutch WOZ, property tax assessment, etc) plus a market premium/discount percentage to estimate market value. If there's no official assessment available where you live, just enter your own estimated market value directly and leave the premium at 0.",
+  "i18n-rich-16": "<strong style=\"color:var(--navy)\">💡 Example:</strong> say you have a UK bank account holding British pounds (GBP).<br>Enter <code>GBP</code> in 「New currency code」 and <code>9.20</code> in 「Exchange rate」 (meaning 1 GBP ≈ 9.20 CNY), then click ➕ Add.<br>After that, <code>GBP</code> will show up as a currency option in both 「Monthly Quick Entry」 and manual entry, and the app will automatically convert GBP amounts into CNY at a rate of 9.20 when totaling your net worth.<br>🗑 If you delete a currency, any account data already recorded in it stays, but will no longer convert correctly — make sure you no longer hold that currency before deleting it.",
+  "i18n-rich-17": "Last month (<span id=\"quickentry-prev-month\"></span>) has no data to copy — just add this month's first batch of data below."
 
 };
 
@@ -1503,9 +1588,21 @@ function fmt(n, decimals=0) {
   if (n == null || isNaN(n)) return '—';
   return new Intl.NumberFormat('zh-CN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(n);
 }
+// "6 个月" (zh) vs "6 months" (en)
+function fmtMonthsLabel(n) {
+  return CURRENT_LANG === 'en' ? `${n} month${n === 1 ? '' : 's'}` : `${n} 个月`;
+}
+
 function fmtShort(n) {
   if (n == null || isNaN(n)) return '—';
-  if (Math.abs(n) >= 10000) return (n/10000).toFixed(1) + '万';
+  if (Math.abs(n) >= 10000) {
+    const wan = n / 10000;
+    if (CURRENT_LANG === 'en') {
+      const m = wan / 100;
+      return Number.isInteger(m) ? `¥${m}M` : `¥${m.toFixed(2)}M`;
+    }
+    return wan.toFixed(1) + '万';
+  }
   return fmt(n);
 }
 function currentMonth() {
@@ -1743,13 +1840,14 @@ function computeCagr() {
 }
 
 function estimateEta(current, target, cagr) {
-  if (!cagr || cagr <= 0) return '需更多历史数据';
-  if (current >= target) return '已达成 ✓';
+  if (!cagr || cagr <= 0) return tr('需更多历史数据');
+  if (current >= target) return tr('已达成 ✓');
   const monthRate = Math.pow(1+cagr, 1/12) - 1;
   const months = Math.log(target/current) / Math.log(1+monthRate);
   const eta = new Date();
   eta.setMonth(eta.getMonth() + Math.ceil(months));
-  return `预计 ${eta.getFullYear()}年${eta.getMonth()+1}月`;
+  const y = eta.getFullYear(), m = eta.getMonth()+1;
+  return CURRENT_LANG === 'en' ? `Est. ${y}-${String(m).padStart(2,'0')}` : `预计 ${y}年${m}月`;
 }
 
 // ── Demo data banner (only relevant for the shared/empty-start build) ──
@@ -1945,16 +2043,16 @@ let quickEntryDraft = []; // working copy of this month's editable rows
 // NOT a restrictive list: any account name (recognized or not) can be
 // tracked, just with a default 🏦 icon.
 const ACCOUNT_ICON_HINTS = [
-  { key:'招商银行',       icon:'🏦' },
+  { key:'招行',           icon:'🏦' },
   { key:'厦门国际',       icon:'🏦' },
-  { key:'中国银行',       icon:'🏦' },
-  { key:'建设银行',       icon:'🏦' },
+  { key:'中行',           icon:'🏦' },
+  { key:'建行',           icon:'🏦' },
   { key:'支付宝',         icon:'💙' },
   { key:'微信',           icon:'💚' },
   { key:'Bunq',           icon:'🟢' },
   { key:'ABN',            icon:'🟡' },
   { key:'Revolut',        icon:'⚫' },
-  { key:'Trade Republic', icon:'🔴' },
+  { key:'TR',             icon:'🔴' },
   { key:'IBKR',           icon:'🔵' },
   { key:'Klarna',         icon:'🩷' },
 ];
@@ -2046,10 +2144,10 @@ function addQuickEntryRow() {
   const ccy = document.getElementById('qe-new-ccy').value;
   const cat2 = document.getElementById('qe-new-cat2').value.trim() || '活期现金';
   const amt = +document.getElementById('qe-new-amount').value;
-  if (!name) { toast('⚠️ 请填写资产名称'); return; }
-  if (!document.getElementById('qe-new-amount').value) { toast('⚠️ 请填写金额'); return; }
+  if (!name) { toast(tr('⚠️ 请填写资产名称')); return; }
+  if (!document.getElementById('qe-new-amount').value) { toast(tr('⚠️ 请填写金额')); return; }
 
-  if (quickEntryDraft.some(r => r.name === name)) { toast('⚠️ 已有同名项目，请直接在上方修改'); return; }
+  if (quickEntryDraft.some(r => r.name === name)) { toast(tr('⚠️ 已有同名项目，请直接在上方修改')); return; }
 
   quickEntryDraft.push({
     name, account: account || '-', currency: ccy,
@@ -2065,7 +2163,7 @@ function addQuickEntryRow() {
   document.getElementById('qe-new-account').value = '';
   document.getElementById('qe-new-cat2').value = '';
   document.getElementById('qe-new-amount').value = '';
-  toast(`✓ 「${name}」已加入本月列表，记得点保存`);
+  toast(`✓ 「${name}」${tr('已加入本月列表，记得点保存')}`);
 }
 
 function updateQuickEntryStatus() {
@@ -2098,7 +2196,7 @@ function saveQuickEntry() {
     setTrackedAccounts([...tracked, ...added.map(name => ({ name, icon: iconForAccount(name) }))]);
   }
 
-  toast(`✓ 已保存本月 ${quickEntryDraft.length} 项数据`);
+  toast(`✓ ${tr('已保存本月')} ${quickEntryDraft.length} ${tr('项数据')}`);
   renderQuickEntryRows();
   updateQuickEntryStatus();
   renderDashboard();
@@ -2235,7 +2333,7 @@ function renderLedger() {
           <div class="ledger-row-name">${e.name||'—'}</div>
           <div class="ledger-row-meta">
             ${showAccount ? `<span>${e.account}</span><span>·</span>` : ''}
-            <span class="cat-badge cat-${g}">${e.cat2||e.cat1||'—'}</span>
+            <span class="cat-badge cat-${g}">${tr(e.cat2||e.cat1||'—')}</span>
           </div>
         </div>
         <div class="ledger-row-amounts">
@@ -2298,11 +2396,11 @@ function editEntry(id) {
   const input = prompt(`修改「${e.name}」的原币金额 (${e.currency}):`, e.origAmt);
   if (input === null) return;
   const amt = parseFloat(input);
-  if (isNaN(amt)) { toast('⚠️ 请输入有效数字'); return; }
+  if (isNaN(amt)) { toast(tr('⚠️ 请输入有效数字')); return; }
   e.origAmt = amt;
   e.cnhAmt = toCny(amt, e.currency);
   setEntries(entries);
-  toast(`✓ 已更新「${e.name}」`);
+  toast(`✓ ${tr('已更新')}「${e.name}」`);
   renderLedger();
   renderDashboard();
 }
@@ -2313,7 +2411,7 @@ function deleteEntry(id) {
   if (!e) return;
   if (!confirm(`确认删除「${e.name}」(${e.account||''}) 这一条记录？`)) return;
   setEntries(entries.filter(x => x.id !== id));
-  toast(`✓ 已删除「${e.name}」`);
+  toast(`✓ ${tr('已删除')}「${e.name}」`);
   renderLedger();
   renderDashboard();
 }
@@ -2365,7 +2463,7 @@ function saveAssetCcy() {
   const ccy = document.getElementById('asset-ccy').value;
   saveSettings({ assetCcy: ccy });
   renderAssets();
-  toast(`✓ 房产/房贷/车辆记账币种已设为 ${ccy}`);
+  toast(`✓ ${tr('房产/房贷/车辆记账币种已设为')} ${ccy}`);
 }
 
 function saveHouseAsset() {
@@ -2377,14 +2475,14 @@ function saveHouseAsset() {
   const estCny = toCny(est, s.assetCcy);
   // Updates the CURRENT month's 房产市值 entry only (other months keep their own recorded values)
   upsertEntry({ name:'房产市值', account:'-', currency: s.assetCcy, origAmt: est, cnhAmt: estCny, cat1:'实物资产', cat2:'房产市值', include: true });
-  toast(`✓ 房产估值已更新为 ${ccySymbol(s.assetCcy)}${fmt(est,0)}（本月）`);
+  toast(`✓ ${tr('房产估值已更新为')} ${ccySymbol(s.assetCcy)}${fmt(est,0)}${tr('（本月）')}`);
 }
 
 function saveMortgage() {
   const amt = +document.getElementById('mortgage-eur').value;
   const s = getSettings();
   upsertEntry({ name:'房贷余额', account:'-', currency: s.assetCcy, origAmt: -amt, cnhAmt: -toCny(amt, s.assetCcy), cat1:'实物资产', cat2:'房贷余额', include: true });
-  toast('✓ 房贷余额已更新');
+  toast(tr('✓ 房贷余额已更新'));
 }
 
 function saveCar() {
@@ -2392,7 +2490,7 @@ function saveCar() {
   const s = getSettings();
   saveSettings({ carEur: amt });
   upsertEntry({ name:'车辆', account:'-', currency: s.assetCcy, origAmt: amt, cnhAmt: toCny(amt, s.assetCcy), cat1:'实物资产', cat2:'车辆价值', include: true });
-  toast('✓ 车辆价值已更新');
+  toast(tr('✓ 车辆价值已更新'));
 }
 
 function upsertEntry(data) {
@@ -2425,7 +2523,7 @@ function renderSettings() {
 
   // FUM (Fuck-You-Money / emergency fund) settings
   document.getElementById('fum-months').value = s.fumMonths || 6;
-  document.getElementById('fum-months-label').textContent = `${s.fumMonths || 6} 个月`;
+  document.getElementById('fum-months-label').textContent = fmtMonthsLabel(s.fumMonths || 6);
   populateFumScopeSelect(s.fumScope);
   updateFumTargetDisplay();
 
@@ -2460,14 +2558,14 @@ function renderFixedFxRatesList() {
   const list = document.getElementById('fixed-fx-rates-list');
   const codes = Object.keys(s.fxRates || {});
   if (!codes.length) {
-    list.innerHTML = `<div style="font-size:11px;color:var(--text-light);text-align:center;padding:8px">暂无外币，请先在上方添加币种</div>`;
+    list.innerHTML = `<div style="font-size:11px;color:var(--text-light);text-align:center;padding:8px">${tr('暂无外币，请先在上方添加币种')}</div>`;
     return;
   }
   list.innerHTML = codes.map(code => `
     <div class="fx-rate-row">
       <span class="fx-rate-code">${ccySymbol(code)} ${code}</span>
       <input class="fx-rate-input" type="number" step="0.0001" id="fixed-fx-rate-${code}" value="${(s.fixedFxRates && s.fixedFxRates[code]) ?? ''}">
-      <span class="fx-rate-suffix">固定 CNY / ${code}</span>
+      <span class="fx-rate-suffix">${tr('固定')} CNY / ${code}</span>
     </div>`).join('');
 }
 
@@ -2482,7 +2580,7 @@ function saveFixedFxRates() {
   });
   saveSettings({ fixedFxRates });
   renderDashboard();
-  toast('✓ 固定汇率已保存');
+  toast(tr('✓ 固定汇率已保存'));
 }
 
 function addFxCurrency() {
@@ -2490,9 +2588,9 @@ function addFxCurrency() {
   const rateInput = document.getElementById('new-fx-rate');
   const code = codeInput.value.trim().toUpperCase();
   const rate = parseFloat(rateInput.value);
-  if (!/^[A-Z]{3}$/.test(code)) { toast('⚠️ 请输入3位币种代码，如 GBP'); return; }
-  if (code === 'CNY') { toast('⚠️ CNY 是基准货币，无需添加'); return; }
-  if (isNaN(rate) || rate <= 0) { toast('⚠️ 请输入有效汇率'); return; }
+  if (!/^[A-Z]{3}$/.test(code)) { toast(tr('⚠️ 请输入3位币种代码，如 GBP')); return; }
+  if (code === 'CNY') { toast(tr('⚠️ CNY 是基准货币，无需添加')); return; }
+  if (isNaN(rate) || rate <= 0) { toast(tr('⚠️ 请输入有效汇率')); return; }
   const s = getSettings();
   const fxRates = { ...(s.fxRates || {}), [code]: rate };
   // Default fixed rate for the new currency: use a known reference if available,
@@ -2504,7 +2602,7 @@ function addFxCurrency() {
   saveSettings({ fxRates, fixedFxRates });
   codeInput.value = ''; rateInput.value = '';
   renderSettings();
-  toast(`✓ 已添加 ${code}，账户币种选项中现已可选`);
+  toast(`✓ ${tr('已添加')} ${code}${tr('，账户币种选项中现已可选')}`);
 }
 
 function removeFxCurrency(code) {
@@ -2522,7 +2620,7 @@ function removeFxCurrency(code) {
   if ((s.mainCurrency || 'CNY') === code) updates.mainCurrency = 'CNY';
   saveSettings(updates);
   renderSettings();
-  toast(`✓ 已删除 ${code}`);
+  toast(`✓ ${tr('已删除')} ${code}`);
 }
 
 function saveFxManual() {
@@ -2535,17 +2633,17 @@ function saveFxManual() {
   saveSettings({ fxRates });
   renderSettings();
   renderDashboard();
-  toast('✓ 汇率已保存');
+  toast(tr('✓ 汇率已保存'));
 }
 
 async function fetchFxRates() {
   const dateStr = document.getElementById('fx-date').value;
-  if (!dateStr) { toast('⚠️ 请选择日期'); return; }
+  if (!dateStr) { toast(tr('⚠️ 请选择日期')); return; }
   const s = getSettings();
   const codes = Object.keys(s.fxRates || {});
-  if (!codes.length) { toast('⚠️ 请先添加至少一个币种'); return; }
+  if (!codes.length) { toast(tr('⚠️ 请先添加至少一个币种')); return; }
   try {
-    toast('🌐 获取汇率中…');
+    toast(tr('🌐 获取汇率中…'));
     const resp = await fetch(`https://api.frankfurter.dev/v1/${dateStr}?base=CNY&symbols=${codes.join(',')}`);
     const data = await resp.json();
     const rates = data.rates || {};
@@ -2557,9 +2655,9 @@ async function fetchFxRates() {
     saveSettings({ fxRates, fxDate: dateStr });
     renderSettings();
     renderDashboard();
-    toast(updated.length ? `✓ ${dateStr} 汇率已更新 (${updated.join(', ')})` : '❌ 未获取到汇率，请手动输入');
+    toast(updated.length ? `✓ ${dateStr} ${tr('汇率已更新')} (${updated.join(', ')})` : tr('❌ 未获取到汇率，请手动输入'));
   } catch (e) {
-    toast('❌ 获取失败，请手动输入');
+    toast(tr('❌ 获取失败，请手动输入'));
   }
 }
 
@@ -2580,7 +2678,7 @@ function saveTargets() {
     houseSupport: fromMainCcy(+document.getElementById('house-support').value) || 0,
     houseSupportFrom: document.getElementById('house-support-from').value || '2025-01'
   });
-  toast('✓ 目标已更新');
+  toast(tr('✓ 目标已更新'));
   updateFumTargetDisplay();
   renderDashboard();
 }
@@ -2643,7 +2741,7 @@ function getFumScopeValue() {
 function updateFumTargetDisplay() {
   const s = getSettings();
   const months = +document.getElementById('fum-months').value || 6;
-  document.getElementById('fum-months-label').textContent = `${months} 个月`;
+  document.getElementById('fum-months-label').textContent = fmtMonthsLabel(months);
   if (s.monthlyExpense > 0) {
     const target = toMainCcy(s.monthlyExpense) * months;
     document.getElementById('fum-target-display').textContent = `${mainSymbol()}${fmt(target,0)}`;
@@ -2659,7 +2757,7 @@ function saveFumSettings() {
   });
   updateFumTargetDisplay();
   renderDashboard();
-  toast('✓ 应急资金目标已更新');
+  toast(tr('✓ 应急资金目标已更新'));
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2876,7 +2974,7 @@ function renderPlanning() {
       ).join('')}
     </div>
     <p style="font-size:10px;color:var(--text-light);margin-top:8px">
-      "达成可能性"是根据所需增速与历史增速的比值给出的粗略参考，并非严格的统计概率或投资建议，仅供你自行判断时参考。
+      ${tr('"达成可能性"是根据所需增速与历史增速的比值给出的粗略参考，并非严格的统计概率或投资建议，仅供你自行判断时参考。')}
     </p>
   `;
 }
@@ -2918,7 +3016,7 @@ function exportExcel() {
 
   const month = fxMonths[fxMonths.length-1] || currentMonth();
   XLSX.writeFile(wb, `FIRE_tracker_${month}.xlsx`);
-  toast('✓ Excel 已导出');
+  toast(tr('✓ Excel 已导出'));
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2944,7 +3042,7 @@ function exportJSON() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast('✓ 数据备份已下载');
+  toast(tr('✓ 数据备份已下载'));
 }
 
 function importJSON(event) {
@@ -2959,11 +3057,11 @@ function importJSON(event) {
       const currentApiKey = getSettings().apiKey;
       setEntries(payload.entries);
       saveSettings({ ...payload.settings, apiKey: currentApiKey, seedVersionApplied: SEED_VERSION });
-      toast(`✓ 已导入 ${payload.entries.length} 条记录`);
+      toast(`✓ ${tr('已导入')} ${payload.entries.length} ${tr('条记录')}`);
       renderDashboard();
       renderLedger();
     } catch (err) {
-      toast('❌ 导入失败：文件格式不正确');
+      toast(tr('❌ 导入失败：文件格式不正确'));
     }
     event.target.value = '';
   };
@@ -2977,7 +3075,7 @@ function clearAllData() {
     // (e.g. your personal-data file's) data too if both share an origin.
     DB.del('entries');
     DB.del('settings');
-    toast('数据已清除');
+    toast(tr('数据已清除'));
     renderDashboard();
   }
 }
@@ -3063,6 +3161,7 @@ function seedHistoryIfEmpty() {
   });
 }
 seedHistoryIfEmpty();
+normalizeAccountNamesIfNeeded();
 // applyLanguage() calls showScreen('dashboard') -> renderDashboard() itself,
 // so a separate initial renderDashboard() call here would be redundant —
 // and if it threw (e.g. Chart.js failed to load), applyLanguage() below
