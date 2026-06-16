@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#1c1c1e">
+<meta name="theme-color" content="#1f2833">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FIRE">
@@ -13,24 +13,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root {
-    /* Neutral ink scale — replaces the old navy/mid/blue trio */
-    --navy: #1c1c1e;
-    --mid: #2c2c2e;
-    --blue: #3f6b52;
-    /* Single muted accent (sage green) replaces mint/sky as the "positive/active" color */
+    /* Palette from Color Hunt: f8fafc / d9eafd / bcccdc / 9aa6b2 — soft,
+       airy blue-grey. Background/surface/border tones taken directly from
+       the palette; navy/mid/accent-blue are derived in the same ~210° hue
+       so dark surfaces and CTAs stay in the same family as the light tones. */
+    --navy: #1f2833;
+    --mid: #354150;
+    --blue: #3c84dd;
     --coral: #9a3b2e;
-    --mint: #3f6b52;
+    --mint: #3c84dd;
     --amber: #b08968;
-    --purple: #6b6b6f;
-    --sky: #6b6b6f;
-    /* Warm-neutral greys (replaces the blue-tinted grey-l/m/d) */
-    --grey-l: #f5f5f3;
-    --grey-m: #e4e4e1;
-    --grey-d: #c7c7c2;
+    --purple: #5b6b7d;
+    --sky: #5b6b7d;
+    --grey-l: #f8fafc;
+    --grey-m: #d9eafd;
+    --grey-d: #bcccdc;
     --white: #ffffff;
-    --text: #1c1c1e;
-    --text-light: #71717a;
-    --success: #3f6b52;
+    --text: #1f2833;
+    --text-light: #5b6b7d;
+    --success: #3c84dd;
     --danger: #9a3b2e;
     --card-radius: 10px;
     --font-mono: 'SF Mono', 'Fira Code', monospace;
@@ -233,12 +234,12 @@
     user-select: none;
   }
   .checkbox-chip input { accent-color: var(--mint); cursor: pointer; }
-  .checkbox-chip.checked { border-color: var(--mint); background: #eef3f0; color: var(--mint); }
+  .checkbox-chip.checked { border-color: var(--mint); background: #d9eafd; color: #1a5fb4; }
   .checkbox-chip.disabled { opacity: 0.4; cursor: not-allowed; }
   .platform-btn:hover, .platform-btn.selected {
     border-color: var(--blue);
     color: var(--blue);
-    background: #f4f7f5;
+    background: #d9eafd;
   }
   .platform-icon { font-size: 22px; display: block; margin-bottom: 4px; }
 
@@ -302,24 +303,49 @@
   }
   .ledger-filter-bar .input-field { font-size: 12px; padding: 7px 8px; }
 
-  .ledger-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .ledger-table th {
+  .ledger-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .ledger-summary-chip {
     background: var(--navy);
     color: var(--white);
-    padding: 8px 10px;
-    text-align: left;
-    font-size: 10px;
+    border-radius: 8px;
+    padding: 8px 8px;
+  }
+  .ledger-summary-chip-label { opacity: 0.6; font-size: 9px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ledger-summary-chip-value { font-weight: 700; font-family: var(--font-mono); font-size: 12px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .ledger-list { display: flex; flex-direction: column; }
+  .ledger-group-header {
+    font-size: 11px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    color: var(--navy);
+    background: var(--grey-m);
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0 4px;
   }
-  .ledger-table td {
-    padding: 8px 10px;
+  .ledger-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 4px;
     border-bottom: 1px solid var(--grey-l);
-    vertical-align: middle;
   }
-  .ledger-table tr:nth-child(even) td { background: var(--grey-l); }
-  .ledger-table tr:hover td { background: #eef1ee; }
+  .ledger-row:last-child { border-bottom: none; }
+  .ledger-row-main { flex: 1; min-width: 0; }
+  .ledger-row-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ledger-row-meta { font-size: 10px; color: var(--text-light); margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+  .ledger-row-amounts { text-align: right; flex-shrink: 0; }
+  .ledger-row-cny { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+  .ledger-row-orig { font-size: 10px; color: var(--text-light); font-family: var(--font-mono); margin-top: 1px; }
+  .ledger-row-actions { display: flex; gap: 2px; flex-shrink: 0; }
+
   .cat-badge {
     display: inline-block;
     padding: 2px 7px;
@@ -328,7 +354,7 @@
     font-weight: 700;
   }
   .cat-流动资金 { background: #eceef0; color: #3f4750; }
-  .cat-固定收益类 { background: #e9f0ec; color: #3f6b52; }
+  .cat-固定收益类 { background: #d9eafd; color: #1a5fb4; }
   .cat-理财类 { background: #f3ede0; color: #8a6a3a; }
   .cat-风险投资 { background: #f1e6e2; color: #8a4a3a; }
   .cat-实物资产 { background: #ece9f0; color: #565070; }
@@ -628,7 +654,7 @@
       </p>
     </div>
 
-    <div class="card" style="margin-bottom:0">
+    <div class="card">
       <div class="card-title">🎯 FIRE 完成时间预估</div>
       <p id="i18n-rich-3" style="font-size:11px;color:var(--text-light);margin-bottom:10px">
         输入你希望达成 FIRE 目标（<span id="planning-target2-label">—</span>）的年月，估算所需年化增速，
@@ -653,7 +679,7 @@
         每项金额已预填上月数值，直接改成本月最新余额即可（改过的会高亮）。最下面一行可以添加本月新增的项目
         （比如新开的账户、朋友借款等）。改完后点一次「✓ 保存本月数据」统一写入。
       </p>
-      <div id="quickentry-complete-banner" style="display:none;margin-bottom:10px;padding:8px 12px;background:#eef3f0;color:var(--mint);border-radius:8px;font-size:12px;font-weight:600">
+      <div id="quickentry-complete-banner" style="display:none;margin-bottom:10px;padding:8px 12px;background:#d9eafd;color:#1a5fb4;border-radius:8px;font-size:12px;font-weight:600">
         ✅ 本月数据已全部保存
       </div>
       <div id="quickentry-empty" style="display:none;text-align:center;padding:20px;color:var(--text-light);font-size:12px">
@@ -768,37 +794,31 @@
     <div class="card">
       <div class="month-selector">
         <select id="ledger-month-select" onchange="renderLedger()"></select>
-        <button class="btn btn-primary btn-sm" onclick="exportExcel()">⬇ 导出 Excel</button>
+        <button class="btn btn-primary btn-sm" onclick="exportExcel()">⬇ 导出</button>
       </div>
-      <div id="ledger-summary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="ledger-summary" class="ledger-summary-grid"></div>
 
       <div class="ledger-filter-bar">
-        <input class="input-field" type="text" id="ledger-search" placeholder="🔍 按名称/账户搜索" oninput="renderLedger()" style="flex:2;min-width:120px">
-        <select class="input-field" id="ledger-filter-cat" onchange="renderLedger()" style="flex:1;min-width:100px"></select>
-        <select class="input-field" id="ledger-filter-account" onchange="renderLedger()" style="flex:1;min-width:100px"></select>
-        <select class="input-field" id="ledger-filter-ccy" onchange="renderLedger()" style="flex:1;min-width:90px"></select>
-      </div>
-      <div class="ledger-filter-bar" style="margin-top:6px">
-        <label class="input-label" style="margin:0;align-self:center">分组方式：</label>
-        <select class="input-field" id="ledger-groupby" onchange="renderLedger()" style="flex:1;min-width:120px">
-          <option value="cat">按类别分组</option>
-          <option value="account">按账户分组</option>
-          <option value="none">不分组（列表）</option>
+        <input class="input-field" type="text" id="ledger-search" placeholder="🔍 搜索" oninput="renderLedger()" style="flex:1.4;min-width:0">
+        <select class="input-field" id="ledger-filter-cat" onchange="renderLedger()" style="flex:1;min-width:0"></select>
+        <select class="input-field" id="ledger-groupby" onchange="renderLedger()" style="flex:1;min-width:0">
+          <option value="cat">按类别</option>
+          <option value="account">按账户</option>
+          <option value="none">不分组</option>
         </select>
-        <button class="btn btn-outline btn-sm" onclick="resetLedgerFilters()">↩ 重置筛选</button>
+      </div>
+      <div id="ledger-filter-more" style="display:none">
+        <div class="ledger-filter-bar" style="margin-top:6px">
+          <select class="input-field" id="ledger-filter-account" onchange="renderLedger()" style="flex:1;min-width:0"></select>
+          <select class="input-field" id="ledger-filter-ccy" onchange="renderLedger()" style="flex:1;min-width:0"></select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:4px">
+        <button class="row-action-btn" style="font-size:11px;opacity:0.7" onclick="toggleLedgerMoreFilters()" id="ledger-more-toggle">⌄ 更多筛选</button>
+        <button class="row-action-btn" style="font-size:11px;opacity:0.7" onclick="resetLedgerFilters()">↩ 重置</button>
       </div>
 
-      <div style="overflow-x:auto">
-        <table class="ledger-table">
-          <thead>
-            <tr>
-              <th>资产名称</th><th>账户</th><th>币种</th>
-              <th>原币金额</th><th>折人民币</th><th>类别</th><th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="ledger-body"></tbody>
-        </table>
-      </div>
+      <div id="ledger-list" class="ledger-list"></div>
     </div>
   </div>
 
@@ -1246,16 +1266,19 @@ const I18N = {
   "币种（表头）": "Currency",
   "全部账户（活期现金）": "All accounts (cash)",
   "全部账户": "All accounts",
+  "更多筛选": "More filters",
+  "⌄ 更多筛选": "⌄ More filters",
   "全部类别": "All categories",
   "全部币种": "All currencies",
   "没有符合筛选条件的记录": "No records match the current filters",
   "（无账户）": "(No account)",
   "分组方式：": "Group by:",
-  "按类别分组": "By category",
-  "按账户分组": "By account",
-  "不分组（列表）": "No grouping (list)",
+  "按类别": "By category",
+  "按账户": "By account",
+  "不分组": "No grouping",
   "↩ 重置筛选": "↩ Reset filters",
-  "🔍 按名称/账户搜索": "🔍 Search by name/account",
+  "↩ 重置": "↩ Reset",
+  "🔍 搜索": "🔍 Search",
   "上月": "Last month",
   "✅ 本月数据已全部保存": "✅ All data saved for this month",
   "➕ 添加这一项": "➕ Add this item",
@@ -1613,11 +1636,11 @@ let chartTrend=null, chartAlloc=null, chartCcy=null, chartNetworth=null;
 // One ink tone for the primary series, muted sage for secondary/positive,
 // warm clay for target/reference lines, neutral greys for axes & gridlines.
 const CHART_COLORS = {
-  line1: '#27272a', line1Fill: 'rgba(39,39,42,0.06)',
-  line2: '#5b8a72',
-  target1: '#b08968', target2: '#a8493a',
-  textMuted: '#52525b', textFaint: '#a1a1aa', gridLine: '#ececef',
-  palette: ['#27272a', '#5b8a72', '#b08968', '#8c8c94', '#a8493a', '#7d8597', '#c9a875', '#6b7280'],
+  line1: '#3c84dd', line1Fill: 'rgba(60,132,221,0.10)',
+  line2: '#1f2833',
+  target1: '#b08968', target2: '#9a3b2e',
+  textMuted: '#5b6b7d', textFaint: '#9aa6b2', gridLine: '#d9eafd',
+  palette: ['#3c84dd', '#1f2833', '#5b6b7d', '#9aa6b2', '#9a3b2e', '#1a5fb4', '#b08968', '#bcccdc'],
 };
 
 function calcTotals(month) {
@@ -2124,6 +2147,25 @@ function resetLedgerFilters() {
   renderLedger();
 }
 
+function toggleLedgerMoreFilters() {
+  const el = document.getElementById('ledger-filter-more');
+  const btn = document.getElementById('ledger-more-toggle');
+  const showing = el.style.display !== 'none';
+  el.style.display = showing ? 'none' : 'block';
+  btn.textContent = showing ? '⌄ ' + tr('更多筛选') : '⌃ ' + tr('更多筛选');
+}
+
+// If the account name is just a repeat of (or contained in) the item name —
+// e.g. name="Paypal-活期", account="Paypal" — showing both is redundant on a
+// narrow phone screen, so we only show the account as separate metadata when
+// it actually adds information.
+function accountAddsInfo(name, account) {
+  if (!account || account === '-') return false;
+  const n = (name||'').toLowerCase();
+  const a = account.toLowerCase();
+  return !n.includes(a);
+}
+
 function renderLedger() {
   const entries = getEntries();
   const months = [...new Set(entries.map(e => e.month))].sort().reverse();
@@ -2139,16 +2181,14 @@ function renderLedger() {
   summary.innerHTML = [
     [tr('总净资产'), fmtMainShort(t.total)],
     [tr('金融资产'), fmtMainShort(t.fin)],
-    [tr('房产净值'), fmtMainShort(t.propNet)],
-    [tr('车辆'), fmtMainShort(t.carCny)],
     [tr('项目数'), monthEntries.length+' '+tr('项')],
-  ].map(([l,v]) => `<div style="background:var(--navy);color:#fff;border-radius:8px;padding:6px 12px;font-size:11px">
-    <div style="opacity:.6;font-size:9px;font-weight:700">${l}</div><div style="font-weight:700;font-family:monospace">${v}</div></div>`).join('');
+  ].map(([l,v]) => `<div class="ledger-summary-chip">
+    <div class="ledger-summary-chip-label">${l}</div><div class="ledger-summary-chip-value">${v}</div></div>`).join('');
 
-  const tbody = document.getElementById('ledger-body');
+  const list = document.getElementById('ledger-list');
   if (!monthEntries.length) {
     populateLedgerFilterOptions([]);
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:#999">${tr('本月暂无数据 — 请到 📸 录入 页面添加')}</td></tr>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-text">${tr('本月暂无数据 — 请到 📸 录入 页面添加')}</div></div>`;
     return;
   }
   populateLedgerFilterOptions(monthEntries);
@@ -2172,7 +2212,7 @@ function renderLedger() {
   });
 
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:#999">${tr('没有符合筛选条件的记录')}</td></tr>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-text">${tr('没有符合筛选条件的记录')}</div></div>`;
     return;
   }
 
@@ -2182,26 +2222,35 @@ function renderLedger() {
   };
   const groupOrder = ['流动资金','固定收益类','理财类','风险投资','应收','负债','实物资产','其他'];
 
+  // One compact row per item: name (+account only if it adds info) on the
+  // left, CNY amount as the primary number on the right with the original-
+  // currency amount as a small subtitle (omitted entirely when the item is
+  // already CNY, since showing the same number twice is just noise).
   function rowHtml(e, g) {
-    return `<tr>
-        <td style="padding-left:20px">${e.name||'—'}</td>
-        <td style="color:var(--text-light)">${e.account||'—'}</td>
-        <td><span class="tag">${e.currency||'CNY'}</span></td>
-        <td style="font-family:monospace;text-align:right">${fmt(e.origAmt,2)}</td>
-        <td style="font-family:monospace;text-align:right;font-weight:700">${fmt(e.cnhAmt,0)}</td>
-        <td><span class="cat-badge cat-${g}">${e.cat2||e.cat1||'—'}</span></td>
-        <td><div class="row-actions">
+    const showAccount = accountAddsInfo(e.name, e.account);
+    const ccy = e.currency || 'CNY';
+    const showOrig = ccy !== 'CNY';
+    return `<div class="ledger-row">
+        <div class="ledger-row-main">
+          <div class="ledger-row-name">${e.name||'—'}</div>
+          <div class="ledger-row-meta">
+            ${showAccount ? `<span>${e.account}</span><span>·</span>` : ''}
+            <span class="cat-badge cat-${g}">${e.cat2||e.cat1||'—'}</span>
+          </div>
+        </div>
+        <div class="ledger-row-amounts">
+          <div class="ledger-row-cny">${fmtMain(e.cnhAmt)}</div>
+          ${showOrig ? `<div class="ledger-row-orig">${ccy} ${fmt(e.origAmt,2)}</div>` : ''}
+        </div>
+        <div class="ledger-row-actions">
           <button class="row-action-btn" title="编辑金额" onclick="editEntry('${e.id}')">✏️</button>
           <button class="row-action-btn" title="删除" onclick="deleteEntry('${e.id}')">🗑</button>
-        </div></td>
-      </tr>`;
+        </div>
+      </div>`;
   }
-  function subtotalRowHtml(label, items) {
+  function groupHeaderHtml(label, items) {
     const subtotal = items.reduce((s,e) => s + (e.cnhAmt||0), 0);
-    return `<tr style="background:var(--grey-m)">
-      <td colspan="5" style="font-weight:700;font-size:11px;color:var(--navy)">${label}</td>
-      <td style="font-family:monospace;text-align:right;font-weight:800;font-size:11px">¥ ${fmt(subtotal,0)}</td>
-      <td></td></tr>`;
+    return `<div class="ledger-group-header"><span>${label}</span><span>${fmtMain(subtotal)}</span></div>`;
   }
 
   let html = '';
@@ -2219,7 +2268,7 @@ function renderLedger() {
     });
     accountNames.forEach(acc => {
       const items = grouped[acc];
-      html += subtotalRowHtml(acc, items);
+      html += groupHeaderHtml(acc, items);
       items.sort((a,b) => Math.abs(b.cnhAmt||0) - Math.abs(a.cnhAmt||0));
       items.forEach(e => { html += rowHtml(e, cat2Group(e.cat2)); });
     });
@@ -2233,12 +2282,12 @@ function renderLedger() {
     groupOrder.forEach(g => {
       const items = grouped[g];
       if (!items || !items.length) return;
-      html += subtotalRowHtml(groupLabelsAll[g], items);
+      html += groupHeaderHtml(groupLabelsAll[g], items);
       items.sort((a,b) => Math.abs(b.cnhAmt||0) - Math.abs(a.cnhAmt||0));
       items.forEach(e => { html += rowHtml(e, g); });
     });
   }
-  tbody.innerHTML = html;
+  list.innerHTML = html;
 }
 
 function editEntry(id) {
@@ -2794,7 +2843,7 @@ function renderPlanning() {
   } else {
     const ratio = requiredCagr / cagr;
     if (ratio <= 0.7) { likelihood = tr('较高'); likelihoodColor = 'var(--mint)'; }
-    else if (ratio <= 1.05) { likelihood = tr('中高'); likelihoodColor = '#7a8f6e'; }
+    else if (ratio <= 1.05) { likelihood = tr('中高'); likelihoodColor = '#1a5fb4'; }
     else if (ratio <= 1.3) { likelihood = tr('中等，需适度提速'); likelihoodColor = 'var(--amber)'; }
     else { likelihood = tr('较低，差距较大'); likelihoodColor = 'var(--coral)'; }
   }
