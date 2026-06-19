@@ -153,55 +153,74 @@
     margin-bottom: 10px;
     overflow: hidden;
   }
-  .dash-hero-top { padding: 18px 16px 12px; }
-  .dash-hero-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
-  .dash-hero-value { font-size: 36px; font-weight: 800; font-family: var(--font-mono); color: var(--white); line-height: 1; margin-bottom: 14px; }
-  .dash-hero-stats { display: flex; align-items: center; gap: 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; }
-  .dash-stat { flex: 1; text-align: center; }
-  .dash-stat-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.12); }
-  .dash-stat-label { font-size: 9px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
-  .dash-stat-value { font-size: 14px; font-weight: 700; font-family: var(--font-mono); color: var(--white); }
+  .dash-hero-top { padding: 14px 14px 10px; }
+  .dash-hero-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
+  .dash-hero-value-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .dash-hero-value { font-size: 30px; font-weight: 800; font-family: var(--font-mono); color: var(--white); line-height: 1; }
+  .dash-own-pill {
+    display: inline-flex; align-items: baseline; gap: 4px;
+    background: rgba(255,255,255,0.14); border-radius: 6px;
+    padding: 3px 8px;
+  }
+  .dash-own-pill-label { font-size: 9px; color: rgba(255,255,255,0.65); font-weight: 600; }
+  .dash-own-pill-value { font-size: 12px; color: #fff; font-weight: 700; font-family: var(--font-mono); }
+  .dash-hero-stats { display: flex; align-items: center; gap: 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+  .dash-stat { flex: 1; text-align: center; min-height: 36px; display: flex; flex-direction: column; justify-content: center; }
+  .dash-stat-divider { width: 1px; height: 26px; background: rgba(255,255,255,0.12); }
+  .dash-stat-label { font-size: 9px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .dash-stat-value { font-size: 13px; font-weight: 700; font-family: var(--font-mono); color: var(--white); }
   .dash-stat-value.is-coral { color: #ff9d8a; }
   .dash-stat-value.is-mint { color: #8ad1ff; }
-  .dash-trend-wrap { padding: 0 0 4px; height: 140px; }
-  .dash-trend-wrap canvas { display: block; width: 100% !important; height: 140px !important; }
+  .dash-trend-header { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 14px 4px; }
+  .dash-trend-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.4px; }
+  .dash-trend-change { font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
+  .dash-trend-change.is-coral { color: #ff9d8a; }
+  .dash-trend-change.is-mint { color: #8ad1ff; }
+  .dash-trend-wrap { position: relative; padding: 0 14px 2px; height: 84px; }
+  .dash-trend-range { display: flex; justify-content: space-between; padding: 2px 14px 14px; font-size: 9px; color: rgba(255,255,255,0.4); font-family: var(--font-mono); }
+  .dash-trend-wrap canvas { display: block; width: 100% !important; height: 84px !important; }
 
   /* ── Dashboard section label ── */
   .dash-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-light); margin-bottom: 10px; display: block; }
 
-  /* ── Stacked bar breakdown ── */
-  .dash-breakdown-card { padding-bottom: 14px; }
-  .dash-stacked-bar { display: flex; height: 36px; border-radius: 8px; overflow: hidden; gap: 2px; margin-bottom: 12px; }
-  .dash-bar-seg { display: flex; align-items: center; justify-content: center; transition: flex 0.5s ease; min-width: 2px; cursor: default; }
-  .dash-bar-seg-label { font-size: 9px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
-  .dash-breakdown-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; }
-  .dash-legend-item { display: flex; align-items: center; gap: 5px; }
-  .dash-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .dash-legend-name { font-size: 11px; color: var(--text-light); }
-  .dash-legend-value { font-size: 11px; font-weight: 700; color: var(--text); font-family: var(--font-mono); }
+  /* ── Asset breakdown: stacked bar + ranked list ── */
+  .dash-breakdown-card { padding-bottom: 12px; }
+  .dash-stack-bar {
+    display: flex; height: 10px; border-radius: 5px; overflow: hidden;
+    background: var(--grey-m); margin-bottom: 14px; gap: 1px;
+  }
+  .dash-stack-seg { height: 100%; transition: flex 0.4s ease; min-width: 2px; }
+  .dash-rank-list { display: flex; flex-direction: column; }
+  .dash-rank-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid var(--grey-m); min-height: 36px;
+  }
+  .dash-rank-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .dash-rank-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dash-rank-name { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dash-rank-amount { font-size: 12px; font-weight: 600; color: var(--text-light); font-family: var(--font-mono); white-space: nowrap; }
+  .dash-rank-pct { font-size: 12px; font-weight: 800; color: var(--text); font-family: var(--font-mono); min-width: 40px; text-align: right; white-space: nowrap; }
 
   /* ── FIRE ring card ── */
-  .dash-fire-card { }
-  .dash-fire-layout { display: flex; align-items: flex-start; gap: 16px; }
-  .dash-ring-wrap { flex-shrink: 0; width: 110px; }
-  .dash-ring-svg { width: 110px; height: 110px; transform: rotate(-90deg); }
+  .dash-fire-card { padding-bottom: 12px; }
+  .dash-fire-top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .dash-ring-wrap { flex-shrink: 0; width: 84px; }
+  .dash-ring-svg { width: 84px; height: 84px; transform: rotate(-90deg); }
   .dash-ring-track { fill: none; stroke: var(--grey-m); stroke-width: 10; }
   .dash-ring-fill { fill: none; stroke: var(--blue); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 314; stroke-dashoffset: 314; transition: stroke-dashoffset 0.8s ease; }
-  .dash-ring-pct { fill: var(--navy); font-size: 18px; font-weight: 800; text-anchor: middle; dominant-baseline: middle; transform: rotate(90deg) translate(0, -120px); font-family: var(--font-mono); }
-  .dash-ring-sub { fill: var(--text-light); font-size: 7px; text-anchor: middle; dominant-baseline: middle; transform: rotate(90deg) translate(0, -120px); }
-  .dash-fire-stats { flex: 1; display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
-  .dash-fire-stat { }
-  .dash-fire-stat-label { font-size: 10px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
-  .dash-fire-stat-bar-wrap { height: 6px; background: var(--grey-m); border-radius: 3px; overflow: hidden; margin-bottom: 3px; }
-  .dash-fire-stat-bar { height: 100%; background: var(--blue); border-radius: 3px; transition: width 0.6s ease; }
-  .dash-fire-stat-meta { font-size: 11px; color: var(--text); font-family: var(--font-mono); font-weight: 600; }
-  .dash-fire-fx { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--grey-m); display: flex; justify-content: space-between; align-items: center; }
-  .dash-fire-fx-label { font-size: 10px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.3px; font-weight: 600; }
-  .dash-fire-fx-value { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
-
-  /* ── Personal accumulation inline card ── */
-  .dash-own-card { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; }
-  .dash-own-value { font-size: 18px; font-weight: 800; font-family: var(--font-mono); color: var(--navy); }
+  .dash-ring-pct { fill: var(--navy); font-size: 19px; font-weight: 800; text-anchor: middle; dominant-baseline: middle; transform: rotate(90deg) translate(0, -120px); font-family: var(--font-mono); }
+  .dash-ring-sub { fill: var(--text-light); font-size: 8px; text-anchor: middle; dominant-baseline: middle; transform: rotate(90deg) translate(0, -120px); }
+  .dash-fire-headline { flex: 1; min-width: 0; }
+  .dash-fire-headline-label { font-size: 11px; font-weight: 600; color: var(--text-light); margin-bottom: 2px; }
+  .dash-fire-headline-value { font-size: 22px; font-weight: 800; font-family: var(--font-mono); color: var(--navy); line-height: 1.15; }
+  .dash-fire-headline-sub { font-size: 11px; color: var(--text-light); font-family: var(--font-mono); margin-top: 3px; }
+  .dash-fire-rows { display: flex; flex-direction: column; }
+  .dash-fire-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--grey-m); min-height: 36px; }
+  .dash-fire-row-label { font-size: 11px; font-weight: 600; color: var(--text-light); flex: 0 0 auto; width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dash-fire-row-bar-wrap { flex: 1; height: 6px; background: var(--grey-m); border-radius: 3px; overflow: hidden; }
+  .dash-fire-row-bar { height: 100%; background: var(--blue); border-radius: 3px; transition: width 0.6s ease; }
+  .dash-fire-row-meta { font-size: 11px; color: var(--text); font-family: var(--font-mono); font-weight: 600; flex: 0 0 auto; white-space: nowrap; }
+  .dash-fire-row-fx-value { font-size: 13px; font-weight: 700; font-family: var(--font-mono); margin-left: auto; }
 
   /* ── Keep old label/sub for Settings and other screens that still use them ── */
   .kpi-label { font-size: 10px; opacity: 0.65; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); }
@@ -583,17 +602,23 @@
   }
   .calendar-tile {
     border-radius: 10px;
-    padding: 10px 6px;
+    padding: 8px 6px;
     text-align: center;
-    min-height: 56px;
+    min-height: 48px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 2px;
   }
-  .calendar-tile-label { font-size: 11px; font-weight: 600; }
-  .calendar-tile-value { font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
+  .calendar-tile-label { font-size: 10px; font-weight: 600; }
+  .calendar-tile-value { font-size: 11px; font-weight: 700; font-family: var(--font-mono); }
+  .calendar-expand-btn {
+    width: 100%; margin-top: 10px; padding: 8px; min-height: 36px;
+    background: var(--grey-l); border: 1px solid var(--grey-m); border-radius: 8px;
+    font-size: 11px; font-weight: 600; color: var(--text-light); cursor: pointer;
+  }
+  .calendar-expand-btn:hover { background: var(--grey-m); }
   .calendar-tile-empty { background: var(--grey-l); color: var(--text-light); opacity: 0.5; }
   .calendar-tile-gain { background: #fbe4e2; color: #b3402f; }
   .calendar-tile-loss { background: #dcf0e6; color: #1f8a5c; }
@@ -639,7 +664,13 @@
     <div class="dash-hero-panel">
       <div class="dash-hero-top">
         <div class="dash-hero-label" id="kpi-total-sub">总净资产</div>
-        <div class="dash-hero-value" id="kpi-total">—</div>
+        <div class="dash-hero-value-row">
+          <div class="dash-hero-value" id="kpi-total">—</div>
+          <div class="dash-own-pill" id="own-tracker-card" style="display:none">
+            <span class="dash-own-pill-label">个人积累</span>
+            <span class="dash-own-pill-value" id="own-net">—</span>
+          </div>
+        </div>
         <div class="dash-hero-stats">
           <div class="dash-stat">
             <div class="dash-stat-label">月环比</div>
@@ -658,22 +689,30 @@
         </div>
       </div>
       <!-- Chart bleeds into the panel, no border -->
+      <div class="dash-trend-header">
+        <span class="dash-trend-label" id="dash-trend-label">净资产走势</span>
+        <span class="dash-trend-change" id="dash-trend-change">—</span>
+      </div>
       <div class="dash-trend-wrap">
         <canvas id="chart-trend"></canvas>
       </div>
+      <div class="dash-trend-range">
+        <span id="dash-trend-start">—</span>
+        <span id="dash-trend-end">—</span>
+      </div>
     </div>
 
-    <!-- ② Asset Breakdown — full-width stacked bar with inline labels -->
+    <!-- ② Asset Breakdown — stacked bar + ranked list, mobile-friendly -->
     <div class="card dash-breakdown-card">
       <div class="dash-section-label">资产构成</div>
-      <div class="dash-stacked-bar" id="dash-stacked-bar"></div>
-      <div class="dash-breakdown-legend" id="dash-breakdown-legend"></div>
+      <div class="dash-stack-bar" id="dash-stack-bar"></div>
+      <div class="dash-rank-list" id="dash-rank-list"></div>
     </div>
 
     <!-- ③ FIRE Progress ring + FX stat -->
     <div class="card dash-fire-card">
       <div class="dash-section-label">FIRE 进度</div>
-      <div class="dash-fire-layout">
+      <div class="dash-fire-top">
         <div class="dash-ring-wrap">
           <svg class="dash-ring-svg" viewBox="0 0 120 120" id="dash-ring-svg">
             <circle class="dash-ring-track" cx="60" cy="60" r="50"/>
@@ -682,43 +721,36 @@
             <text class="dash-ring-sub" x="60" y="72" id="dash-ring-sub">of FIRE goal</text>
           </svg>
         </div>
-        <div class="dash-fire-stats">
-          <div class="dash-fire-stat">
-            <div class="dash-fire-stat-label" id="prog-500-label">里程碑</div>
-            <div class="dash-fire-stat-bar-wrap">
-              <div class="dash-fire-stat-bar" id="prog-500-bar-mini" style="width:0%"></div>
-            </div>
-            <div class="dash-fire-stat-meta" id="prog-500-meta">—</div>
-          </div>
-          <div class="dash-fire-stat" id="prog-1000-item">
-            <div class="dash-fire-stat-label" id="prog-1000-label">FIRE 目标</div>
-            <div class="dash-fire-stat-bar-wrap">
-              <div class="dash-fire-stat-bar" id="prog-1000-bar-mini" style="width:0%;background:var(--coral)"></div>
-            </div>
-            <div class="dash-fire-stat-meta" id="prog-1000-meta">—</div>
-          </div>
-          <div class="dash-fire-stat">
-            <div class="dash-fire-stat-label" id="prog-fum-label">应急资金</div>
-            <div class="dash-fire-stat-bar-wrap">
-              <div class="dash-fire-stat-bar" id="prog-fum-bar-mini" style="width:0%;background:var(--amber)"></div>
-            </div>
-            <div class="dash-fire-stat-meta" id="prog-fum-meta">—</div>
-          </div>
-          <div class="dash-fire-fx" id="kpi-fx-card">
-            <span class="dash-fire-fx-label">汇率影响</span>
-            <span class="dash-fire-fx-value" id="kpi-fximpact">—</span>
-          </div>
+        <div class="dash-fire-headline">
+          <div class="dash-fire-headline-label" id="dash-fire-remaining-label">距目标还需</div>
+          <div class="dash-fire-headline-value" id="dash-fire-remaining-value">—</div>
+          <div class="dash-fire-headline-sub" id="dash-fire-target-sub">—</div>
+        </div>
+      </div>
+      <div class="dash-fire-rows">
+        <div class="dash-fire-row">
+          <span class="dash-fire-row-label" id="prog-500-label">里程碑</span>
+          <div class="dash-fire-row-bar-wrap"><div class="dash-fire-row-bar" id="prog-500-bar-mini" style="width:0%"></div></div>
+          <span class="dash-fire-row-meta" id="prog-500-meta">—</span>
+        </div>
+        <div class="dash-fire-row" id="prog-1000-item">
+          <span class="dash-fire-row-label" id="prog-1000-label">FIRE 目标</span>
+          <div class="dash-fire-row-bar-wrap"><div class="dash-fire-row-bar" id="prog-1000-bar-mini" style="width:0%;background:var(--coral)"></div></div>
+          <span class="dash-fire-row-meta" id="prog-1000-meta">—</span>
+        </div>
+        <div class="dash-fire-row">
+          <span class="dash-fire-row-label" id="prog-fum-label">应急资金</span>
+          <div class="dash-fire-row-bar-wrap"><div class="dash-fire-row-bar" id="prog-fum-bar-mini" style="width:0%;background:var(--amber)"></div></div>
+          <span class="dash-fire-row-meta" id="prog-fum-meta">—</span>
+        </div>
+        <div class="dash-fire-row" id="kpi-fx-card">
+          <span class="dash-fire-row-label">汇率影响</span>
+          <span class="dash-fire-row-fx-value" id="kpi-fximpact">—</span>
         </div>
       </div>
     </div>
 
-    <!-- ④ Personal accumulation (optional) -->
-    <div class="card dash-own-card" id="own-tracker-card" style="display:none">
-      <span class="dash-section-label">个人积累</span>
-      <span class="dash-own-value" id="own-net">—</span>
-    </div>
-
-    <!-- ⑤ Return Calendar -->
+    <!-- ④ Return Calendar -->
     <div class="card">
       <div class="dash-section-label">收益日历</div>
       <div class="calendar-nav">
@@ -727,6 +759,7 @@
         <button class="calendar-nav-btn" onclick="changeCalendarYear(1)">›</button>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
+      <button class="calendar-expand-btn" id="calendar-expand-btn" onclick="toggleCalendarExpand()" style="display:none">展开全年</button>
     </div>
 
     <!-- ⑥ FIRE Completion -->
@@ -1360,6 +1393,7 @@ const I18N = {
   "⏩ 快速结转 — 冻结/不变项": "⏩ Carry Forward — Fixed Items",
   "📋 本月数据录入": "📋 Monthly Quick Entry",
   "个人积累追踪": "Personal Accumulation",
+  "个人积累": "Personal Accumulation",
   "净资产构成": "Net Worth Composition",
   "净资产走势": "Net Worth Trend",
   "股票 · 基金 · 现金": "stocks · funds · cash",
@@ -1492,6 +1526,30 @@ const I18N = {
   "🏡 实物资产": "🏡 Physical Assets",
   "📦 其他": "📦 Other",
   "流动资金": "Liquid",
+  "资产构成": "Asset Breakdown",
+  "FIRE 进度": "FIRE Progress",
+  "收益日历": "Return Calendar",
+  "FIRE 完成时间预估": "FIRE Completion Estimate",
+  "录入": "Entry",
+  "明细": "Ledger",
+  "设置": "Settings",
+  "说明": "Help",
+  "房产估值": "Property Value",
+  "车辆估值": "Vehicle Value",
+  "设置目标": "Set goal",
+  "个月": " mo.",
+  "请先在设置中填写月支出": "Set monthly expenses in Settings first",
+  "主货币": "Main Currency",
+  "汇率 (TO CNY)": "Exchange Rates (to CNY)",
+  "月末汇率": "Month-end rate",
+  "月末汇率 (1 = ? CNY)": "Month-end rate (1 = ? CNY)",
+  "固定参考": "Fixed reference",
+  "保存汇率": "Save rates",
+  "💾 保存汇率": "💾 Save rates",
+  "FIRE 目标": "FIRE Goals",
+  "数据备份": "Data Backup",
+  "净资产走势（固定汇率）": "Net Worth Trend (fixed rate)",
+  "暂无数据": "No data yet",
   "固定收益": "Fixed Income",
   "理财": "Wealth Mgmt",
   "保险": "Insurance",
@@ -1520,6 +1578,10 @@ const I18N = {
   "⚠️ 请选择一个未来的日期": "⚠️ Please choose a future date",
   "🎉 已达成 FIRE 目标！": "🎉 FIRE target achieved!",
   "距目标还需": "Remaining to target",
+  "展开全年": "Show full year",
+  "收起": "Collapse",
+  "已达成": "Achieved",
+  "请先设置目标": "Set a goal first",
   "达成所需年化增速": "Required annual growth rate",
   "你的历史年化增速": "Your historical annual growth rate",
   "达成可能性（粗略参考）": "Likelihood (rough reference)",
@@ -1990,6 +2052,12 @@ function computeYtdChange() {
 
 // ── 收益日历 (Return Calendar) — year view, one tile per month ──
 let calendarViewYear = null; // null until first render, then tracks the user's navigation
+let calendarExpanded = false; // collapsed by default — show only months with data
+
+function toggleCalendarExpand() {
+  calendarExpanded = !calendarExpanded;
+  renderReturnCalendar();
+}
 
 function changeCalendarYear(delta) {
   calendarViewYear += delta;
@@ -2027,8 +2095,22 @@ function renderReturnCalendar() {
     nextBtn.style.opacity = nextBtn.disabled ? '0.35' : '1';
   }
 
-  let html = '';
+  // Months that actually have a computed change this year, plus always
+  // include the current month (even with no data yet) so the user has a
+  // clear "you are here" anchor in the collapsed view.
+  const yearMonthsWithData = [];
   for (let m = 1; m <= 12; m++) {
+    const monthStr = `${calendarViewYear}-${String(m).padStart(2,'0')}`;
+    if (Object.prototype.hasOwnProperty.call(deltas, monthStr) || monthStr === curMonth) {
+      yearMonthsWithData.push(m);
+    }
+  }
+  const monthsToShow = calendarExpanded
+    ? Array.from({length:12}, (_,i) => i+1)
+    : yearMonthsWithData;
+
+  let html = '';
+  monthsToShow.forEach(m => {
     const monthStr = `${calendarViewYear}-${String(m).padStart(2,'0')}`;
     const isCurrent = monthStr === curMonth;
     const hasData = Object.prototype.hasOwnProperty.call(deltas, monthStr);
@@ -2039,15 +2121,27 @@ function renderReturnCalendar() {
 
     if (!hasData) {
       html += `<div class="calendar-tile calendar-tile-empty"><div class="calendar-tile-label">${label}</div><div class="calendar-tile-value">—</div></div>`;
-      continue;
+      return;
     }
     const delta = deltas[monthStr];
     const isGain = delta >= 0;
     const cls = `calendar-tile ${isGain ? 'calendar-tile-gain' : 'calendar-tile-loss'} ${isCurrent ? 'calendar-tile-current' : ''}`;
     const sign = isGain ? '+' : '';
     html += `<div class="${cls}"><div class="calendar-tile-label">${label}</div><div class="calendar-tile-value">${sign}${fmtMainShort(delta)}</div></div>`;
+  });
+  grid.innerHTML = html || `<div style="font-size:12px;color:var(--text-light);grid-column:1/-1;text-align:center;padding:8px 0">${tr('暂无数据')}</div>`;
+
+  // Only show the expand/collapse control when it would actually change
+  // anything — i.e. there are hidden months to reveal.
+  const expandBtn = document.getElementById('calendar-expand-btn');
+  if (expandBtn) {
+    if (yearMonthsWithData.length < 12) {
+      expandBtn.style.display = 'block';
+      expandBtn.textContent = calendarExpanded ? `▲ ${tr('收起')}` : `▼ ${tr('展开全年')}`;
+    } else {
+      expandBtn.style.display = 'none';
+    }
   }
-  grid.innerHTML = html;
 }
 
 function computeCagr() {
@@ -2129,35 +2223,43 @@ function renderDashboard() {
   fxImpactEl.style.color = t.fxImpact >= 0 ? 'var(--mint)' : 'var(--coral)';
 
   // ── Personal accumulation (optional) ──
-  document.getElementById('own-tracker-card').style.display = hasSupport ? 'flex' : 'none';
+  document.getElementById('own-tracker-card').style.display = hasSupport ? 'inline-flex' : 'none';
   if (hasSupport) document.getElementById('own-net').textContent = fmtMain(t.ownTotal);
 
-  // ── Asset breakdown stacked bar ──
+  // ── Asset breakdown: stacked bar + ranked list ──
   const current = hasSupport ? t.ownTotal : t.total;
-  const BREAKDOWN_COLORS = ['#3c84dd','#354150','#9aa6b2','#1a5fb4','#9a3b2e','#b08968'];
-  const segments = [
-    { label: tr('金融资产'), value: t.fin, color: BREAKDOWN_COLORS[0] },
-    { label: tr('房产净值'), value: Math.max(0, t.propNet), color: BREAKDOWN_COLORS[1] },
-    { label: tr('车辆'),     value: Math.max(0, t.carCny),  color: BREAKDOWN_COLORS[2] },
-  ].filter(s => s.value > 0);
-  const totalBreak = segments.reduce((s,x) => s + x.value, 0);
-  const barEl = document.getElementById('dash-stacked-bar');
-  const legEl = document.getElementById('dash-breakdown-legend');
-  if (totalBreak > 0 && barEl) {
-    barEl.innerHTML = segments.map(seg => {
-      const pct = seg.value / totalBreak * 100;
-      const showLabel = pct > 14;
-      return `<div class="dash-bar-seg" style="flex:${pct};background:${seg.color}" title="${seg.label}: ${fmtMain(seg.value)}">
-        ${showLabel ? `<span class="dash-bar-seg-label">${fmtMainShort(seg.value)}</span>` : ''}
+  // Financial assets broken into sub-categories (liquid/fixed/wealth/risk)
+  // rather than one lump "金融资产" segment, plus property equity and
+  // vehicle value as their own rows when present.
+  const RANK_COLORS = ['#3c84dd','#1a5fb4','#5b8fd9','#7aa7e0','#354150','#9aa6b2'];
+  const rankSegments = [
+    { label: tr('流动资金'), value: t.liquid, color: RANK_COLORS[0] },
+    { label: tr('固定收益'), value: t.fixed,  color: RANK_COLORS[1] },
+    { label: tr('理财'),     value: t.wealth, color: RANK_COLORS[2] },
+    { label: tr('风险投资'), value: t.risk,   color: RANK_COLORS[3] },
+    { label: tr('房产净值'), value: Math.max(0, t.propNet), color: RANK_COLORS[4] },
+    { label: tr('车辆'),     value: Math.max(0, t.carCny),  color: RANK_COLORS[5] },
+  ].filter(s => s.value > 0).sort((a,b) => b.value - a.value);
+  const rankTotal = rankSegments.reduce((s,x) => s + x.value, 0);
+  const stackBarEl = document.getElementById('dash-stack-bar');
+  const rankListEl = document.getElementById('dash-rank-list');
+  if (stackBarEl && rankTotal > 0) {
+    stackBarEl.innerHTML = rankSegments.map(seg => {
+      const pct = seg.value / rankTotal * 100;
+      return `<div class="dash-stack-seg" style="flex:${pct};background:${seg.color}" title="${seg.label}: ${fmtMain(seg.value)}"></div>`;
+    }).join('');
+    rankListEl.innerHTML = rankSegments.map(seg => {
+      const pct = (seg.value/rankTotal*100).toFixed(1);
+      return `<div class="dash-rank-row">
+        <div class="dash-rank-dot" style="background:${seg.color}"></div>
+        <div class="dash-rank-name">${seg.label}</div>
+        <div class="dash-rank-amount">${fmtMainShort(seg.value)}</div>
+        <div class="dash-rank-pct">${pct}%</div>
       </div>`;
     }).join('');
-    legEl.innerHTML = segments.map(seg =>
-      `<div class="dash-legend-item">
-        <div class="dash-legend-dot" style="background:${seg.color}"></div>
-        <span class="dash-legend-name">${seg.label}</span>
-        <span class="dash-legend-value">${fmtMainShort(seg.value)}</span>
-      </div>`
-    ).join('');
+  } else if (stackBarEl) {
+    stackBarEl.innerHTML = '';
+    rankListEl.innerHTML = `<div style="font-size:12px;color:var(--text-light);padding:8px 0">${tr('暂无数据')}</div>`;
   }
 
   // ── FIRE ring ──
@@ -2177,13 +2279,38 @@ function renderDashboard() {
   if (ringPctEl) ringPctEl.textContent = target2 > 0 ? (ringPct*100).toFixed(0)+'%' : '—';
   if (ringSubEl) ringSubEl.textContent = target2 > 0 ? tr('of FIRE goal') : tr('设置目标');
 
+  // Headline message: remaining distance to the FIRE target — the single
+  // most important number in this card, shown beside the ring rather than
+  // buried in a meta row.
+  const remainLabelEl = document.getElementById('dash-fire-remaining-label');
+  const remainValueEl = document.getElementById('dash-fire-remaining-value');
+  const remainSubEl = document.getElementById('dash-fire-target-sub');
+  if (remainValueEl) {
+    if (target2 > 0) {
+      const remaining = Math.max(0, target2 - current);
+      if (remaining <= 0) {
+        remainLabelEl.textContent = tr('已达成');
+        remainValueEl.textContent = fmtMain(target2);
+        remainSubEl.textContent = tr('FIRE 目标');
+      } else {
+        remainLabelEl.textContent = tr('距目标还需');
+        remainValueEl.textContent = fmtMainShort(remaining);
+        remainSubEl.textContent = `${fmtMainShort(current)} / ${fmtMainShort(target2)}`;
+      }
+    } else {
+      remainLabelEl.textContent = tr('FIRE 目标');
+      remainValueEl.textContent = tr('请先设置目标');
+      remainSubEl.textContent = '';
+    }
+  }
+
   // ── FIRE progress mini-bars (right side of ring) ──
   const target1Reached = s.target1 > 0 && current >= s.target1;
   document.getElementById('prog-1000-item').style.display = target1Reached ? 'flex' : 'none';
 
   const miniBarData = [
-    { pct: s.target1 > 0 ? current/s.target1 : 0, cur: current, tgt: s.target1, label: fmtMainLabel(s.target1)+' '+tr('里程碑'), labelId:'prog-500-label', barId:'prog-500-bar-mini', metaId:'prog-500-meta', color:'var(--blue)' },
-    { pct: s.target2 > 0 ? current/s.target2 : 0, cur: current, tgt: s.target2, label: fmtMainLabel(s.target2)+' FIRE', labelId:'prog-1000-label', barId:'prog-1000-bar-mini', metaId:'prog-1000-meta', color:'var(--coral)' },
+    { pct: s.target1 > 0 ? current/s.target1 : 0, cur: current, tgt: s.target1, label: tr('里程碑'), labelId:'prog-500-label', barId:'prog-500-bar-mini', metaId:'prog-500-meta', color:'var(--blue)' },
+    { pct: s.target2 > 0 ? current/s.target2 : 0, cur: current, tgt: s.target2, label: tr('FIRE 目标'), labelId:'prog-1000-label', barId:'prog-1000-bar-mini', metaId:'prog-1000-meta', color:'var(--coral)' },
   ];
   miniBarData.forEach(b => {
     const p = Math.min(b.pct || 0, 1);
@@ -2199,9 +2326,8 @@ function renderDashboard() {
   const fumPct = t.fumTarget > 0 ? Math.min(t.fumCurrent / t.fumTarget, 1) : 0;
   const fumBarMini = document.getElementById('prog-fum-bar-mini');
   if (fumBarMini) fumBarMini.style.width = (fumPct*100)+'%';
-  const fumScopeLabel = (s.fumScope && s.fumScope.length) ? s.fumScope.join('+') : tr('全部账户');
   const fumLabelEl = document.getElementById('prog-fum-label');
-  if (fumLabelEl) fumLabelEl.textContent = `${tr('应急资金')} (${s.fumMonths}${tr('个月')})`;
+  if (fumLabelEl) fumLabelEl.textContent = tr('应急资金');
   const fumMetaEl = document.getElementById('prog-fum-meta');
   if (fumMetaEl) {
     if (t.fumTarget > 0) {
@@ -2217,9 +2343,37 @@ function renderDashboard() {
   const histLabels = history.map(h => h.month);
   const histFixed = history.map(h => toChartScale(h.totalFixed, 1));
   const tgt2Scaled = toChartScale(s.target2, 0);
+
+  // Header: total change over the whole visible history (first → last),
+  // so the number above the chart explains what the line is showing —
+  // same idea as Trade Republic's "€20,276.96 ▲€151.04" pattern.
+  const trendLabelEl = document.getElementById('dash-trend-label');
+  const trendChangeEl = document.getElementById('dash-trend-change');
+  if (trendLabelEl) trendLabelEl.textContent = tr('净资产走势（固定汇率）');
+  if (trendChangeEl) {
+    if (history.length >= 2) {
+      const first = history[0].totalFixed, last = history[history.length-1].totalFixed;
+      const diff = last - first;
+      const diffPct = first > 0 ? (diff/first*100) : null;
+      trendChangeEl.textContent = (diff >= 0 ? '▲ ' : '▼ ') + fmtMainShort(Math.abs(diff)) +
+        (diffPct != null ? ` (${diff >= 0 ? '+' : '-'}${Math.abs(diffPct).toFixed(1)}%)` : '');
+      trendChangeEl.className = 'dash-trend-change ' + (diff >= 0 ? 'is-coral' : 'is-mint');
+    } else {
+      trendChangeEl.textContent = '—';
+      trendChangeEl.className = 'dash-trend-change';
+    }
+  }
+  const trendStartEl = document.getElementById('dash-trend-start');
+  const trendEndEl = document.getElementById('dash-trend-end');
+  if (trendStartEl) trendStartEl.textContent = histLabels[0] || '—';
+  if (trendEndEl) trendEndEl.textContent = histLabels[histLabels.length-1] || '—';
+
   const datasets = [
     { data: histFixed, borderColor: CHART_COLORS.line1, backgroundColor: CHART_COLORS.line1Fill,
-      borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 4 },
+      borderWidth: 2, fill: true, tension: 0.4,
+      pointRadius: histFixed.map((_,i) => i === histFixed.length-1 ? 4 : 0),
+      pointBackgroundColor: CHART_COLORS.line1, pointBorderColor: '#fff', pointBorderWidth: 1.5,
+      pointHoverRadius: 5 },
   ];
   if (hasSupport) {
     const histOwn = history.map(h => toChartScale(h.ownTotal, 1));
