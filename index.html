@@ -172,6 +172,14 @@
   .dash-stat-value.is-coral { color: #ff9d8a; }
   .dash-stat-value.is-mint { color: #8ad1ff; }
   .dash-trend-header { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 14px 4px; }
+  .dash-trend-tabs { display: flex; gap: 4px; padding: 0 14px 8px; }
+  .dash-trend-tab {
+    flex: 1; border: none; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.55);
+    font-size: 10px; font-weight: 600; padding: 5px 4px; border-radius: 6px; cursor: pointer;
+    min-height: 26px; transition: background 0.15s, color 0.15s;
+  }
+  .dash-trend-tab:hover { background: rgba(255,255,255,0.14); }
+  .dash-trend-tab.active { background: rgba(255,255,255,0.95); color: var(--navy); }
   .dash-trend-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.4px; }
   .dash-trend-change { font-size: 12px; font-weight: 700; font-family: var(--font-mono); }
   .dash-trend-change.is-coral { color: #ff9d8a; }
@@ -183,23 +191,41 @@
   /* ── Dashboard section label ── */
   .dash-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-light); margin-bottom: 10px; display: block; }
 
-  /* ── Asset breakdown: stacked bar + ranked list ── */
-  .dash-breakdown-card { padding-bottom: 12px; }
-  .dash-stack-bar {
-    display: flex; height: 10px; border-radius: 5px; overflow: hidden;
-    background: var(--grey-m); margin-bottom: 14px; gap: 1px;
+  /* ── Asset breakdown: interactive drill-down bubbles ── */
+  .dash-breakdown-card { padding-bottom: 14px; }
+  .dash-drilldown { min-height: 140px; }
+  .dash-dd-bubbles {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 8px 0 12px; flex-wrap: wrap;
   }
-  .dash-stack-seg { height: 100%; transition: flex 0.4s ease; min-width: 2px; }
-  .dash-rank-list { display: flex; flex-direction: column; }
-  .dash-rank-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 0; border-bottom: 1px solid var(--grey-m); min-height: 36px;
+  .dash-dd-bubble {
+    border-radius: 50%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #fff; cursor: pointer; transition: all 0.35s ease;
+    text-align: center; user-select: none; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
   }
-  .dash-rank-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .dash-rank-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-  .dash-rank-name { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dash-rank-amount { font-size: 12px; font-weight: 600; color: var(--text-light); font-family: var(--font-mono); white-space: nowrap; }
-  .dash-rank-pct { font-size: 12px; font-weight: 800; color: var(--text); font-family: var(--font-mono); min-width: 40px; text-align: right; white-space: nowrap; }
+  .dash-dd-bubble:active { transform: scale(0.95); }
+  .dash-dd-bubble-pct { font-weight: 800; font-family: var(--font-mono); line-height: 1.1; }
+  .dash-dd-bubble-amt { font-weight: 700; font-family: var(--font-mono); line-height: 1.1; opacity: 0.9; }
+  .dash-dd-bubble-label { font-weight: 600; opacity: 0.8; margin-top: 2px; line-height: 1.1; }
+  /* Aside (shrunken) pill when the other group is expanded */
+  .dash-dd-aside {
+    display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+    background: var(--grey-l); border-radius: 10px; cursor: pointer;
+    margin-bottom: 10px; transition: background 0.15s; user-select: none;
+  }
+  .dash-dd-aside:hover { background: var(--grey-m); }
+  .dash-dd-aside-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dash-dd-aside-name { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; }
+  .dash-dd-aside-meta { font-size: 12px; color: var(--text-light); font-family: var(--font-mono); }
+  /* Back button row */
+  .dash-dd-back {
+    display: flex; align-items: center; justify-content: center;
+    padding: 6px 0 2px; font-size: 11px; font-weight: 600;
+    color: var(--blue); cursor: pointer; user-select: none;
+  }
+  .dash-dd-back:hover { text-decoration: underline; }
 
   /* ── FIRE ring card ── */
   .dash-fire-card { padding-bottom: 12px; }
@@ -427,6 +453,8 @@
   }
   .input-field:focus { outline: none; border-color: var(--blue); }
   .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .input-row > div { min-width: 0; }
+  .input-row > .input-field { min-width: 0; }
   .calc-result {
     background: var(--grey-l);
     border-radius: 8px;
@@ -448,14 +476,13 @@
   .fx-ccy { font-size: 10px; font-weight: 700; color: var(--text-light); margin-bottom: 3px; }
   .fx-val { font-size: 16px; font-weight: 700; font-family: var(--font-mono); color: var(--navy); }
   .fx-date { font-size: 10px; color: var(--text-light); margin-top: 2px; }
-  .fx-rate-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: var(--grey-l); border-radius: 8px; }
-  .fx-rate-row .fx-rate-code { font-weight: 700; font-size: 12px; color: var(--navy); min-width: 50px; }
-  .fx-rate-row .fx-rate-input { flex: 1; border: 1px solid var(--grey-m); border-radius: 6px; padding: 5px 8px; font-size: 12px; font-family: var(--font-mono); background: var(--white); }
+  .fx-rate-row .fx-rate-code { font-weight: 700; font-size: 12px; color: var(--navy); min-width: 0; }
+  .fx-rate-row .fx-rate-input { min-width: 0; width: 100%; border: 1px solid var(--grey-m); border-radius: 6px; padding: 5px 6px; font-size: 12px; font-family: var(--font-mono); background: var(--white); }
   .fx-rate-row .fx-rate-suffix { font-size: 10px; color: var(--text-light); white-space: nowrap; }
-  .fx-rate-row .fx-rate-del { border:none; background:transparent; color: var(--coral); cursor:pointer; font-size:14px; padding: 2px 6px; }
-  .fx-table-header { display: grid; grid-template-columns: 60px 1fr 1fr 28px; gap: 8px; padding: 0 4px 4px; }
+  .fx-rate-row .fx-rate-del { border:none; background:transparent; color: var(--coral); cursor:pointer; font-size:14px; padding: 2px 4px; min-width: 0; }
+  .fx-table-header { display: grid; grid-template-columns: 44px minmax(0,1fr) minmax(0,1fr) 22px; gap: 6px; padding: 0 4px 4px; }
   .fx-col-label { font-size: 10px; color: var(--text-light); font-weight: 600; text-align: center; }
-  .fx-rate-row { display: grid; grid-template-columns: 60px 1fr 1fr 28px; gap: 8px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--grey-m); }
+  .fx-rate-row { display: grid; grid-template-columns: 44px minmax(0,1fr) minmax(0,1fr) 22px; gap: 6px; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--grey-m); min-width: 0; }
 
   /* ── Buttons ── */
   .btn {
@@ -693,6 +720,12 @@
         <span class="dash-trend-label" id="dash-trend-label">净资产走势</span>
         <span class="dash-trend-change" id="dash-trend-change">—</span>
       </div>
+      <div class="dash-trend-tabs" id="dash-trend-tabs">
+        <button class="dash-trend-tab" data-period="6m" onclick="setTrendPeriod('6m')">6个月</button>
+        <button class="dash-trend-tab" data-period="ytd" onclick="setTrendPeriod('ytd')">今年以来</button>
+        <button class="dash-trend-tab" data-period="1y" onclick="setTrendPeriod('1y')">近1年</button>
+        <button class="dash-trend-tab" data-period="all" onclick="setTrendPeriod('all')">全部</button>
+      </div>
       <div class="dash-trend-wrap">
         <canvas id="chart-trend"></canvas>
       </div>
@@ -702,11 +735,10 @@
       </div>
     </div>
 
-    <!-- ② Asset Breakdown — stacked bar + ranked list, mobile-friendly -->
+    <!-- ② Asset Breakdown — interactive drill-down bubbles -->
     <div class="card dash-breakdown-card">
       <div class="dash-section-label">资产构成</div>
-      <div class="dash-stack-bar" id="dash-stack-bar"></div>
-      <div class="dash-rank-list" id="dash-rank-list"></div>
+      <div class="dash-drilldown" id="dash-drilldown"></div>
     </div>
 
     <!-- ③ FIRE Progress ring + FX stat -->
@@ -958,15 +990,15 @@
         <div id="fx-rates-list" style="display:flex;flex-direction:column;gap:4px;margin-bottom:12px"></div>
 
         <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px">
-          <div style="flex:1">
+          <div style="flex:1;min-width:0">
             <label class="input-label">新币种代码</label>
             <input class="input-field" type="text" id="new-fx-code" placeholder="如 GBP" maxlength="3" style="text-transform:uppercase">
           </div>
-          <div style="flex:1">
+          <div style="flex:1;min-width:0">
             <label class="input-label">月末汇率 (1 = ? CNY)</label>
             <input class="input-field" type="number" id="new-fx-rate" step="0.0001" placeholder="如 9.20">
           </div>
-          <button class="btn btn-outline btn-sm" onclick="addFxCurrency()">➕ 添加</button>
+          <button class="btn btn-outline btn-sm" onclick="addFxCurrency()" style="flex-shrink:0">➕ 添加</button>
         </div>
 
         <div class="input-group" style="margin-bottom:10px">
@@ -1314,6 +1346,8 @@ const I18N = {
   "❓ 说明": "❓ Help",
   "总净资产": "Net Worth",
   "金融资产": "Financial Assets",
+  "非金融资产": "Non-Financial",
+  "返回": "Back",
   "房产净值": "Property Equity",
   "年化增速 CAGR": "Annualized CAGR",
   "月环比": "MoM Change",
@@ -1549,6 +1583,10 @@ const I18N = {
   "FIRE 目标": "FIRE Goals",
   "数据备份": "Data Backup",
   "净资产走势（固定汇率）": "Net Worth Trend (fixed rate)",
+  "6个月": "6M",
+  "今年以来": "YTD",
+  "近1年": "1Y",
+  "全部": "All",
   "暂无数据": "No data yet",
   "固定收益": "Fixed Income",
   "理财": "Wealth Mgmt",
@@ -1920,6 +1958,120 @@ function showScreen(name) {
 // ═══════════════════════════════════════════════════════════════
 
 let chartTrend=null, chartAlloc=null, chartCcy=null, chartNetworth=null;
+let trendPeriod = '1y'; // '6m' | 'ytd' | '1y' | 'all' — which slice of history the trend chart shows
+
+// ── Asset drilldown bubble chart state ──
+let drilldownLevel = 'top'; // 'top' | 'financial' | 'nonfinancial'
+let drilldownData = null;   // cached from renderDashboard so clicks can re-render
+
+function setDrilldown(level) {
+  drilldownLevel = level;
+  if (drilldownData) renderDrilldown();
+}
+
+function renderDrilldown() {
+  const el = document.getElementById('dash-drilldown');
+  if (!el || !drilldownData) return;
+  const d = drilldownData;
+
+  // Build bubble HTML helper — sizes by sqrt(value) so area is proportional
+  function bubbleHtml(items, total, maxPx, minPx, onClick) {
+    if (!items.length) return '';
+    const sqrts = items.map(i => Math.sqrt(Math.max(i.value, 0)));
+    const maxSqrt = Math.max(...sqrts) || 1;
+    return items.map((item, idx) => {
+      const size = Math.max(minPx, Math.round(minPx + (sqrts[idx]/maxSqrt) * (maxPx - minPx)));
+      const pct = total > 0 ? (item.value/total*100).toFixed(1) : '0.0';
+      const fs = Math.max(10, Math.round(14 * size / maxPx));
+      const fsAmt = Math.max(9, Math.round(11 * size / maxPx));
+      const fsLabel = Math.max(8, Math.round(10 * size / maxPx));
+      const click = onClick ? ` onclick="${onClick}"` : '';
+      return `<div class="dash-dd-bubble" style="width:${size}px;height:${size}px;background:${item.color}"${click}>
+        <div class="dash-dd-bubble-pct" style="font-size:${fs}px">${pct}%</div>
+        <div class="dash-dd-bubble-amt" style="font-size:${fsAmt}px">${d.fmt(item.value)}</div>
+        <div class="dash-dd-bubble-label" style="font-size:${fsLabel}px">${item.label}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Aside pill HTML for the collapsed group
+  function asideHtml(item, total, onClick) {
+    const pct = total > 0 ? (item.value/total*100).toFixed(1) : '0.0';
+    return `<div class="dash-dd-aside" onclick="${onClick}">
+      <div class="dash-dd-aside-dot" style="background:${item.color}"></div>
+      <div class="dash-dd-aside-name">${item.label}</div>
+      <div class="dash-dd-aside-meta">${d.fmt(item.value)}</div>
+      <div class="dash-dd-aside-meta" style="font-weight:800;min-width:40px;text-align:right">${pct}%</div>
+    </div>`;
+  }
+
+  const total = d.finTotal + d.nonfinTotal;
+  let html = '';
+
+  if (drilldownLevel === 'top') {
+    // Level 0: two bubbles — Financial vs Non-Financial
+    const items = [
+      { label: tr('金融资产'), value: d.finTotal, color: '#3c84dd', click: "setDrilldown('financial')" },
+      { label: tr('非金融资产'), value: d.nonfinTotal, color: '#354150', click: "setDrilldown('nonfinancial')" },
+    ].filter(i => i.value > 0);
+    html = `<div class="dash-dd-bubbles">${items.map((item, idx) => {
+      const sqrts = items.map(i => Math.sqrt(Math.max(i.value, 0)));
+      const maxSqrt = Math.max(...sqrts) || 1;
+      const size = Math.max(80, Math.round(80 + (sqrts[idx]/maxSqrt) * 60));
+      const pct = total > 0 ? (item.value/total*100).toFixed(1) : '0.0';
+      return `<div class="dash-dd-bubble" style="width:${size}px;height:${size}px;background:${item.color}" onclick="${item.click}">
+        <div class="dash-dd-bubble-pct" style="font-size:${Math.max(12, Math.round(16 * size / 140))}px">${pct}%</div>
+        <div class="dash-dd-bubble-amt" style="font-size:${Math.max(10, Math.round(12 * size / 140))}px">${d.fmt(item.value)}</div>
+        <div class="dash-dd-bubble-label" style="font-size:${Math.max(9, Math.round(10 * size / 140))}px">${item.label}</div>
+      </div>`;
+    }).join('')}</div>`;
+  } else if (drilldownLevel === 'financial') {
+    // Non-financial shrinks to an aside pill at top
+    if (d.nonfinTotal > 0) {
+      html += asideHtml({ label: tr('非金融资产'), value: d.nonfinTotal, color: '#354150' }, total, "setDrilldown('nonfinancial')");
+    }
+    // Financial sub-categories expand to bubbles
+    html += `<div class="dash-dd-bubbles">${bubbleHtml(d.finSubs, d.finTotal, 120, 60)}</div>`;
+    html += `<div class="dash-dd-back" onclick="setDrilldown('top')">← ${tr('返回')}</div>`;
+  } else if (drilldownLevel === 'nonfinancial') {
+    // Financial shrinks to an aside pill at top
+    if (d.finTotal > 0) {
+      html += asideHtml({ label: tr('金融资产'), value: d.finTotal, color: '#3c84dd' }, total, "setDrilldown('financial')");
+    }
+    // Non-financial sub-categories expand to bubbles
+    html += `<div class="dash-dd-bubbles">${bubbleHtml(d.nonfinSubs, d.nonfinTotal, 140, 70)}</div>`;
+    html += `<div class="dash-dd-back" onclick="setDrilldown('top')">← ${tr('返回')}</div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+function setTrendPeriod(period) {
+  trendPeriod = period;
+  renderDashboard();
+}
+
+// Slice the full monthly history down to the selected period. Falls back to
+// the full series if the requested window has fewer than 2 points (nothing
+// useful to chart with just one), so a sparse-data user always sees SOMEthing
+// rather than an empty chart.
+function filterHistoryByPeriod(history, period) {
+  if (!history.length) return history;
+  const lastMonth = history[history.length-1].month;
+  const [ly, lm] = lastMonth.split('-').map(Number);
+  let cutoff = null;
+  if (period === '6m') {
+    const d = new Date(ly, lm-1-5, 1); // last month + 5 back = 6 months window
+    cutoff = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  } else if (period === '1y') {
+    const d = new Date(ly, lm-1-11, 1);
+    cutoff = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  } else if (period === 'ytd') {
+    cutoff = `${ly}-01`;
+  } // 'all' → no cutoff
+  const filtered = cutoff ? history.filter(h => h.month >= cutoff) : history;
+  return filtered.length >= 2 ? filtered : history;
+}
 
 // Single quiet, modern chart palette used everywhere — no rainbow gradients.
 // One ink tone for the primary series, muted sage for secondary/positive,
@@ -2226,41 +2378,23 @@ function renderDashboard() {
   document.getElementById('own-tracker-card').style.display = hasSupport ? 'inline-flex' : 'none';
   if (hasSupport) document.getElementById('own-net').textContent = fmtMain(t.ownTotal);
 
-  // ── Asset breakdown: stacked bar + ranked list ──
+  // ── Asset breakdown: drill-down bubble chart ──
   const current = hasSupport ? t.ownTotal : t.total;
-  // Financial assets broken into sub-categories (liquid/fixed/wealth/risk)
-  // rather than one lump "金融资产" segment, plus property equity and
-  // vehicle value as their own rows when present.
-  const RANK_COLORS = ['#3c84dd','#1a5fb4','#5b8fd9','#7aa7e0','#354150','#9aa6b2'];
-  const rankSegments = [
-    { label: tr('流动资金'), value: t.liquid, color: RANK_COLORS[0] },
-    { label: tr('固定收益'), value: t.fixed,  color: RANK_COLORS[1] },
-    { label: tr('理财'),     value: t.wealth, color: RANK_COLORS[2] },
-    { label: tr('风险投资'), value: t.risk,   color: RANK_COLORS[3] },
-    { label: tr('房产净值'), value: Math.max(0, t.propNet), color: RANK_COLORS[4] },
-    { label: tr('车辆'),     value: Math.max(0, t.carCny),  color: RANK_COLORS[5] },
+  const finSubs = [
+    { label: tr('流动资金'), value: t.liquid, color: '#3c84dd' },
+    { label: tr('固定收益'), value: t.fixed,  color: '#1a5fb4' },
+    { label: tr('理财'),     value: t.wealth, color: '#5b8fd9' },
+    { label: tr('风险投资'), value: t.risk,   color: '#7aa7e0' },
   ].filter(s => s.value > 0).sort((a,b) => b.value - a.value);
-  const rankTotal = rankSegments.reduce((s,x) => s + x.value, 0);
-  const stackBarEl = document.getElementById('dash-stack-bar');
-  const rankListEl = document.getElementById('dash-rank-list');
-  if (stackBarEl && rankTotal > 0) {
-    stackBarEl.innerHTML = rankSegments.map(seg => {
-      const pct = seg.value / rankTotal * 100;
-      return `<div class="dash-stack-seg" style="flex:${pct};background:${seg.color}" title="${seg.label}: ${fmtMain(seg.value)}"></div>`;
-    }).join('');
-    rankListEl.innerHTML = rankSegments.map(seg => {
-      const pct = (seg.value/rankTotal*100).toFixed(1);
-      return `<div class="dash-rank-row">
-        <div class="dash-rank-dot" style="background:${seg.color}"></div>
-        <div class="dash-rank-name">${seg.label}</div>
-        <div class="dash-rank-amount">${fmtMainShort(seg.value)}</div>
-        <div class="dash-rank-pct">${pct}%</div>
-      </div>`;
-    }).join('');
-  } else if (stackBarEl) {
-    stackBarEl.innerHTML = '';
-    rankListEl.innerHTML = `<div style="font-size:12px;color:var(--text-light);padding:8px 0">${tr('暂无数据')}</div>`;
-  }
+  const nonfinSubs = [
+    { label: tr('房产净值'), value: Math.max(0, t.propNet), color: '#354150' },
+    { label: tr('车辆'),     value: Math.max(0, t.carCny),  color: '#9aa6b2' },
+  ].filter(s => s.value > 0).sort((a,b) => b.value - a.value);
+  const finTotal = finSubs.reduce((s,x) => s + x.value, 0);
+  const nonfinTotal = nonfinSubs.reduce((s,x) => s + x.value, 0);
+  drilldownData = { finTotal, nonfinTotal, finSubs, nonfinSubs, fmt: fmtMainShort };
+  renderDrilldown();
+
 
   // ── FIRE ring ──
   const target2 = s.target2 || 0;
@@ -2340,19 +2474,30 @@ function renderDashboard() {
   // Trend chart — slim, no axes clutter, just the line
   const ctx1 = document.getElementById('chart-trend').getContext('2d');
   if (chartTrend) chartTrend.destroy();
-  const histLabels = history.map(h => h.month);
-  const histFixed = history.map(h => toChartScale(h.totalFixed, 1));
-  const tgt2Scaled = toChartScale(s.target2, 0);
 
-  // Header: total change over the whole visible history (first → last),
-  // so the number above the chart explains what the line is showing —
-  // same idea as Trade Republic's "€20,276.96 ▲€151.04" pattern.
+  // Apply the selected period filter (6M / YTD / 1Y / All) to the full
+  // monthly history before charting — this is what makes the change-amount
+  // header and the curve itself reflect the chosen window, not just all-time.
+  const fullHistory = history;
+  const periodHistory = filterHistoryByPeriod(fullHistory, trendPeriod);
+  const histLabels = periodHistory.map(h => h.month);
+  const histFixed = periodHistory.map(h => toChartScale(h.totalFixed, 1));
+
+  // Sync the tab buttons' active state with the current selection
+  document.querySelectorAll('.dash-trend-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.period === trendPeriod);
+  });
+
+  // Header: total change over the SELECTED period (first → last point in the
+  // filtered window), so the number above the chart always matches what the
+  // curve is showing — same idea as Trade Republic's "€20,276.96 ▲€151.04"
+  // pattern, but period-aware instead of fixed to all-time.
   const trendLabelEl = document.getElementById('dash-trend-label');
   const trendChangeEl = document.getElementById('dash-trend-change');
   if (trendLabelEl) trendLabelEl.textContent = tr('净资产走势（固定汇率）');
   if (trendChangeEl) {
-    if (history.length >= 2) {
-      const first = history[0].totalFixed, last = history[history.length-1].totalFixed;
+    if (periodHistory.length >= 2) {
+      const first = periodHistory[0].totalFixed, last = periodHistory[periodHistory.length-1].totalFixed;
       const diff = last - first;
       const diffPct = first > 0 ? (diff/first*100) : null;
       trendChangeEl.textContent = (diff >= 0 ? '▲ ' : '▼ ') + fmtMainShort(Math.abs(diff)) +
@@ -2368,6 +2513,11 @@ function renderDashboard() {
   if (trendStartEl) trendStartEl.textContent = histLabels[0] || '—';
   if (trendEndEl) trendEndEl.textContent = histLabels[histLabels.length-1] || '—';
 
+  // No target line on this chart anymore — plotting a flat target value on
+  // the same scale as actual net worth forced the Y-axis to stretch to cover
+  // it, which squashed the real trend into a thin band. The Y-axis now
+  // autoscales tightly around just the visible data, so the curve's actual
+  // shape (the thing this chart exists to show) is what's emphasized.
   const datasets = [
     { data: histFixed, borderColor: CHART_COLORS.line1, backgroundColor: CHART_COLORS.line1Fill,
       borderWidth: 2, fill: true, tension: 0.4,
@@ -2376,13 +2526,9 @@ function renderDashboard() {
       pointHoverRadius: 5 },
   ];
   if (hasSupport) {
-    const histOwn = history.map(h => toChartScale(h.ownTotal, 1));
+    const histOwn = periodHistory.map(h => toChartScale(h.ownTotal, 1));
     datasets.push({ data: histOwn, borderColor: 'rgba(255,255,255,0.4)', borderWidth: 1.5,
       fill: false, tension: 0.4, pointRadius: 0 });
-  }
-  if (s.target2 > 0) {
-    datasets.push({ data: histLabels.map(() => tgt2Scaled), borderColor: 'rgba(255,255,255,0.25)',
-      borderWidth: 1, borderDash: [4,4], fill: false, pointRadius: 0 });
   }
   chartTrend = new Chart(ctx1, {
     type: 'line',
@@ -2450,11 +2596,16 @@ const ASSET_CARD_CATS = ['房产市值', '房产净值', '房贷余额', '车辆
 // the same value they already had. ──
 function renderQuickEntry() {
   const month = currentMonth();
-  const prev = getPrevMonth(month);
   document.getElementById('quickentry-month').textContent = `(${month})`;
-  document.getElementById('quickentry-prev-month').textContent = prev;
 
   const entries = getEntries();
+  // Find the most recent month that actually has data (not necessarily the
+  // calendar previous month) — so carry-forward works even when the user
+  // skips several months between data-entry sessions.
+  const priorMonths = [...new Set(entries.map(e => e.month))].filter(m => m < month).sort();
+  const prev = priorMonths.length ? priorMonths[priorMonths.length - 1] : getPrevMonth(month);
+  document.getElementById('quickentry-prev-month').textContent = prev;
+
   const prevItems = entries.filter(e => e.month === prev && !ASSET_CARD_CATS.includes(e.cat2));
   const thisMonthByKey = {};
   entries.filter(e => e.month === month).forEach(e => {
@@ -2630,7 +2781,36 @@ function saveQuickEntry() {
     setTrackedAccounts([...tracked, ...added.map(name => ({ name, icon: iconForAccount(name) }))]);
   }
 
-  toast(`✓ ${tr('已保存本月')} ${quickEntryDraft.length} ${tr('项数据')}`);
+  // ── Auto-save property/mortgage/vehicle ──
+  // These carry forward from the previous month just like financial assets:
+  // the input fields are pre-filled with last month's values (via settings
+  // for WOZ/car, via previous entry for mortgage), and saving here upserts
+  // them for the CURRENT month, so the user doesn't have to click three
+  // separate buttons each month just to carry forward unchanged values.
+  const s = getSettings();
+  let assetCount = 0;
+  const wozVal = +document.getElementById('woz-value').value || 0;
+  const wozRate = +document.getElementById('woz-rate').value || 0;
+  if (wozVal) {
+    saveSettings({ wozValue: wozVal, wozRate: wozRate });
+    const est = wozVal * (1 + wozRate/100);
+    upsertEntry({ name:'房产市值', account:'-', currency: s.assetCcy, origAmt: est, cnhAmt: toCny(est, s.assetCcy), cat1:'实物资产', cat2:'房产市值', include: true });
+    assetCount++;
+  }
+  const mortgageVal = +document.getElementById('mortgage-eur').value;
+  if (mortgageVal) {
+    upsertEntry({ name:'房贷余额', account:'-', currency: s.assetCcy, origAmt: -mortgageVal, cnhAmt: -toCny(mortgageVal, s.assetCcy), cat1:'实物资产', cat2:'房贷余额', include: true });
+    assetCount++;
+  }
+  const carVal = +document.getElementById('car-eur').value;
+  if (carVal) {
+    saveSettings({ carEur: carVal });
+    upsertEntry({ name:'车辆', account:'-', currency: s.assetCcy, origAmt: carVal, cnhAmt: toCny(carVal, s.assetCcy), cat1:'实物资产', cat2:'车辆价值', include: true });
+    assetCount++;
+  }
+
+  const totalItems = quickEntryDraft.length + assetCount;
+  toast(`✓ ${tr('已保存本月')} ${totalItems} ${tr('项数据')}`);
   renderQuickEntryRows();
   updateQuickEntryStatus();
   renderDashboard();
@@ -2954,6 +3134,23 @@ function renderAssets() {
   document.getElementById('woz-rate').value  = s.wozRate;
   document.getElementById('car-eur').value   = s.carEur || '';
   document.getElementById('woz-current-month').textContent = currentMonth();
+
+  // Pre-fill mortgage from this month's saved entry if it exists, otherwise
+  // carry forward from the most recent month that has a mortgage entry — NOT
+  // just the calendar-previous month, because the user may have skipped
+  // several months between data-entry sessions (e.g. March → August gap).
+  const month = currentMonth();
+  const entries = getEntries();
+  const thisMortgage = entries.find(e => e.month === month && e.cat2 === '房贷余额');
+  // Search backwards through all months for the most recent mortgage entry
+  const latestPriorMortgage = !thisMortgage
+    ? [...entries].filter(e => e.month < month && e.cat2 === '房贷余额')
+        .sort((a,b) => b.month.localeCompare(a.month))[0]
+    : null;
+  const mortgageAmt = thisMortgage ? Math.abs(thisMortgage.origAmt)
+                    : (latestPriorMortgage ? Math.abs(latestPriorMortgage.origAmt) : '');
+  document.getElementById('mortgage-eur').value = mortgageAmt || '';
+
   calcHouse(); calcCar(); calcMortgage();
 }
 
