@@ -341,7 +341,17 @@
     padding: 5px 10px;
     border-radius: 6px;
     margin: 10px 0 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    min-height: 32px;
   }
+  .qe-group-header:active { opacity: 0.7; }
+  .qe-group-chevron { font-size: 10px; color: var(--text-light); transition: transform 0.2s; }
+  .qe-group-section.collapsed .qe-group-items { display: none; }
+  .qe-group-section.collapsed .qe-group-chevron { transform: rotate(-90deg); }
   .qe-add-section {
     border: 1px dashed var(--grey-d);
     border-radius: var(--card-radius);
@@ -398,8 +408,16 @@
     border-radius: 6px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin: 10px 0 4px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 32px;
   }
+  .ledger-group-header:active { opacity: 0.7; }
+  .ledger-group-chevron { font-size: 10px; color: var(--text-light); transition: transform 0.2s; margin-left: 8px; }
+  .ledger-group-section.collapsed .ledger-group-items { display: none; }
+  .ledger-group-section.collapsed .ledger-group-chevron { transform: rotate(-90deg); }
   .ledger-row {
     display: flex;
     align-items: center;
@@ -721,7 +739,6 @@
         <span class="dash-trend-change" id="dash-trend-change">—</span>
       </div>
       <div class="dash-trend-tabs" id="dash-trend-tabs">
-        <button class="dash-trend-tab" data-period="6m" onclick="setTrendPeriod('6m')">6个月</button>
         <button class="dash-trend-tab" data-period="ytd" onclick="setTrendPeriod('ytd')">今年以来</button>
         <button class="dash-trend-tab" data-period="1y" onclick="setTrendPeriod('1y')">近1年</button>
         <button class="dash-trend-tab" data-period="all" onclick="setTrendPeriod('all')">全部</button>
@@ -1583,7 +1600,6 @@ const I18N = {
   "FIRE 目标": "FIRE Goals",
   "数据备份": "Data Backup",
   "净资产走势（固定汇率）": "Net Worth Trend (fixed rate)",
-  "6个月": "6M",
   "今年以来": "YTD",
   "近1年": "1Y",
   "全部": "All",
@@ -1958,7 +1974,7 @@ function showScreen(name) {
 // ═══════════════════════════════════════════════════════════════
 
 let chartTrend=null, chartAlloc=null, chartCcy=null, chartNetworth=null;
-let trendPeriod = '1y'; // '6m' | 'ytd' | '1y' | 'all' — which slice of history the trend chart shows
+let trendPeriod = 'ytd'; // 'ytd' | '1y' | 'all'
 
 // ── Asset drilldown bubble chart state ──
 let drilldownLevel = 'top'; // 'top' | 'financial' | 'nonfinancial'
@@ -2060,14 +2076,13 @@ function filterHistoryByPeriod(history, period) {
   const lastMonth = history[history.length-1].month;
   const [ly, lm] = lastMonth.split('-').map(Number);
   let cutoff = null;
-  if (period === '6m') {
-    const d = new Date(ly, lm-1-5, 1); // last month + 5 back = 6 months window
-    cutoff = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  if (period === 'ytd') {
+    // Include Dec of previous year as the starting baseline so the
+    // change-amount header shows "since year-end" rather than "since Jan"
+    cutoff = `${ly-1}-12`;
   } else if (period === '1y') {
     const d = new Date(ly, lm-1-11, 1);
     cutoff = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-  } else if (period === 'ytd') {
-    cutoff = `${ly}-01`;
   } // 'all' → no cutoff
   const filtered = cutoff ? history.filter(h => h.month >= cutoff) : history;
   return filtered.length >= 2 ? filtered : history;
@@ -2669,6 +2684,11 @@ function qeSortRows(rows) {
   });
 }
 
+function toggleGroupSection(headerEl) {
+  const section = headerEl.closest('.qe-group-section, .ledger-group-section');
+  if (section) section.classList.toggle('collapsed');
+}
+
 function renderQuickEntryRows() {
   const container = document.getElementById('quickentry-rows');
   const groupBy = document.getElementById('quickentry-groupby').value || 'account';
@@ -2679,23 +2699,25 @@ function renderQuickEntryRows() {
   }
 
   if (groupBy === 'cat2') {
-    // Group headers follow the same logical category order as Ledger;
-    // rows within each group sorted by account name.
     const groups = {};
     quickEntryDraft.forEach(row => {
       const key = cat2Group(row.cat2);
       (groups[key] = groups[key] || []).push(row);
     });
     container.innerHTML = CAT2_GROUP_ORDER.filter(g => groups[g] && groups[g].length).map(g => `
-      <div class="qe-group-header">${tr(CAT2_GROUP_LABELS[g])}</div>
-      ${groups[g].sort((a,b) => (a.account||'').localeCompare(b.account||'')).map(qeRowHtml).join('')}
+      <div class="qe-group-section">
+        <div class="qe-group-header" onclick="toggleGroupSection(this)">
+          <span>${tr(CAT2_GROUP_LABELS[g])} (${groups[g].length})</span>
+          <span class="qe-group-chevron">▼</span>
+        </div>
+        <div class="qe-group-items">
+          ${groups[g].sort((a,b) => (a.account||'').localeCompare(b.account||'')).map(qeRowHtml).join('')}
+        </div>
+      </div>
     `).join('');
     return;
   }
 
-  // Grouped by account: account groups sorted alphabetically (no inherent
-  // logical order between accounts), but rows WITHIN each account follow
-  // the same category order as everywhere else.
   const groups = {};
   quickEntryDraft.forEach(row => {
     const key = row.account || tr('（无账户）');
@@ -2703,8 +2725,15 @@ function renderQuickEntryRows() {
   });
   const groupNames = Object.keys(groups).sort();
   container.innerHTML = groupNames.map(name => `
-    <div class="qe-group-header">${name}</div>
-    ${qeSortRows(groups[name]).map(qeRowHtml).join('')}
+    <div class="qe-group-section">
+      <div class="qe-group-header" onclick="toggleGroupSection(this)">
+        <span>${name} (${groups[name].length})</span>
+        <span class="qe-group-chevron">▼</span>
+      </div>
+      <div class="qe-group-items">
+        ${qeSortRows(groups[name]).map(qeRowHtml).join('')}
+      </div>
+    </div>
   `).join('');
 }
 
@@ -3051,8 +3080,9 @@ function renderLedger() {
   }
   function groupHeaderHtml(label, items) {
     const subtotal = items.reduce((s,e) => s + (e.cnhAmt||0), 0);
-    return `<div class="ledger-group-header"><span>${label}</span><span>${fmtMain(subtotal)}</span></div>`;
+    return `<div class="ledger-group-section"><div class="ledger-group-header" onclick="toggleGroupSection(this)"><span>${label} (${items.length})</span><span>${fmtMain(subtotal)} <span class="ledger-group-chevron">▼</span></span></div><div class="ledger-group-items">`;
   }
+  function groupFooterHtml() { return `</div></div>`; }
 
   let html = '';
   if (groupBy === 'none') {
@@ -3072,6 +3102,7 @@ function renderLedger() {
       html += groupHeaderHtml(acc, items);
       items.sort((a,b) => Math.abs(b.cnhAmt||0) - Math.abs(a.cnhAmt||0));
       items.forEach(e => { html += rowHtml(e, cat2Group(e.cat2), 'cat2'); });
+      html += groupFooterHtml();
     });
   } else {
     // Default: group by broad category (original behavior)
@@ -3086,6 +3117,7 @@ function renderLedger() {
       html += groupHeaderHtml(groupLabelsAll[g], items);
       items.sort((a,b) => Math.abs(b.cnhAmt||0) - Math.abs(a.cnhAmt||0));
       items.forEach(e => { html += rowHtml(e, g, 'account'); });
+      html += groupFooterHtml();
     });
   }
   list.innerHTML = html;
