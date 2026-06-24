@@ -670,6 +670,94 @@
   .calendar-tile-current { box-shadow: 0 0 0 2px var(--blue) inset; }
   .calendar-tile-current.calendar-tile-gain { background: #b3402f; color: #fff; }
   .calendar-tile-current.calendar-tile-loss { background: #1f8a5c; color: #fff; }
+
+  /* ── Investment screen ── */
+  .inv-temp-hero {
+    background: var(--navy);
+    border-radius: var(--card-radius);
+    padding: 20px 16px 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .inv-temp-score-wrap { position: relative; width: 110px; height: 110px; margin: 0 auto 12px; }
+  .inv-temp-score-svg { width: 110px; height: 110px; transform: rotate(-90deg); }
+  .inv-temp-track { fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 10; }
+  .inv-temp-fill { fill: none; stroke-width: 10; stroke-linecap: round; stroke-dasharray: 283; transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease; }
+  .inv-temp-score-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+  .inv-temp-score-num { font-size: 30px; font-weight: 800; font-family: var(--font-mono); color: #fff; line-height: 1; }
+  .inv-temp-score-sub { font-size: 10px; color: rgba(255,255,255,0.55); font-weight: 600; margin-top: 2px; }
+  .inv-temp-state { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+  .inv-action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .inv-action-cell { background: rgba(255,255,255,0.09); border-radius: 8px; padding: 8px 6px; }
+  .inv-action-cell-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
+  .inv-action-cell-val { font-size: 11px; font-weight: 700; color: #fff; line-height: 1.3; }
+  .inv-incomplete-note { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 10px; }
+
+  .inv-indicator-row { display: grid; grid-template-columns: 1fr 72px 32px 52px 22px; gap: 5px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--grey-l); min-height: 36px; }
+  .inv-indicator-row:last-child { border-bottom: none; }
+  .inv-ind-name { font-size: 12px; font-weight: 600; min-width: 0; }
+  .inv-ind-name-sub { font-size: 9px; font-weight: 400; color: var(--text-light); }
+  /* Value column — shows only the number, right-aligned, consistent height */
+  .inv-ind-value { font-size: 12px; font-family: var(--font-mono); font-weight: 600; text-align: right; color: var(--text); }
+  .inv-ind-value.is-missing { color: var(--text-light); font-style: italic; font-weight: 400; font-size: 11px; }
+  .inv-ind-score { font-size: 12px; font-family: var(--font-mono); font-weight: 700; text-align: center; }
+  .inv-ind-meaning { font-size: 10px; color: var(--text-light); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Last column: tiny badge OR pencil button */
+  .inv-ind-action { display: flex; align-items: center; justify-content: center; }
+  /* Input styled to match the span height exactly */
+  .inv-ind-input {
+    border: 1px solid var(--grey-m); border-radius: 6px; padding: 3px 6px;
+    font-size: 12px; font-family: var(--font-mono); width: 100%;
+    background: var(--white); text-align: right; box-sizing: border-box;
+    height: 26px; line-height: 1;
+  }
+  .inv-ind-input:focus { outline: none; border-color: var(--blue); }
+  .inv-ind-override-btn {
+    border: none; background: transparent; cursor: pointer; font-size: 12px;
+    color: var(--text-light); padding: 2px; line-height: 1; opacity: 0.55;
+  }
+  .inv-ind-override-btn:hover { opacity: 1; color: var(--blue); }
+
+  /* Reference data grid — read-only card style in API mode */
+  .inv-ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .inv-ref-cell {
+    background: var(--grey-l); border-radius: 7px; padding: 7px 9px;
+    display: flex; flex-direction: column; gap: 2px; position: relative;
+  }
+  .inv-ref-cell-label { font-size: 10px; color: var(--text-light); font-weight: 600; }
+  .inv-ref-cell-value { font-size: 13px; font-weight: 700; font-family: var(--font-mono); color: var(--navy); }
+  .inv-ref-cell-value.is-missing { color: var(--text-light); font-weight: 400; font-style: italic; font-size: 11px; }
+  .inv-ref-cell-edit {
+    position: absolute; top: 5px; right: 6px;
+    border: none; background: transparent; cursor: pointer;
+    font-size: 11px; color: var(--text-light); padding: 2px; line-height: 1; opacity: 0.5;
+  }
+  .inv-ref-cell-edit:hover { opacity: 1; color: var(--blue); }
+
+  .inv-stock-row { display: flex; align-items: flex-start; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--grey-l); }
+  .inv-stock-row:last-child { border-bottom: none; }
+  .inv-stock-main { flex: 1; min-width: 0; }
+  .inv-stock-ticker { font-size: 12px; font-weight: 700; font-family: var(--font-mono); color: var(--navy); }
+  .inv-stock-name { font-size: 11px; color: var(--text-light); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inv-stock-prices { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .inv-stock-price-chip { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--grey-l); color: var(--text-light); font-family: var(--font-mono); }
+  .inv-stock-action { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
+  .inv-stock-current { font-size: 13px; font-weight: 700; font-family: var(--font-mono); flex-shrink: 0; }
+  .inv-stock-actions-row { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+
+  .inv-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--grey-l); }
+  .inv-summary-row:last-child { border-bottom: none; }
+  .inv-summary-label { font-size: 12px; color: var(--text-light); font-weight: 600; }
+  .inv-summary-value { font-size: 13px; font-weight: 700; font-family: var(--font-mono); color: var(--text); }
+
+  .inv-disclaimer { font-size: 10px; color: var(--text-light); line-height: 1.6; padding: 10px 12px; background: var(--grey-l); border-radius: 8px; margin-top: 4px; }
+
+  .inv-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+  .inv-modal { background: var(--white); border-radius: 16px 16px 0 0; padding: 20px 16px 32px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
+  .inv-modal-title { font-size: 16px; font-weight: 800; color: var(--navy); margin-bottom: 16px; }
+  .inv-modal-close { float: right; font-size: 20px; color: var(--text-light); cursor: pointer; border: none; background: transparent; line-height: 1; }
 </style>
 </head>
 <body>
@@ -687,6 +775,7 @@
 
   <nav class="nav">
     <button class="nav-btn active" data-screen="dashboard" onclick="showScreen('dashboard')">📊 看板</button>
+    <button class="nav-btn" data-screen="investment" onclick="showScreen('investment')">📈 投资</button>
     <button class="nav-btn" data-screen="upload" onclick="showScreen('upload')">📸 录入</button>
     <button class="nav-btn" data-screen="ledger" onclick="showScreen('ledger')">📋 明细</button>
     <button class="nav-btn" data-screen="settings" onclick="showScreen('settings')">⚙️ 设置</button>
@@ -822,6 +911,147 @@
         </div>
       </div>
       <div id="fire-timeline-result"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ INVESTMENT ══════════ -->
+  <div id="screen-investment" class="screen">
+    <h2 class="screen-heading" id="inv-screen-heading">投资温度</h2>
+
+    <!-- ① Investment Summary Card -->
+    <div class="card">
+      <div class="card-title" id="inv-summary-card-title">投资概览</div>
+      <div id="inv-summary-content">
+        <div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">暂无数据 — 请先在录入页面添加本月数据</div>
+      </div>
+    </div>
+
+    <!-- ② Market Temperature Hero -->
+    <div class="inv-temp-hero" id="inv-temp-hero">
+      <div class="card-title" id="inv-temp-card-title" style="color:rgba(255,255,255,0.5);margin-bottom:10px">市场温度</div>
+      <div class="inv-temp-score-wrap">
+        <svg class="inv-temp-score-svg" viewBox="0 0 110 110" id="inv-temp-svg">
+          <circle class="inv-temp-track" cx="55" cy="55" r="45"/>
+          <circle class="inv-temp-fill" cx="55" cy="55" r="45" id="inv-temp-fill" stroke="#3c84dd" style="stroke-dashoffset:283"/>
+        </svg>
+        <div class="inv-temp-score-label">
+          <div class="inv-temp-score-num" id="inv-temp-num">—</div>
+          <div class="inv-temp-score-sub">/ 100</div>
+        </div>
+      </div>
+      <div class="inv-temp-state" id="inv-temp-state">—</div>
+      <div class="inv-action-grid">
+        <div class="inv-action-cell">
+          <div class="inv-action-cell-label" id="inv-act-base-label">基础定投</div>
+          <div class="inv-action-cell-val" id="inv-act-base">—</div>
+        </div>
+        <div class="inv-action-cell">
+          <div class="inv-action-cell-label" id="inv-act-extra-label">额外加仓</div>
+          <div class="inv-action-cell-val" id="inv-act-extra">—</div>
+        </div>
+        <div class="inv-action-cell">
+          <div class="inv-action-cell-label" id="inv-act-stock-label">个股操作</div>
+          <div class="inv-action-cell-val" id="inv-act-stock">—</div>
+        </div>
+      </div>
+      <div class="inv-incomplete-note" id="inv-incomplete-note" style="display:none"></div>
+    </div>
+
+    <!-- Refresh button row -->
+    <div style="margin-bottom:6px;display:flex;gap:8px">
+      <button class="btn btn-primary btn-sm" onclick="refreshMarketData()" style="flex:1;justify-content:center" id="inv-refresh-btn">🔄 刷新市场数据</button>
+      <button class="btn btn-outline btn-sm" onclick="showScreen('settings');setTimeout(()=>document.getElementById('settings-api-section')?.scrollIntoView({behavior:'smooth'}),150)" style="justify-content:center" title="API 设置">⚙️</button>
+    </div>
+    <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px">
+      <span style="font-size:10px;color:var(--text-light)" id="inv-last-updated">—</span>
+      <span style="font-size:10px;color:var(--text-light)" id="inv-data-source-label"></span>
+    </div>
+    <div id="inv-fetch-status" style="display:none;margin-bottom:10px;font-size:11px;color:var(--text-light);background:var(--grey-l);border-radius:7px;padding:7px 10px;line-height:1.5"></div>
+
+    <!-- ③ Indicator Details Card -->
+    <div class="card">
+      <div class="card-title" id="inv-indicators-card-title">指标明细</div>
+      <div id="inv-indicators-header" style="display:grid;grid-template-columns:1fr 72px 32px 52px 22px;gap:5px;padding:0 0 6px;border-bottom:1px solid var(--grey-m)">
+        <div style="font-size:10px;color:var(--text-light);font-weight:600">指标</div>
+        <div style="font-size:10px;color:var(--text-light);font-weight:600;text-align:right">数值</div>
+        <div style="font-size:10px;color:var(--text-light);font-weight:600;text-align:center">温度</div>
+        <div style="font-size:10px;color:var(--text-light);font-weight:600;text-align:right">含义</div>
+        <div></div>
+      </div>
+      <div id="inv-indicators-list"></div>
+    </div>
+
+    <!-- ④ Stock Watchlist Card -->
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span id="inv-watchlist-card-title">自选股买入区</span>
+        <button class="btn btn-outline btn-sm" id="inv-watchlist-add-btn" onclick="openAddStockModal()">＋ 添加</button>
+      </div>
+      <div id="inv-watchlist-content">
+        <div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">暂无自选股 — 点击右上角添加</div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="inv-disclaimer" id="inv-disclaimer">
+      本页面仅作为个人投资纪律和市场温度参考，不构成投资建议。请结合现金流、风险承受能力和长期计划决策。
+    </div>
+  </div>
+
+  <!-- Stock Modal -->
+  <div class="inv-modal-overlay" id="inv-stock-modal" style="display:none" onclick="if(event.target===this)closeStockModal()">
+    <div class="inv-modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="inv-modal-title" id="inv-modal-title">添加自选股</div>
+        <button class="inv-modal-close" onclick="closeStockModal()">×</button>
+      </div>
+      <div class="input-group">
+        <label class="input-label">代码 Ticker</label>
+        <input class="input-field" id="stock-ticker" type="text" placeholder="如：VWRL">
+      </div>
+      <div class="input-group">
+        <label class="input-label">名称</label>
+        <input class="input-field" id="stock-name" type="text" placeholder="如：Vanguard FTSE All-World">
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label">币种</label>
+          <select class="input-field" id="stock-ccy"><option>EUR</option><option>USD</option><option>CNY</option></select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">当前价格</label>
+          <input class="input-field" id="stock-current" type="number" step="0.01" placeholder="0.00">
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label">合理估值价</label>
+          <input class="input-field" id="stock-fair" type="number" step="0.01" placeholder="0.00">
+        </div>
+        <div class="input-group">
+          <label class="input-label">买入价</label>
+          <input class="input-field" id="stock-buy" type="number" step="0.01" placeholder="0.00">
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label">强力买入价</label>
+          <input class="input-field" id="stock-strongbuy" type="number" step="0.01" placeholder="0.00">
+        </div>
+        <div class="input-group">
+          <label class="input-label">最大仓位 %</label>
+          <input class="input-field" id="stock-maxweight" type="number" step="1" placeholder="如：5">
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">备注</label>
+        <input class="input-field" id="stock-note" type="text" placeholder="可选">
+      </div>
+      <input type="hidden" id="stock-edit-id">
+      <div class="btn-row" style="margin-top:4px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveStock()">保存</button>
+        <button class="btn btn-outline" onclick="closeStockModal()">取消</button>
+      </div>
     </div>
   </div>
 
@@ -1101,6 +1331,60 @@
         </div>
         <input type="file" id="import-json-input" accept="application/json" style="display:none" onchange="importJSON(event)">
       </div>
+
+      <div class="settings-section" id="settings-api-section">
+        <div class="settings-title">API / 数据源</div>
+
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">汇率来源 / Exchange Rate Source</label>
+          <div style="font-size:12px;color:var(--text-light);padding:8px 10px;background:var(--grey-l);border-radius:8px;display:flex;align-items:center;gap:6px">
+            <span>🤖</span><span>Claude AI — 自动查询历史汇率</span>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom:4px">
+          <label class="input-label">Claude API Key <span style="font-weight:400;color:var(--text-light)">(留空保留原值 / leave blank to keep existing)</span></label>
+          <input class="input-field" id="settings-claude-api-key" type="password" placeholder="sk-ant-••••••••" style="max-width:320px" autocomplete="off">
+        </div>
+        <div style="font-size:10px;color:var(--text-light);margin-bottom:12px;line-height:1.55">
+          ⚠️ API Key 仅存于本浏览器 localStorage，不含于备份文件中。请勿在共享设备上截图或分享。
+        </div>
+
+        <div class="input-group" style="margin-bottom:8px">
+          <label class="input-label">市场数据来源 / Market Data Source</label>
+          <select class="input-field" id="settings-market-provider" style="max-width:320px" onchange="onMarketProviderChange()">
+            <option value="manual">手动输入 / Manual</option>
+            <option value="fmp">Financial Modeling Prep (FMP)</option>
+            <option value="alphavantage">Alpha Vantage</option>
+          </select>
+        </div>
+
+        <div class="input-group" id="settings-api-key-group" style="margin-bottom:4px">
+          <label class="input-label">市场数据 API Key <span style="font-weight:400;color:var(--text-light)">(留空保留原值)</span></label>
+          <input class="input-field" id="settings-market-api-key" type="password" placeholder="••••••••••••••••" style="max-width:320px" autocomplete="off">
+        </div>
+        <div style="font-size:10px;color:var(--text-light);margin-bottom:10px;line-height:1.55">
+          ⚠️ API Key 仅存于本浏览器 localStorage。请勿在共享设备上使用，导出的 JSON 备份不含 API Key。
+        </div>
+
+        <div class="settings-title" style="margin-top:14px">投资目标 / Investment Goals</div>
+        <div class="input-row" style="margin-bottom:8px">
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">月基础定投额 (<span class="main-ccy-label">CNY</span>)</label>
+            <input class="input-field" id="settings-inv-monthly-base" type="number" step="100" placeholder="0">
+          </div>
+          <div class="input-group" style="margin-bottom:0">
+            <label class="input-label">目标 ETF 比例 %</label>
+            <input class="input-field" id="settings-inv-target-etf" type="number" step="1" min="0" max="100" placeholder="70">
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom:10px">
+          <label class="input-label">目标个股比例 %</label>
+          <input class="input-field" id="settings-inv-target-stock" type="number" step="1" min="0" max="100" placeholder="20" style="max-width:160px">
+        </div>
+
+        <button class="btn btn-primary btn-sm" onclick="saveApiSettings()">💾 保存 API 设置</button>
+      </div>
     </div>
   </div>
 
@@ -1268,6 +1552,17 @@ const getSettings = () => {
   if (s.fireGoalDate === undefined) { s.fireGoalDate = null; changed = true; }
   if (s.mainCurrency === undefined) { s.mainCurrency = 'CNY'; changed = true; }
   if (!s.trackedAccounts) { s.trackedAccounts = []; changed = true; }
+  // ── Market data settings migration from investment_api_settings ──
+  if (!s.marketDataProvider) {
+    // Try to pull from the old separate store if it exists
+    const oldInv = DB.get('investment_api_settings', null);
+    s.marketDataProvider = (oldInv && oldInv.apiProvider) ? oldInv.apiProvider : 'manual';
+    s.marketDataApiKey = (oldInv && oldInv.apiKey) ? oldInv.apiKey : '';
+    s.invMonthlyBase = (oldInv && oldInv.monthlyBase) ? oldInv.monthlyBase : 0;
+    s.invTargetEtfPct = (oldInv && oldInv.targetEtfPct) ? oldInv.targetEtfPct : 70;
+    s.invTargetStockPct = (oldInv && oldInv.targetStockPct) ? oldInv.targetStockPct : 20;
+    changed = true;
+  }
   if (changed) DB.set('settings', s);
   return s;
 };
@@ -1354,7 +1649,111 @@ const ACCOUNT_CATS = {
 
 // Maps a specific 二级分类 to its broad display group for badge styling
 const I18N = {
-  "📊 看板": "📊 Dashboard",
+  "📈 投资": "📈 Invest",
+  "投资温度": "Investment",
+  "投资概览": "Investment Summary",
+  "市场温度": "Market Temperature",
+  "指标明细": "Indicator Details",
+  "自选股买入区": "Stock Buy Zones",
+  "刷新市场数据": "Refresh Market Data",
+  "🔄 刷新市场数据": "🔄 Refresh Market Data",
+  "基础定投": "Base DCA",
+  "额外加仓": "Extra Buy",
+  "个股操作": "Stock Action",
+  "继续": "Continue",
+  "持有": "Hold",
+  "暂不加仓": "No Extra Buy",
+  "小额加仓": "Small Extra Buy",
+  "强烈关注加仓": "Strong Extra Buy",
+  "过热": "Hot",
+  "极度贪婪/过热": "Extreme Greed / Hot",
+  "贪婪/偏热": "Greed / Warm",
+  "中性": "Neutral",
+  "恐惧/偏冷": "Fear / Attractive",
+  "恐慌/极冷": "Panic / Very Cold",
+  "极度贪婪": "Extreme Greed",
+  "贪婪": "Greed",
+  "恐惧": "Fear",
+  "极度恐惧": "Extreme Fear",
+  "恐慌": "Panic",
+  "ETF总计": "ETF Total",
+  "个股总计": "Stock Total",
+  "风险投资合计": "Total Risk Assets",
+  "ETF占比": "ETF Weight",
+  "个股占比": "Stock Weight",
+  "月环比变化": "MoM Change",
+  "年初至今变化": "YTD Change",
+  "指数基金": "Index Fund",
+  "暂无自选股 — 点击右上角添加": "No watchlist stocks yet — tap + to add",
+  "暂无数据 — 请先在录入页面添加本月数据": "No data yet — add this month's entries first",
+  "添加自选股": "Add Stock",
+  "编辑自选股": "Edit Stock",
+  "代码 Ticker": "Ticker",
+  "名称": "Name",
+  "当前价格": "Current Price",
+  "合理估值价": "Fair Value",
+  "买入价": "Buy Price",
+  "强力买入价": "Strong Buy Price",
+  "最大仓位 %": "Max Weight %",
+  "备注": "Notes",
+  "投资设置": "Investment Settings",
+  "目标配置": "Target Allocation",
+  "月基础定投额 (主货币)": "Monthly Base Investment (main ccy)",
+  "目标ETF比例 %": "Target ETF Weight %",
+  "目标个股比例 %": "Target Stock Weight %",
+  "市场数据 API": "Market Data API",
+  "数据来源": "Data Source",
+  "手动输入 / Manual input": "Manual Input",
+  "仅手动": "Manual only",
+  "估值偏高 / 观望": "Overvalued / Watch only",
+  "观望": "Watch",
+  "小额买入": "Buy small",
+  "强力买入区": "Strong buy zone",
+  "低波动": "Low vol",
+  "中波动": "Mid vol",
+  "高波动": "High vol",
+  "手动/可选": "manual/opt",
+  "手动覆盖": "Override",
+  "未获取": "—",
+  "缺失": "Missing",
+  "市场参考数据": "Market Reference Data",
+  "标普 52周高": "S&P 52W Hi",
+  "纳指 52周高": "QQQ 52W Hi",
+  "纳指 回撤": "Nasdaq Drawdown",
+  "vs 52周高": "vs 52W hi",
+  "点击 ✏️ 手动覆盖": "click ✏️ to override",
+  "尚未更新": "Not yet updated",
+  "部分数据已更新，部分字段缺失": "Partial update — some fields missing",
+  "手动模式 — 请直接在指标表格中编辑数值": "Manual mode — edit values in the table",
+  "超出最大仓位，注意风险": "Exceeds max weight — watch risk",
+  "本页面仅作为个人投资纪律和市场温度参考，不构成投资建议。请结合现金流、风险承受能力和长期计划决策。": "This page is for personal investment discipline and market temperature reference only. It is not financial advice. Decisions should consider cash flow, risk tolerance, and long-term plan.",
+  "指标数据不完整，温度得分基于现有指标计算": "Temperature score based on available indicators only — some data missing",
+  "恐惧与贪婪": "Fear & Greed",
+  "VIX 波动率": "VIX Volatility",
+  "标普500 回撤": "S&P 500 Drawdown",
+  "纳指/QQQ 回撤": "Nasdaq/QQQ Drawdown",
+  "标普500 趋势": "S&P 500 Trend (vs 200DMA)",
+  "自选股估值": "Watchlist Valuation",
+  "已从 API 更新": "Updated from API",
+  "API 获取失败，已使用本地缓存": "API fetch failed — using local cache",
+  "API 获取失败，请手动输入": "API fetch failed — please enter manually",
+  "数据已刷新": "Data refreshed",
+  "API Key 已保存": "API key saved",
+  "✓ 设置已保存": "✓ Settings saved",
+  "已删除": "Deleted",
+  "添加": "Add",
+  "操作": "Actions",
+  "继续定投": "Continue DCA",
+  "仅基础定投": "Base DCA only",
+  "最低定投": "Minimum DCA",
+  "酌情小额加仓": "Consider small extra",
+  "强烈建议加仓（应急资金充足时）": "Strongly consider extra (if emergency fund is safe)",
+  "择优买入（低于买入价时小额买入）": "Selective buy (small, below buy price)",
+  "仅强力买入区个股": "Only stocks in strong buy zone",
+  "避免新买入": "Avoid new buys",
+  "若超配可酌情减仓": "Consider trim if overweight",
+  "持有观望": "Hold",
+  "择优小额买入": "Selective small buy",
   "📸 录入": "📸 Upload",
   "📋 明细": "📋 Ledger",
   "🏡 资产": "🏡 Assets",
@@ -1963,6 +2362,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
   document.getElementById('screen-' + name).classList.add('active');
   if (name === 'dashboard') renderDashboard();
+  if (name === 'investment') renderInvestmentScreen();
   if (name === 'upload') { renderQuickEntry(); renderAssets(); }
   if (name === 'ledger') renderLedger();
   if (name === 'settings') renderSettings();
@@ -3294,6 +3694,9 @@ function renderSettings() {
     const d = new Date(); d.setDate(0);
     document.getElementById('fx-date').value = d.toISOString().split('T')[0];
   }
+
+  // API / Data Sources section
+  renderApiSettings();
 }
 
 // ── Dynamic currency rate list (settings) ──
@@ -3390,23 +3793,84 @@ async function fetchFxRates() {
   const dateStr = document.getElementById('fx-date').value;
   if (!dateStr) { toast(tr('⚠️ 请选择日期')); return; }
   const s = getSettings();
-  const codes = Object.keys(s.fxRates || {});
+  if (!s.claudeApiKey) {
+    toast(CURRENT_LANG === 'en' ? '⚠️ Please save your Claude API Key in Settings → API / Data Sources first' : '⚠️ 请先在 设置 → API/数据源 中填写 Claude API Key');
+    return;
+  }
+  const codes = Object.keys(s.fxRates || {}).filter(c => c !== 'CNY');
   if (!codes.length) { toast(tr('⚠️ 请先添加至少一个币种')); return; }
   try {
     toast(tr('🌐 获取汇率中…'));
-    const resp = await fetch(`https://api.frankfurter.dev/v1/${dateStr}?base=CNY&symbols=${codes.join(',')}`);
-    const data = await resp.json();
-    const rates = data.rates || {};
-    const fxRates = { ...s.fxRates };
-    let updated = [];
-    codes.forEach(code => {
-      if (rates[code]) { fxRates[code] = +(1 / rates[code]).toFixed(6); updated.push(code); }
+    // Use Claude API to look up exchange rates for the selected date
+    const prompt = `Please provide the exchange rates for ${dateStr} (or the most recent available trading day before that date if it was a weekend/holiday).
+
+I need the rate from CNY (Chinese Yuan) to each of these currencies: ${codes.join(', ')}.
+
+Return ONLY a JSON object with no other text, markdown, or explanation. Format:
+{"EUR": 0.1234, "USD": 0.1388}
+
+Where each value is how many units of that currency equal 1 CNY. Use actual historical rates for ${dateStr}. If you don't have data for that exact date, use the closest prior business day.`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': s.claudeApiKey || '',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 256,
+        messages: [{ role: 'user', content: prompt }],
+      }),
     });
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '');
+      console.warn('Claude FX API error:', resp.status, text);
+      toast(tr('❌ 获取失败，请手动输入'));
+      return;
+    }
+
+    const data = await resp.json();
+    const raw = (data.content || []).map(b => b.text || '').join('').trim();
+    // Strip any accidental markdown fences
+    const jsonStr = raw.replace(/^```[a-z]*\n?/i, '').replace(/\n?```$/,'').trim();
+    let rates;
+    try { rates = JSON.parse(jsonStr); } catch (e) {
+      console.warn('Claude FX: could not parse response:', raw);
+      toast(tr('❌ 获取失败，请手动输入'));
+      return;
+    }
+
+    const fxRates = { ...s.fxRates };
+    const updated = [];
+    const missing = [];
+    codes.forEach(code => {
+      const val = rates[code] ?? rates[code.toUpperCase()] ?? rates[code.toLowerCase()];
+      if (val && +val > 0) {
+        fxRates[code] = +(1 / +val).toFixed(6); // Claude gives CNY→foreign, we store foreign→CNY
+        updated.push(code);
+      } else {
+        missing.push(code);
+      }
+    });
+
+    if (missing.length) console.warn('Claude FX: no rate for:', missing, '| full response:', rates);
+
     saveSettings({ fxRates, fxDate: dateStr });
     renderSettings();
     renderDashboard();
-    toast(updated.length ? `✓ ${dateStr} ${tr('汇率已更新')} (${updated.join(', ')})` : tr('❌ 未获取到汇率，请手动输入'));
+
+    if (updated.length) {
+      const missingNote = missing.length ? `，${missing.join(',')} 未获取` : '';
+      toast(`✓ ${dateStr} ${tr('汇率已更新')} (${updated.join(', ')})${missingNote}`);
+    } else {
+      toast(tr('❌ 未获取到汇率，请手动输入'));
+    }
   } catch (e) {
+    console.warn('FX fetch failed:', e);
     toast(tr('❌ 获取失败，请手动输入'));
   }
 }
@@ -3764,8 +4228,10 @@ function exportJSON() {
     entries: getEntries(),
     settings: getSettings(),
   };
-  // Don't export the API key in plaintext backups
+  // Don't export API keys in plaintext backups
   delete payload.settings.apiKey;
+  delete payload.settings.marketDataApiKey;
+  delete payload.settings.claudeApiKey;
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -3788,8 +4254,10 @@ function importJSON(event) {
       if (!payload.entries || !payload.settings) throw new Error('格式不正确');
       if (!confirm(`将导入 ${payload.entries.length} 条记录，覆盖当前本机数据？（API Key 不会被覆盖）`)) return;
       const currentApiKey = getSettings().apiKey;
+      const currentMarketKey = getSettings().marketDataApiKey;
+      const currentClaudeKey = getSettings().claudeApiKey;
       setEntries(payload.entries);
-      saveSettings({ ...payload.settings, apiKey: currentApiKey, seedVersionApplied: SEED_VERSION });
+      saveSettings({ ...payload.settings, apiKey: currentApiKey, marketDataApiKey: currentMarketKey, claudeApiKey: currentClaudeKey, seedVersionApplied: SEED_VERSION });
       toast(`✓ ${tr('已导入')} ${payload.entries.length} ${tr('条记录')}`);
       renderDashboard();
       renderLedger();
@@ -3874,6 +4342,1146 @@ mergeEntriesByNewIdentityIfNeeded();
 // so a separate initial renderDashboard() call here would be redundant —
 // and if it threw (e.g. Chart.js failed to load), applyLanguage() below
 // would never run, silently dropping the user's saved language.
+// ═══════════════════════════════════════════════════════════════
+// INVESTMENT SCREEN
+// ═══════════════════════════════════════════════════════════════
+
+// ── Storage helpers (go through DB so the prefix is respected) ──
+function getMarketIndicators() {
+  return DB.get('investment_market_indicators', {
+    fearGreed: null, vix: null,
+    sp500: null, sp500High52w: null, sp500Ma200: null,
+    qqq: null, qqqHigh52w: null, qqqMa200: null,
+    updatedAt: null,
+  });
+}
+function saveMarketIndicators(obj) {
+  DB.set('investment_market_indicators', { ...getMarketIndicators(), ...obj, updatedAt: new Date().toISOString() });
+}
+function getWatchlist() { return DB.get('investment_watchlist', []); }
+function saveWatchlist(list) { DB.set('investment_watchlist', list); }
+// ── Investment settings now live in the global settings object ──
+// Convenience helpers that read/write through saveSettings so the prefix,
+// migration logic, and export/import stripping all work automatically.
+function getInvGoals() {
+  const s = getSettings();
+  return {
+    monthlyBase: s.invMonthlyBase || 0,
+    targetEtfPct: s.invTargetEtfPct || 70,
+    targetStockPct: s.invTargetStockPct || 20,
+  };
+}
+function getMarketDataProvider() {
+  return getSettings().marketDataProvider || 'manual';
+}
+function getMarketDataApiKey() {
+  return getSettings().marketDataApiKey || '';
+}
+
+// ── Temperature scoring helpers ──
+function scoreFromFearGreed(fg) {
+  if (fg == null) return null;
+  return Math.min(100, Math.max(0, fg)); // raw 0-100 maps directly
+}
+function scoreFromVix(vix) {
+  if (vix == null) return null;
+  if (vix < 14) return 85;
+  if (vix < 20) return 65;
+  if (vix < 25) return 50;
+  if (vix < 35) return 30;
+  return 15;
+}
+function scoreFromDrawdown(current, high) {
+  if (current == null || high == null || high <= 0) return null;
+  const dd = (current / high) - 1; // negative or 0
+  if (dd > -0.05) return 80;
+  if (dd > -0.10) return 65;
+  if (dd > -0.20) return 40;
+  if (dd > -0.30) return 25;
+  return 15;
+}
+function scoreFromTrend(current, ma200) {
+  if (current == null || ma200 == null || ma200 <= 0) return null;
+  const ratio = current / ma200 - 1;
+  if (ratio > 0.10) return 75;
+  if (ratio > -0.05) return 50;
+  if (ratio > -0.15) return 35;
+  return 25;
+}
+function scoreFromWatchlist(watchlist) {
+  if (!watchlist || !watchlist.length) return null;
+  // Average relative position of current vs price tiers
+  let total = 0, count = 0;
+  watchlist.forEach(s => {
+    const p = parseFloat(s.currentPrice);
+    const fair = parseFloat(s.fairPrice);
+    const buy = parseFloat(s.buyPrice);
+    const sb = parseFloat(s.strongBuyPrice);
+    if (!p || !fair) return;
+    // map current vs fair => heat score
+    // above fair = hotter, below strong buy = coldest
+    if (p > fair) { total += 80; count++; }
+    else if (!buy || p > buy) { total += 55; count++; }
+    else if (!sb || p > sb) { total += 35; count++; }
+    else { total += 15; count++; }
+  });
+  return count > 0 ? total / count : null;
+}
+function calcTemperatureScore(ind, watchlist) {
+  // Weights: FG 25%, VIX 20%, SP500 drawdown 20%, QQQ drawdown 15%, SP500 trend 10%, watchlist 10%
+  const scores = [
+    { w: 0.25, v: scoreFromFearGreed(ind.fearGreed) },
+    { w: 0.20, v: scoreFromVix(ind.vix) },
+    { w: 0.20, v: scoreFromDrawdown(ind.sp500, ind.sp500High52w) },
+    { w: 0.15, v: scoreFromDrawdown(ind.qqq, ind.qqqHigh52w) },
+    { w: 0.10, v: scoreFromTrend(ind.sp500, ind.sp500Ma200) },
+    { w: 0.10, v: scoreFromWatchlist(watchlist) },
+  ];
+  const avail = scores.filter(s => s.v != null);
+  if (!avail.length) return { score: null, incomplete: true };
+  const totalW = avail.reduce((s, x) => s + x.w, 0);
+  const weighted = avail.reduce((s, x) => s + x.v * x.w, 0);
+  const score = Math.round(weighted / totalW);
+  const incomplete = avail.length < scores.length;
+  return { score, incomplete };
+}
+function tempStateLabel(score) {
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  if (score == null) return { label: '—', color: '#5b6b7d' };
+  if (score >= 80) return { label: T('极度贪婪/过热','Extreme Greed'), color: '#9a3b2e' };
+  if (score >= 60) return { label: T('贪婪/偏热','Greed / Warm'),     color: '#b08968' };
+  if (score >= 40) return { label: T('中性','Neutral'),               color: '#5b6b7d' };
+  if (score >= 20) return { label: T('恐惧/偏冷','Fear / Cold'),      color: '#1a5fb4' };
+  return             { label: T('恐慌/极冷','Panic / Very Cold'),     color: '#3c84dd' };
+}
+function tempActions(score) {
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  if (score == null) return { base: '—', extra: '—', stock: '—' };
+  if (score >= 80) return {
+    base:  T('最低定投','Min DCA'),
+    extra: T('暂不加仓','No extra'),
+    stock: T('避免新买入','Avoid buys'),
+  };
+  if (score >= 60) return {
+    base:  T('仅基础定投','Base DCA only'),
+    extra: T('暂不加仓','No extra'),
+    stock: T('持有观望','Hold'),
+  };
+  if (score >= 40) return {
+    base:  T('继续定投','Continue DCA'),
+    extra: T('暂不加仓','No extra'),
+    stock: T('持有观望','Hold'),
+  };
+  if (score >= 20) return {
+    base:  T('继续定投','Continue DCA'),
+    extra: T('酌情小额加仓','Consider small extra'),
+    stock: T('择优小额买入','Selective small buy'),
+  };
+  return {
+    base:  T('继续定投','Continue DCA'),
+    extra: T('强烈建议加仓','Strongly consider extra'),
+    stock: T('仅强力买入区个股','Strong buy zone only'),
+  };
+}
+
+// ── Stock action label per watchlist item ──
+function stockAction(stock) {
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  const p = parseFloat(stock.currentPrice);
+  const fair = parseFloat(stock.fairPrice);
+  const buy = parseFloat(stock.buyPrice);
+  const sb = parseFloat(stock.strongBuyPrice);
+  const maxW = parseFloat(stock.maxWeight);
+  if (!p) return { label: '—', bg: 'var(--grey-l)', color: 'var(--text-light)' };
+  if (fair && p > fair) return { label: T('估值偏高 / 观望','Overvalued / Watch'), bg: '#f3ede0', color: '#8a6a3a' };
+  if (buy && p > buy)  return { label: T('观望','Watch'), bg: '#f0f4ff', color: '#1a5fb4' };
+  if (sb && p > sb)    return { label: T('小额买入','Small buy'), bg: '#d9eafd', color: '#1a5fb4' };
+  if (maxW && maxW > 0) return { label: T('超出最大仓位','Over max weight'), bg: '#f1e6e2', color: '#8a4a3a' };
+  return { label: T('强力买入区','Strong buy'), bg: '#dcf0e6', color: '#1f8a5c' };
+}
+
+// ── Summary calculations from entries ──
+function calcInvSummary() {
+  const entries = getEntries();
+  if (!entries.length) return null;
+  const months = [...new Set(entries.map(e => e.month))].sort();
+  const latestMonth = months[months.length - 1];
+  const prevMonth = months.length >= 2 ? months[months.length - 2] : null;
+  // YTD: first month of the current year
+  const yearStr = latestMonth.slice(0, 4);
+  const ytdMonth = months.find(m => m.startsWith(yearStr)) || null;
+
+  function calcForMonth(m) {
+    const me = entries.filter(e => e.month === m && e.include !== false);
+    const etf = me.filter(e => e.cat2 === '指数基金').reduce((s, e) => s + (e.cnhAmt || 0), 0);
+    const stock = me.filter(e => e.cat2 === '个股').reduce((s, e) => s + (e.cnhAmt || 0), 0);
+    return { etf, stock, total: etf + stock };
+  }
+  const cur = calcForMonth(latestMonth);
+  const prev = prevMonth ? calcForMonth(prevMonth) : null;
+  const ytd = (ytdMonth && ytdMonth !== latestMonth) ? calcForMonth(ytdMonth) : null;
+
+  const momChange = prev != null ? cur.total - prev.total : null;
+  const ytdChange = ytd != null ? cur.total - ytd.total : null;
+  const etfPct = cur.total > 0 ? (cur.etf / cur.total * 100) : 0;
+  const stockPct = cur.total > 0 ? (cur.stock / cur.total * 100) : 0;
+  return { latestMonth, cur, momChange, ytdChange, etfPct, stockPct };
+}
+
+// ── Rendering ──
+function renderInvestmentScreen() {
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  // Update all static labels that can't be caught by the text-node walker
+  const set = (id, text) => { const el=document.getElementById(id); if(el) el.textContent=text; };
+  set('inv-screen-heading',     T('投资温度','Investment'));
+  set('inv-summary-card-title', T('投资概览','Investment Summary'));
+  set('inv-temp-card-title',    T('市场温度','Market Temperature'));
+  set('inv-act-base-label',     T('基础定投','Base DCA'));
+  set('inv-act-extra-label',    T('额外加仓','Extra Buy'));
+  set('inv-act-stock-label',    T('个股操作','Stock Action'));
+  set('inv-watchlist-card-title', T('自选股买入区','Stock Buy Zones'));
+  const addBtn = document.getElementById('inv-watchlist-add-btn');
+  if (addBtn) addBtn.textContent = T('＋ 添加','＋ Add');
+
+  renderInvSummary();
+  renderInvTemperature();
+  renderInvIndicators();
+  renderInvWatchlist();
+  updateInvDisclaimerLang();
+  updateInvLastUpdated();
+  updateInvDataSourceLabel(getMarketDataProvider());
+}
+
+function updateInvDisclaimerLang() {
+  const el = document.getElementById('inv-disclaimer');
+  if (!el) return;
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  el.textContent = T(
+    '本页面仅作为个人投资纪律和市场温度参考，不构成投资建议。请结合现金流、风险承受能力和长期计划决策。',
+    'This page is for personal investment discipline and market temperature reference only. It is not financial advice.'
+  );
+}
+
+function renderInvSummary() {
+  const el = document.getElementById('inv-summary-content');
+  if (!el) return;
+  const s = calcInvSummary();
+  if (!s) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">${tr('暂无数据 — 请先在录入页面添加本月数据')}</div>`;
+    return;
+  }
+  const { cur, momChange, ytdChange, etfPct, stockPct, latestMonth } = s;
+  const fmtChange = (v) => {
+    if (v == null) return '—';
+    const sign = v >= 0 ? '+' : '';
+    return `<span style="color:${v >= 0 ? '#9a3b2e' : '#1f8a5c'}">${sign}${fmtMain(v)}</span>`;
+  };
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  el.innerHTML = `
+    <div class="inv-summary-row"><span class="inv-summary-label">${T('ETF 合计','ETF Total')}</span><span class="inv-summary-value">${fmtMain(cur.etf)}</span></div>
+    <div class="inv-summary-row"><span class="inv-summary-label">${T('个股合计','Stock Total')}</span><span class="inv-summary-value">${fmtMain(cur.stock)}</span></div>
+    <div class="inv-summary-row"><span class="inv-summary-label">${T('风险投资合计','Risk Assets Total')}</span><span class="inv-summary-value">${fmtMain(cur.total)}</span></div>
+    <div class="inv-summary-row">
+      <span class="inv-summary-label">ETF / ${T('个股占比','Stock Weight')}</span>
+      <span class="inv-summary-value">${etfPct.toFixed(1)}% / ${stockPct.toFixed(1)}%</span>
+    </div>
+    <div class="inv-summary-row"><span class="inv-summary-label">${T('月环比','MoM Change')}</span><span class="inv-summary-value">${fmtChange(momChange)}</span></div>
+    <div class="inv-summary-row" style="border-bottom:none"><span class="inv-summary-label">${T('年初至今','YTD Change')}</span><span class="inv-summary-value">${fmtChange(ytdChange)}</span></div>
+    <div style="font-size:10px;color:var(--text-light);margin-top:6px">${latestMonth}</div>
+  `;
+}
+
+function renderInvTemperature() {
+  const ind = getMarketIndicators();
+  const watchlist = getWatchlist();
+  const { score, incomplete } = calcTemperatureScore(ind, watchlist);
+  const actions = tempActions(score);
+  const state = tempStateLabel(score);
+
+  // Gauge ring
+  const fill = document.getElementById('inv-temp-fill');
+  const numEl = document.getElementById('inv-temp-num');
+  const stateEl = document.getElementById('inv-temp-state');
+  if (fill) {
+    const offset = score != null ? 283 - (score / 100) * 283 : 283;
+    fill.style.strokeDashoffset = offset;
+    // Color: cold=blue, neutral=amber, hot=coral
+    const col = score == null ? '#5b6b7d'
+      : score >= 80 ? '#9a3b2e'
+      : score >= 60 ? '#b08968'
+      : score >= 40 ? '#5b6b7d'
+      : '#3c84dd';
+    fill.style.stroke = col;
+  }
+  if (numEl) numEl.textContent = score != null ? score : '—';
+  if (stateEl) { stateEl.textContent = state.label; stateEl.style.color = state.color; }
+
+  document.getElementById('inv-act-base').textContent = actions.base;
+  document.getElementById('inv-act-extra').textContent = actions.extra;
+  document.getElementById('inv-act-stock').textContent = actions.stock;
+
+  const noteEl = document.getElementById('inv-incomplete-note');
+  if (noteEl) {
+    const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+    if (incomplete && score != null) {
+      noteEl.style.display = '';
+      noteEl.textContent = T('指标数据不完整，温度得分基于现有指标计算','Score based on available data only — some indicators missing');
+    } else {
+      noteEl.style.display = 'none';
+    }
+  }
+
+  // Show last updated time
+  if (ind.updatedAt) {
+    const dt = new Date(ind.updatedAt);
+    const timeStr = dt.toLocaleDateString('zh-CN', { month:'2-digit', day:'2-digit' }) + ' ' + dt.toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' });
+    const heroEl = document.getElementById('inv-temp-hero');
+    let timeTag = heroEl.querySelector('.inv-update-time');
+    if (!timeTag) {
+      timeTag = document.createElement('div');
+      timeTag.className = 'inv-update-time';
+      timeTag.style.cssText = 'font-size:10px;color:rgba(255,255,255,0.35);margin-top:8px';
+      heroEl.appendChild(timeTag);
+    }
+    timeTag.textContent = `${CURRENT_LANG === 'en' ? 'Updated' : '更新于'} ${timeStr}`;
+  }
+}
+
+function renderInvIndicators() {
+  const el = document.getElementById('inv-indicators-list');
+  if (!el) return;
+  const ind = getMarketIndicators();
+  const provider = getMarketDataProvider();
+  const hasApiKey = !!getMarketDataApiKey();
+  const isApiMode = provider !== 'manual' && hasApiKey;
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+
+  // ── Update card title (header updated after rows array below) ──
+  const titleEl = document.getElementById('inv-indicators-card-title');
+  if (titleEl) titleEl.textContent = T('指标明细', 'Indicator Details');
+
+  // ── Small helpers ──
+  function fmtNum(v, dp=2) { return v != null ? Number(v).toFixed(dp) : null; }
+  function ddPct(cur, high) {
+    if (!cur || !high) return null;
+    return ((cur / high - 1) * 100).toFixed(1) + '%';
+  }
+  function trendPct(cur, ma) {
+    if (!cur || !ma) return null;
+    const pct = ((cur / ma - 1) * 100).toFixed(1);
+    return (pct >= 0 ? '+' : '') + pct + '%';
+  }
+  function fgMeaning(fg) {
+    if (fg == null) return '—';
+    if (fg <= 25) return T('极度恐惧','Extreme Fear');
+    if (fg <= 45) return T('恐惧','Fear');
+    if (fg <= 55) return T('中性','Neutral');
+    if (fg <= 75) return T('贪婪','Greed');
+    return T('极度贪婪','Extreme Greed');
+  }
+  function sourceTag(style, text) {
+    const styles = {
+      api:     'background:#d9eafd;color:#1a5fb4',
+      manual:  'background:var(--grey-m);color:var(--text-light)',
+      missing: 'background:#f3e3df;color:#9a3b2e',
+    };
+    return `<span style="font-size:9px;${styles[style]||styles.manual};padding:1px 4px;border-radius:3px;font-weight:700;white-space:nowrap">${text}</span>`;
+  }
+
+  // ── Score column HTML ──
+  function scoreHtml(score) {
+    if (score == null) return `<span class="inv-ind-score" style="color:var(--text-light)">—</span>`;
+    const col = score >= 60 ? '#b08968' : score >= 40 ? '#5b6b7d' : '#3c84dd';
+    return `<span class="inv-ind-score" style="color:${col}">${score}</span>`;
+  }
+
+  // Value cell: just the number (or placeholder), right-aligned
+  // action: optional HTML for the 5th column (badge or pencil)
+  function numCell(value, missing) {
+    if (missing) return `<span class="inv-ind-value is-missing">—</span>`;
+    if (value == null) return `<span class="inv-ind-value" style="color:var(--text-light)">—</span>`;
+    return `<span class="inv-ind-value">${value}</span>`;
+  }
+
+  // Input cell for manual entry — styled to same visual height as spans
+  function inputCell(key, value, placeholder) {
+    const val = value != null ? value : '';
+    const ph = placeholder || '0–100';
+    return `<input class="inv-ind-input" value="${val}" placeholder="${ph}" onchange="onIndicatorManualEdit('${key}', this.value)">`;
+  }
+
+  // Source badge for the 5th column
+  function apiBadge() {
+    return `<span style="font-size:9px;background:#d9eafd;color:#1a5fb4;padding:1px 4px;border-radius:3px;font-weight:700">API</span>`;
+  }
+  function missBadge() {
+    return `<span style="font-size:9px;background:#f3e3df;color:#9a3b2e;padding:1px 4px;border-radius:3px;font-weight:700">${T('缺','?')}</span>`;
+  }
+  function pencilBtn(key, rawValue) {
+    return `<button class="inv-ind-override-btn" title="${T('覆盖','override')}" onclick="activateIndicatorOverride('${key}','${rawValue ?? ''}')">✏️</button>`;
+  }
+
+  // Build a 5-column row object: {name, valHtml, score, meaning, actionHtml}
+  // Define a "manual" badge for the 5th column
+  function manualBadge() {
+    return `<span style="font-size:9px;background:var(--grey-m);color:var(--text-light);padding:1px 4px;border-radius:3px;font-weight:700">${T('手动','man')}</span>`;
+  }
+
+  const rows = [
+    // Fear & Greed — always manual entry, but styled consistently with VIX in API mode
+    {
+      name: T('恐惧与贪婪','Fear & Greed'),
+      valHtml: isApiMode
+        ? numCell(fmtNum(ind.fearGreed, 0), false)   // read-only display in API mode
+        : inputCell('fearGreed', fmtNum(ind.fearGreed, 0), '0–100'),
+      score: scoreFromFearGreed(ind.fearGreed),
+      meaning: fgMeaning(ind.fearGreed),
+      // In API mode: manual badge + pencil (like VIX but grey badge instead of blue)
+      // In manual mode: nothing (the input box IS the interaction)
+      actionHtml: isApiMode
+        ? manualBadge() + pencilBtn('fearGreed', fmtNum(ind.fearGreed, 0))
+        : '',
+    },
+    // VIX — API readonly or manual input
+    {
+      name: 'VIX',
+      valHtml: isApiMode
+        ? numCell(fmtNum(ind.vix, 2), false)
+        : inputCell('vix', fmtNum(ind.vix, 2), T('如 18.5','e.g. 18')),
+      score: scoreFromVix(ind.vix),
+      meaning: ind.vix
+        ? (ind.vix < 20 ? T('低波动','low') : ind.vix < 30 ? T('中波动','mid') : T('高波动','high'))
+        : '—',
+      actionHtml: isApiMode
+        ? (ind.vix != null ? apiBadge() + pencilBtn('vix', fmtNum(ind.vix, 2)) : missBadge() + pencilBtn('vix', ''))
+        : '',
+    },
+    // Derived rows — calculated, never manual
+    {
+      name: T('标普500 回撤','S&P 500 Drawdown'),
+      valHtml: numCell(ddPct(ind.sp500, ind.sp500High52w)),
+      score: scoreFromDrawdown(ind.sp500, ind.sp500High52w),
+      meaning: ddPct(ind.sp500, ind.sp500High52w) ? T('vs 52周高','vs 52W hi') : '—',
+      actionHtml: '',
+    },
+    {
+      name: T('纳指 回撤','Nasdaq Drawdown'),
+      valHtml: numCell(ddPct(ind.qqq, ind.qqqHigh52w)),
+      score: scoreFromDrawdown(ind.qqq, ind.qqqHigh52w),
+      meaning: ddPct(ind.qqq, ind.qqqHigh52w) ? T('vs 52周高','vs 52W hi') : '—',
+      actionHtml: '',
+    },
+    {
+      name: T('标普500 趋势','S&P 500 Trend'),
+      valHtml: numCell(trendPct(ind.sp500, ind.sp500Ma200)),
+      score: scoreFromTrend(ind.sp500, ind.sp500Ma200),
+      meaning: ind.sp500Ma200 ? 'vs 200DMA' : '—',
+      actionHtml: '',
+    },
+  ];
+
+  // Update header to current language
+  const hdrEl = document.getElementById('inv-indicators-header');
+  if (hdrEl) hdrEl.innerHTML = `
+    <div style="font-size:10px;color:var(--text-light);font-weight:600">${T('指标','Indicator')}</div>
+    <div style="font-size:10px;color:var(--text-light);font-weight:600;text-align:right">${T('数值','Value')}</div>
+    <div style="font-size:10px;color:var(--text-light);font-weight:600;text-align:center">${T('温度','Score')}</div>
+    <div style="font-size:10px;color:var(--text-light);font-weight:600;text-align:right">${T('含义','Signal')}</div>
+    <div></div>`;
+
+  el.innerHTML = rows.map(r => `
+    <div class="inv-indicator-row">
+      <span class="inv-ind-name">${r.name}</span>
+      ${r.valHtml}
+      ${scoreHtml(r.score)}
+      <span class="inv-ind-meaning">${r.meaning}</span>
+      <div class="inv-ind-action">${r.actionHtml}</div>
+    </div>`).join('');
+
+  // ── Market Reference Data section ──
+  const refTitle = T('市场参考数据','Market Reference Data');
+  const refItems = [
+    { key: 'sp500',        label: 'S&P 500 / SPY',    dp: 2 },
+    { key: 'sp500High52w', label: T('标普 52周高','S&P 52W Hi'), dp: 2 },
+    { key: 'sp500Ma200',   label: 'S&P 200DMA',        dp: 2 },
+    { key: 'qqq',          label: 'QQQ / Nasdaq',      dp: 2 },
+    { key: 'qqqHigh52w',   label: T('纳指 52周高','QQQ 52W Hi'), dp: 2 },
+    { key: 'qqqMa200',     label: 'QQQ 200DMA',        dp: 2 },
+  ];
+
+  const sectionModeBadge = isApiMode
+    ? sourceTag('api', 'API')
+    : sourceTag('manual', T('手动','manual'));
+  const hintText = isApiMode ? T('点击 ✏️ 手动覆盖','click ✏️ to override') : '';
+
+  if (isApiMode) {
+    const missingLabel = T('未获取','—');
+    el.innerHTML += `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--grey-m)">
+        <div style="font-size:10px;color:var(--text-light);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span>${refTitle}</span>${sectionModeBadge}<span style="font-size:9px;font-weight:400">${hintText}</span>
+        </div>
+        <div class="inv-ref-grid">
+          ${refItems.map(item => {
+            const raw = ind[item.key];
+            const display = raw != null ? Number(raw).toFixed(item.dp) : null;
+            const isMissing = display == null;
+            return `<div class="inv-ref-cell" data-ref-key="${item.key}">
+              <span class="inv-ref-cell-label">${item.label}</span>
+              <span class="inv-ref-cell-value${isMissing ? ' is-missing' : ''}" id="inv-ref-val-${item.key}">${isMissing ? missingLabel : display}</span>
+              ${isMissing ? sourceTag('missing',T('缺失','missing')) : sourceTag('api','API')}
+              <button class="inv-ref-cell-edit" title="${T('手动覆盖','override')}" onclick="activateRefCellOverride('${item.key}',${raw != null ? raw : 0})">✏️</button>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  } else {
+    el.innerHTML += `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--grey-m)">
+        <div style="font-size:10px;color:var(--text-light);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <span>${refTitle}</span>${sectionModeBadge}
+        </div>
+        <div class="inv-ref-grid">
+          ${refItems.map(item => `
+            <div>
+              <div style="font-size:10px;color:var(--text-light);margin-bottom:3px">${item.label}</div>
+              <input class="inv-ind-input" style="width:100%;text-align:left"
+                value="${ind[item.key] != null ? ind[item.key] : ''}"
+                placeholder="0.00"
+                onchange="onIndicatorManualEdit('${item.key}', this.value)">
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+}
+
+function onIndicatorManualEdit(key, rawVal) {
+  const val = parseFloat(rawVal);
+  if (isNaN(val)) return;
+  saveMarketIndicators({ [key]: val });
+  renderInvTemperature();
+  renderInvIndicators();
+}
+
+// Replace the value span in an indicator row with an inline input for manual override.
+// The ✏️ button is in the 5th column; the value span is the 2nd child of the same row.
+function activateIndicatorOverride(key, currentVal) {
+  // Find the button that was clicked, walk up to its row, find the value cell (2nd child)
+  const btn = document.querySelector(`.inv-ind-action button[onclick*="'${key}'"]`);
+  if (!btn) return;
+  const row = btn.closest('.inv-indicator-row');
+  if (!row) return;
+  // 2nd grid child is the value column
+  const valueCell = row.children[1];
+  if (!valueCell) return;
+  const input = document.createElement('input');
+  input.className = 'inv-ind-input';
+  input.value = currentVal || '';
+  input.placeholder = '0.00';
+  valueCell.replaceWith(input);
+  // Move input to same grid position (it now IS the 2nd child)
+  input.focus();
+  input.select();
+  function commit() {
+    const val = parseFloat(input.value);
+    if (!isNaN(val)) saveMarketIndicators({ [key]: val });
+    renderInvTemperature();
+    renderInvIndicators();
+  }
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') renderInvIndicators();
+  });
+}
+
+// Swap a ref-cell value display into an inline input in the card grid (API mode).
+function activateRefCellOverride(key, currentVal) {
+  const cell = document.querySelector(`.inv-ref-cell[data-ref-key="${key}"]`);
+  if (!cell) return;
+  const input = document.createElement('input');
+  input.className = 'inv-ind-input';
+  input.value = currentVal || '';
+  input.placeholder = '0.00';
+  input.style.width = '100%';
+  input.style.marginTop = '2px';
+  // Replace the value span and source tag; keep the label and pencil button
+  const valSpan = cell.querySelector('.inv-ref-cell-value');
+  const editBtn = cell.querySelector('.inv-ref-cell-edit');
+  if (valSpan) valSpan.replaceWith(input);
+  if (editBtn) editBtn.style.display = 'none';
+  // Also hide any source tag spans
+  cell.querySelectorAll('span[style*="border-radius:3px"]').forEach(s => s.style.display = 'none');
+  input.focus();
+  input.select();
+  function commit() {
+    const val = parseFloat(input.value);
+    if (!isNaN(val)) {
+      saveMarketIndicators({ [key]: val });
+    }
+    renderInvTemperature();
+    renderInvIndicators();
+  }
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { input.blur(); } if (e.key === 'Escape') { renderInvIndicators(); } });
+}
+
+function renderInvWatchlist() {
+  const el = document.getElementById('inv-watchlist-content');
+  if (!el) return;
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  const list = getWatchlist();
+  if (!list.length) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-light);font-size:12px">${T('暂无自选股 — 点击右上角添加','No stocks yet — tap ＋ to add')}</div>`;
+    return;
+  }
+  el.innerHTML = list.map((s, i) => {
+    const action = stockAction(s);
+    const priceVal = s.currentPrice ? `${s.currency || ''} ${Number(s.currentPrice).toFixed(2)}` : '—';
+    const srcTag = s.priceSource === 'api'
+      ? `<span style="font-size:9px;background:#d9eafd;color:#1a5fb4;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px">API</span>`
+      : (s.currentPrice ? `<span style="font-size:9px;background:var(--grey-m);color:var(--text-light);padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px">${T('手动','manual')}</span>` : '');
+    const chips = [
+      s.fairPrice    ? `${T('估值','Fair')} ${s.currency||''} ${Number(s.fairPrice).toFixed(2)}`    : null,
+      s.buyPrice     ? `${T('买入','Buy')} ${Number(s.buyPrice).toFixed(2)}`                         : null,
+      s.strongBuyPrice ? `${T('强力买入','Strong buy')} ${Number(s.strongBuyPrice).toFixed(2)}`     : null,
+    ].filter(Boolean);
+    return `<div class="inv-stock-row">
+      <div class="inv-stock-main">
+        <div class="inv-stock-ticker">${s.ticker || '—'}</div>
+        <div class="inv-stock-name">${s.name || ''}</div>
+        <div class="inv-stock-prices">${chips.map(c => `<span class="inv-stock-price-chip">${c}</span>`).join('')}</div>
+        ${s.note ? `<div style="font-size:10px;color:var(--text-light);margin-top:3px">${s.note}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="inv-stock-current">${priceVal}${srcTag}</span>
+        <span class="inv-stock-action" style="background:${action.bg};color:${action.color}">${action.label}</span>
+        <div class="inv-stock-actions-row">
+          <button class="row-action-btn" title="${T('编辑','Edit')}" onclick="openEditStockModal(${i})">✏️</button>
+          <button class="row-action-btn" title="${T('删除','Delete')}" onclick="deleteStock(${i})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Stock CRUD ──
+function openAddStockModal() {
+  document.getElementById('inv-modal-title').textContent = tr('添加自选股');
+  ['ticker','name','current','fair','buy','strongbuy','maxweight','note'].forEach(f => {
+    const el = document.getElementById('stock-' + f);
+    if (el) el.value = '';
+  });
+  document.getElementById('stock-edit-id').value = '';
+  document.getElementById('inv-stock-modal').style.display = 'flex';
+}
+function openEditStockModal(idx) {
+  const list = getWatchlist();
+  const s = list[idx];
+  if (!s) return;
+  document.getElementById('inv-modal-title').textContent = tr('编辑自选股');
+  document.getElementById('stock-ticker').value = s.ticker || '';
+  document.getElementById('stock-name').value = s.name || '';
+  document.getElementById('stock-ccy').value = s.currency || 'EUR';
+  document.getElementById('stock-current').value = s.currentPrice || '';
+  document.getElementById('stock-fair').value = s.fairPrice || '';
+  document.getElementById('stock-buy').value = s.buyPrice || '';
+  document.getElementById('stock-strongbuy').value = s.strongBuyPrice || '';
+  document.getElementById('stock-maxweight').value = s.maxWeight || '';
+  document.getElementById('stock-note').value = s.note || '';
+  document.getElementById('stock-edit-id').value = String(idx);
+  document.getElementById('inv-stock-modal').style.display = 'flex';
+}
+function closeStockModal() {
+  document.getElementById('inv-stock-modal').style.display = 'none';
+}
+function saveStock() {
+  const ticker = document.getElementById('stock-ticker').value.trim().toUpperCase();
+  if (!ticker) { toast('⚠️ 请输入代码'); return; }
+  const stock = {
+    ticker,
+    name: document.getElementById('stock-name').value.trim(),
+    currency: document.getElementById('stock-ccy').value,
+    currentPrice: document.getElementById('stock-current').value,
+    fairPrice: document.getElementById('stock-fair').value,
+    buyPrice: document.getElementById('stock-buy').value,
+    strongBuyPrice: document.getElementById('stock-strongbuy').value,
+    maxWeight: document.getElementById('stock-maxweight').value,
+    note: document.getElementById('stock-note').value.trim(),
+  };
+  const list = getWatchlist();
+  const editIdx = document.getElementById('stock-edit-id').value;
+  if (editIdx !== '') {
+    list[parseInt(editIdx)] = stock;
+  } else {
+    list.push(stock);
+  }
+  saveWatchlist(list);
+  closeStockModal();
+  renderInvWatchlist();
+  renderInvTemperature(); // watchlist valuation affects score
+  toast(tr('已保存'));
+}
+function deleteStock(idx) {
+  if (!confirm(tr('确认删除') + '?')) return;
+  const list = getWatchlist();
+  list.splice(idx, 1);
+  saveWatchlist(list);
+  renderInvWatchlist();
+  renderInvTemperature();
+  toast(tr('已删除'));
+}
+
+// ── API / Data Source Settings (lives in main Settings screen) ──
+function renderApiSettings() {
+  const s = getSettings();
+  const providerEl = document.getElementById('settings-market-provider');
+  if (providerEl) providerEl.value = s.marketDataProvider || 'manual';
+  // Never pre-fill password fields
+  const marketKeyEl = document.getElementById('settings-market-api-key');
+  if (marketKeyEl) marketKeyEl.value = '';
+  const claudeKeyEl = document.getElementById('settings-claude-api-key');
+  if (claudeKeyEl) claudeKeyEl.value = '';
+  // Show a small indicator if a key is already saved
+  const claudeKeyGroup = claudeKeyEl ? claudeKeyEl.closest('.input-group') : null;
+  if (claudeKeyGroup) {
+    let hint = claudeKeyGroup.querySelector('.key-saved-hint');
+    if (!hint) {
+      hint = document.createElement('div');
+      hint.className = 'key-saved-hint';
+      hint.style.cssText = 'font-size:10px;margin-top:3px;color:var(--text-light)';
+      claudeKeyGroup.appendChild(hint);
+    }
+    hint.textContent = s.claudeApiKey ? '✓ ' + (CURRENT_LANG === 'en' ? 'Key saved (leave blank to keep)' : 'Key 已保存（留空保留）') : '';
+  }
+  // Investment goals
+  const g = getInvGoals();
+  const baseEl = document.getElementById('settings-inv-monthly-base');
+  if (baseEl) baseEl.value = g.monthlyBase || '';
+  const etfEl = document.getElementById('settings-inv-target-etf');
+  if (etfEl) etfEl.value = g.targetEtfPct || '';
+  const stockEl = document.getElementById('settings-inv-target-stock');
+  if (stockEl) stockEl.value = g.targetStockPct || '';
+  onMarketProviderChange();
+}
+function onMarketProviderChange() {
+  const providerEl = document.getElementById('settings-market-provider');
+  const keyGroupEl = document.getElementById('settings-api-key-group');
+  if (!providerEl || !keyGroupEl) return;
+  keyGroupEl.style.display = providerEl.value === 'manual' ? 'none' : '';
+}
+function saveApiSettings() {
+  const providerEl = document.getElementById('settings-market-provider');
+  const marketKeyInput = (document.getElementById('settings-market-api-key') || {}).value?.trim() || '';
+  const claudeKeyInput = (document.getElementById('settings-claude-api-key') || {}).value?.trim() || '';
+  const provider = providerEl ? providerEl.value : 'manual';
+  const update = {
+    marketDataProvider: provider,
+    invMonthlyBase: parseFloat((document.getElementById('settings-inv-monthly-base') || {}).value) || 0,
+    invTargetEtfPct: parseFloat((document.getElementById('settings-inv-target-etf') || {}).value) || 70,
+    invTargetStockPct: parseFloat((document.getElementById('settings-inv-target-stock') || {}).value) || 20,
+  };
+  // Only overwrite keys if user typed something new
+  if (marketKeyInput) update.marketDataApiKey = marketKeyInput;
+  if (claudeKeyInput) update.claudeApiKey = claudeKeyInput;
+  saveSettings(update);
+  toast(tr('✓ 设置已保存'));
+  // Clear inputs so saved values are never visible
+  const mk = document.getElementById('settings-market-api-key');
+  if (mk) mk.value = '';
+  const ck = document.getElementById('settings-claude-api-key');
+  if (ck) ck.value = '';
+  updateInvDataSourceLabel(provider);
+}
+
+// ── Investment tab UI helpers ──
+function updateInvLastUpdated() {
+  const el = document.getElementById('inv-last-updated');
+  if (!el) return;
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  const ind = getMarketIndicators();
+  if (!ind.updatedAt) { el.textContent = T('尚未更新','Not yet updated'); return; }
+  const dt = new Date(ind.updatedAt);
+  const locale = CURRENT_LANG === 'en' ? 'en-GB' : 'zh-CN';
+  const dateStr = dt.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  const timeStr = dt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  el.textContent = T('更新于 ','Updated ') + dateStr + ' ' + timeStr;
+}
+function updateInvDataSourceLabel(provider) {
+  const el = document.getElementById('inv-data-source-label');
+  if (!el) return;
+  const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+  const labels = {
+    manual:       T('📝 手动','📝 Manual'),
+    fmp:          '📡 FMP',
+    alphavantage: '📡 Alpha Vantage',
+  };
+  el.textContent = labels[provider] || labels.manual;
+}
+
+// ── Market Data Refresh ──
+async function refreshMarketData() {
+  const s = getSettings();
+  const provider = s.marketDataProvider || 'manual';
+  const apiKey = s.marketDataApiKey || '';
+  const btn = document.getElementById('inv-refresh-btn');
+  const statusEl = document.getElementById('inv-fetch-status');
+
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ ' + (CURRENT_LANG === 'en' ? 'Fetching…' : '获取中…'); }
+  if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
+  updateInvDataSourceLabel(provider);
+
+  try {
+    if (provider === 'manual' || !apiKey) {
+      toast(CURRENT_LANG === 'en' ? 'Manual mode — edit values in the indicator table' : '手动模式 — 请直接在指标表格中编辑数值');
+    } else {
+      let result = { updated: [], missing: [], partial: false };
+      if (provider === 'fmp') {
+        result = await fetchMarketDataFromFMP(apiKey);
+      } else if (provider === 'alphavantage') {
+        result = await fetchMarketDataFromAlphaVantage(apiKey);
+      }
+      // Always attempt watchlist refresh even if market data partially failed
+      await refreshWatchlistPrices(apiKey, provider);
+
+      // Show status summary
+      const { updated, missing } = result;
+      if (statusEl) {
+        const T = (zh, en) => CURRENT_LANG === 'en' ? en : zh;
+        const updLine = updated.length ? `✓ ${T('已更新','Updated')}: ${updated.join(', ')}` : '';
+        const misLine = missing.length ? `— ${T('缺失','Missing')}: ${missing.join(', ')}` : '';
+        const statusText = [updLine, misLine].filter(Boolean).join('\n');
+        if (statusText) { statusEl.style.display = ''; statusEl.style.whiteSpace = 'pre-line'; statusEl.textContent = statusText; }
+      }
+
+      if (updated.length && !missing.length) {
+        toast(tr('数据已刷新'));
+      } else if (updated.length) {
+        toast(CURRENT_LANG === 'en' ? 'Partial update — some fields missing' : '部分数据已更新，部分字段缺失');
+      } else {
+        toast(CURRENT_LANG === 'en' ? 'API fetch failed — using cached values' : tr('API 获取失败，已使用本地缓存'));
+      }
+    }
+  } catch (err) {
+    console.warn('refreshMarketData error:', err);
+    toast(tr('API 获取失败，已使用本地缓存'));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 ' + (CURRENT_LANG === 'en' ? 'Refresh Market Data' : '刷新市场数据'); }
+  }
+
+  renderInvTemperature();
+  renderInvIndicators();
+  renderInvWatchlist();
+  updateInvLastUpdated();
+}
+
+// ── FMP historical helpers ──
+async function fetchFmpHistoricalDaily(sym, apiKey) {
+  const v3  = 'https://financialmodelingprep.com/api/v3';
+  const stb = 'https://financialmodelingprep.com/stable';
+  const enc = encodeURIComponent(sym);
+
+  // Try multiple endpoints; return array of { date, high, close } newest-first
+  for (const url of [
+    `${v3}/historical-price-full/${enc}?timeseries=252&apikey=${apiKey}`,
+    `${stb}/historical-price-full?symbol=${enc}&apikey=${apiKey}`,
+    `${v3}/historical-price-full/${enc}?apikey=${apiKey}`,
+  ]) {
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) { console.warn(`FMP historical ${sym} HTTP ${resp.status} (${url})`); continue; }
+      const data = await resp.json();
+      let rows = null;
+      if (data && Array.isArray(data.historical)) rows = data.historical;
+      else if (Array.isArray(data)) rows = data;
+      else if (data && data[sym] && Array.isArray(data[sym])) rows = data[sym];
+      if (rows && rows.length) {
+        // Ensure newest-first (FMP usually returns newest first, but normalise just in case)
+        rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+        console.log(`FMP historical ${sym}: ${rows.length} bars from ${url}`);
+        return rows;
+      }
+      console.warn(`FMP historical ${sym}: empty or unrecognised response shape`, Object.keys(data || {}));
+    } catch (e) { console.warn(`FMP historical ${sym} error (${url}):`, e); }
+  }
+  return [];
+}
+function calcHigh(history, n) {
+  // history = array of { high, close } objects, newest first; return max high over n bars
+  const slice = history.slice(0, n);
+  if (!slice.length) return null;
+  const h = Math.max(...slice.map(d => parseFloat(d.high || d.close || 0)));
+  return h > 0 ? +h.toFixed(4) : null;
+}
+function calcSma(history, n) {
+  // history = array of { close } objects, newest first; return SMA of n bars
+  const slice = history.slice(0, n);
+  if (slice.length < n) return null; // not enough data
+  const sum = slice.reduce((s, d) => s + parseFloat(d.close || 0), 0);
+  return +(sum / n).toFixed(4);
+}
+
+async function fetchMarketDataFromFMP(apiKey) {
+  const v3  = 'https://financialmodelingprep.com/api/v3';
+  const stb = 'https://financialmodelingprep.com/stable';
+  const update = {};
+  const REQUIRED = ['vix','sp500','sp500High52w','sp500Ma200','qqq','qqqHigh52w','qqqMa200'];
+
+  // ── Extract a usable quote object from any FMP response shape ──
+  // IMPORTANT: also verify the symbol matches so we never accept SPY data as QQQ.
+  function extractQuote(raw, expectedSym) {
+    if (!raw) return null;
+    const exp = expectedSym.toUpperCase().replace(/^%5E/, '^');
+
+    const candidates = Array.isArray(raw) ? raw
+      : Array.isArray(raw.data) ? raw.data
+      : (raw.price != null || raw.previousClose != null) ? [raw]
+      : raw[expectedSym] ? [raw[expectedSym]]
+      : [];
+
+    // First pass: match by symbol field
+    for (const q of candidates) {
+      if (!q) continue;
+      const qSym = (q.symbol || '').toUpperCase().replace(/^%5E/, '^');
+      if (qSym === exp && (q.price != null || q.previousClose != null)) return q;
+    }
+    // Second pass: if only one candidate and no symbol field, accept it
+    if (candidates.length === 1 && candidates[0]) {
+      const q = candidates[0];
+      if (q.price != null || q.previousClose != null) {
+        console.warn(`FMP ${expectedSym}: accepting response without symbol verification`, q);
+        return q;
+      }
+    }
+    return null;
+  }
+
+  // ── Fetch a single symbol's quote; try three endpoint patterns ──
+  async function fmpFetchQuote(sym) {
+    const enc = encodeURIComponent(sym);
+    const urls = [
+      `${stb}/quote?symbol=${enc}&apikey=${apiKey}`,         // stable query-param style
+      `${v3}/quote/${enc}?apikey=${apiKey}`,                  // v3 path style
+      `${v3}/quote/${enc}?apikey=${apiKey}&datatype=json`,    // v3 with explicit JSON
+    ];
+    for (const url of urls) {
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) { console.warn(`FMP ${sym} HTTP ${resp.status} at ${url}`); continue; }
+        const raw = await resp.json();
+        console.log(`FMP ${sym} raw (${url}):`, JSON.stringify(raw).slice(0, 400));
+        // Check for FMP error/info objects
+        if (raw && raw['Error Message']) { console.warn(`FMP ${sym} error:`, raw['Error Message']); continue; }
+        if (raw && raw.message && typeof raw.message === 'string') { console.warn(`FMP ${sym} message:`, raw.message); continue; }
+        const q = extractQuote(raw, sym);
+        if (q) {
+          console.log(`FMP ${sym} extracted: price=${q.price} yearHigh=${q.yearHigh} priceAvg200=${q.priceAvg200}`);
+          return q;
+        }
+        console.warn(`FMP ${sym}: extractQuote returned null from`, raw);
+      } catch (e) { console.warn(`FMP ${sym} fetch error at ${url}:`, e); }
+    }
+    return null;
+  }
+
+  // ── Apply a verified quote to the update object ──
+  function applyQuote(q, sym) {
+    if (!q) return;
+    const price   = q.price ?? q.previousClose ?? null;
+    const high52w = q.yearHigh ?? null;
+    const ma200   = q.priceAvg200 ?? null;          // never substitute priceAvg50 for 200DMA
+    const s = sym.toUpperCase();
+
+    if (s === 'SPY') {
+      if (price   != null) update.sp500        = price;
+      if (high52w != null) update.sp500High52w = high52w;
+      if (ma200   != null) update.sp500Ma200   = ma200;
+    } else if (s === 'QQQ') {
+      if (price   != null) update.qqq          = price;
+      if (high52w != null) update.qqqHigh52w   = high52w;
+      if (ma200   != null) update.qqqMa200     = ma200;
+    } else if (['^VIX','VIX','VIXY'].includes(s)) {
+      if (price   != null) update.vix          = price;
+    }
+  }
+
+  // ── Step 1: SPY ──
+  console.log('FMP: fetching SPY…');
+  applyQuote(await fmpFetchQuote('SPY'), 'SPY');
+  console.log('SPY result → sp500:', update.sp500, 'High52w:', update.sp500High52w, 'Ma200:', update.sp500Ma200);
+
+  // ── Step 2: QQQ — completely independent of SPY ──
+  console.log('FMP: fetching QQQ…');
+  applyQuote(await fmpFetchQuote('QQQ'), 'QQQ');
+  console.log('QQQ result → qqq:', update.qqq, 'High52w:', update.qqqHigh52w, 'Ma200:', update.qqqMa200);
+  const qqqMissingAfterQuote = ['qqq','qqqHigh52w','qqqMa200'].filter(k => update[k] == null);
+  if (qqqMissingAfterQuote.length) console.warn('QQQ fields missing after quote fetch:', qqqMissingAfterQuote);
+
+  // ── Step 3: VIX ──
+  if (!update.vix) {
+    for (const vixSym of ['^VIX', 'VIX', 'VIXY']) {
+      applyQuote(await fmpFetchQuote(vixSym), vixSym);
+      if (update.vix) { console.log('VIX fetched as', vixSym, '=', update.vix); break; }
+    }
+  }
+
+  // ── Step 4: Historical fallback for SPY ──
+  if (!update.sp500High52w || !update.sp500Ma200) {
+    console.log('FMP: SPY historical fallback…');
+    const hist = await fetchFmpHistoricalDaily('SPY', apiKey);
+    if (hist.length) {
+      if (!update.sp500High52w) update.sp500High52w = calcHigh(hist, 252);
+      if (!update.sp500Ma200)   update.sp500Ma200   = calcSma(hist, 200);
+      console.log('SPY hist → High52w:', update.sp500High52w, 'Ma200:', update.sp500Ma200);
+    } else console.warn('FMP SPY historical: empty');
+  }
+
+  // ── Step 5: Historical fallback for QQQ (covers price, 52W high, AND 200DMA) ──
+  const qqqStillMissing = ['qqq','qqqHigh52w','qqqMa200'].filter(k => update[k] == null);
+  if (qqqStillMissing.length) {
+    console.log('FMP: QQQ historical fallback — still missing:', qqqStillMissing);
+    const hist = await fetchFmpHistoricalDaily('QQQ', apiKey);
+    console.log(`FMP QQQ historical: ${hist.length} bars`);
+    if (hist.length) {
+      if (!update.qqq) {
+        const close0 = parseFloat(hist[0]?.close || hist[0]?.adjClose || 0);
+        if (close0 > 0) { update.qqq = close0; console.log('QQQ price from hist[0].close:', close0); }
+      }
+      if (!update.qqqHigh52w) update.qqqHigh52w = calcHigh(hist, 252);
+      if (!update.qqqMa200)   update.qqqMa200   = calcSma(hist, 200);
+      console.log('QQQ hist → price:', update.qqq, 'High52w:', update.qqqHigh52w, 'Ma200:', update.qqqMa200);
+    } else console.warn('FMP QQQ historical: empty — QQQ fields remain missing');
+  }
+
+  const updated = REQUIRED.filter(k => update[k] != null);
+  const missing = REQUIRED.filter(k => update[k] == null);
+  if (updated.length) saveMarketIndicators(update);
+  console.log('FMP done — updated:', updated, 'missing:', missing);
+  return { updated, missing };
+}
+
+async function fetchMarketDataFromAlphaVantage(apiKey) {
+  const base = 'https://www.alphavantage.co/query';
+  const update = {};
+  const REQUIRED = ['vix','sp500','sp500High52w','sp500Ma200','qqq','qqqHigh52w','qqqMa200'];
+
+  // ── Step 1: current quotes ──
+  const quoteSymbols = [
+    { sym: 'SPY', priceKey: 'sp500' },
+    { sym: 'QQQ', priceKey: 'qqq'   },
+    { sym: 'VIX', priceKey: 'vix'   },
+  ];
+  for (const { sym, priceKey } of quoteSymbols) {
+    try {
+      const resp = await fetch(`${base}?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${apiKey}`);
+      if (!resp.ok) { console.warn(`AV GLOBAL_QUOTE ${sym} HTTP ${resp.status}`); continue; }
+      const data = await resp.json();
+      // Alpha Vantage returns rate-limit notes as plain strings inside JSON objects
+      if (data.Note || data.Information) {
+        console.warn('Alpha Vantage rate limit / info:', data.Note || data.Information);
+        toast(CURRENT_LANG === 'en' ? 'Alpha Vantage rate limit — try again later' : 'Alpha Vantage 请求频率超限，稍后再试');
+        break;
+      }
+      const q = data['Global Quote'];
+      if (q && q['05. price']) {
+        const price = parseFloat(q['05. price']);
+        if (!isNaN(price) && price > 0) update[priceKey] = price;
+      } else {
+        console.warn(`AV GLOBAL_QUOTE ${sym}: empty quote`, data);
+      }
+    } catch (e) { console.warn(`AV GLOBAL_QUOTE ${sym} error:`, e); }
+  }
+
+  // ── Step 2: daily time series for 52W high and 200DMA ──
+  for (const { sym, highKey, maKey } of [
+    { sym: 'SPY', highKey: 'sp500High52w', maKey: 'sp500Ma200' },
+    { sym: 'QQQ', highKey: 'qqqHigh52w',  maKey: 'qqqMa200'   },
+  ]) {
+    if (update[highKey] && update[maKey]) continue;
+    try {
+      const resp = await fetch(`${base}?function=TIME_SERIES_DAILY&symbol=${sym}&outputsize=compact&apikey=${apiKey}`);
+      if (!resp.ok) { console.warn(`AV TIME_SERIES_DAILY ${sym} HTTP ${resp.status}`); continue; }
+      const data = await resp.json();
+      if (data.Note || data.Information) {
+        console.warn('Alpha Vantage rate limit on daily:', data.Note || data.Information);
+        break;
+      }
+      const ts = data['Time Series (Daily)'];
+      if (!ts) { console.warn(`AV TIME_SERIES_DAILY ${sym}: no time series`, Object.keys(data)); continue; }
+      const dates = Object.keys(ts).sort().reverse(); // newest first
+      if (!update[highKey]) {
+        const h = calcHigh(dates.slice(0, 252).map(d => ({ high: ts[d]['2. high'], close: ts[d]['4. close'] })), 252);
+        if (h) update[highKey] = h;
+      }
+      if (!update[maKey] && dates.length >= 200) {
+        const sma = calcSma(dates.slice(0, 200).map(d => ({ close: ts[d]['4. close'] })), 200);
+        if (sma) update[maKey] = sma;
+      }
+      console.log(`AV ${sym} historical → 52W high:`, update[highKey], ' 200DMA:', update[maKey]);
+    } catch (e) { console.warn(`AV TIME_SERIES_DAILY ${sym} error:`, e); }
+  }
+
+  const updated = REQUIRED.filter(k => update[k] != null);
+  const missing = REQUIRED.filter(k => update[k] == null);
+  if (updated.length) saveMarketIndicators(update);
+  console.log('Alpha Vantage result — updated:', updated, ' missing:', missing);
+  return { updated, missing };
+}
+
+// Update watchlist current prices from market data API
+async function refreshWatchlistPrices(apiKey, provider) {
+  const list = getWatchlist();
+  if (!list.length || !apiKey || provider === 'manual') return;
+  const updated = [...list];
+  for (let i = 0; i < updated.length; i++) {
+    const s = updated[i];
+    if (!s.ticker) continue;
+    try {
+      let price = null, name = null, currency = null;
+      if (provider === 'alphavantage') {
+        const resp = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(s.ticker)}&apikey=${apiKey}`);
+        if (!resp.ok) { console.warn(`AV watchlist ${s.ticker} HTTP ${resp.status}`); continue; }
+        const data = await resp.json();
+        if (data.Note || data.Information) { console.warn('AV watchlist rate limit:', data.Note || data.Information); break; }
+        const q = data['Global Quote'];
+        if (q && q['05. price']) price = parseFloat(q['05. price']);
+      } else if (provider === 'fmp') {
+        const encodedTicker = encodeURIComponent(s.ticker);
+        // Try stable endpoint first, then v3
+        let q = null;
+        for (const url of [
+          `https://financialmodelingprep.com/stable/quote?symbol=${encodedTicker}&apikey=${apiKey}`,
+          `https://financialmodelingprep.com/api/v3/quote/${encodedTicker}?apikey=${apiKey}`,
+        ]) {
+          try {
+            const resp = await fetch(url);
+            if (!resp.ok) { console.warn(`FMP watchlist ${s.ticker} HTTP ${resp.status} (${url})`); continue; }
+            const data = await resp.json();
+            const candidate = Array.isArray(data) ? data[0] : (data && data.price != null ? data : null);
+            if (candidate && candidate.price != null) { q = candidate; break; }
+          } catch (e) { console.warn(`FMP watchlist ${s.ticker} error:`, e); }
+        }
+        if (q) {
+          if (q.price) price = q.price;
+          if (!s.name && q.name) name = q.name;
+          if (!s.currency && q.currency) currency = q.currency.toUpperCase();
+        }
+        console.log(`FMP watchlist ${s.ticker}: price=${price}`);
+      }
+      if (price != null || name || currency) {
+        updated[i] = {
+          ...s,
+          // Never overwrite user-entered fair/buy/strongBuy/maxWeight/note
+          ...(price != null ? { currentPrice: price, priceSource: 'api' } : {}),
+          ...(name ? { name } : {}),
+          ...(currency ? { currency } : {}),
+        };
+      }
+    } catch (e) { console.warn(`watchlist refresh ${s.ticker} error:`, e); }
+  }
+  saveWatchlist(updated);
+}
+
 applyLanguage(getSettings().language || 'zh');
 </script>
 </body>
