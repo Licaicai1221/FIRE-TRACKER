@@ -2104,7 +2104,7 @@ function calcTotals(month) {
   const s = getSettings();
 
   let liquid=0, fixed=0, wealth=0, risk=0, debt=0;
-  const ccyTotals = {}; // currency code -> CNY-equivalent total (financial assets only)
+  const ccyTotals = {}; // currency code -> native-currency total (financial assets only, uses origAmt)
 
   entries.forEach(e => {
     const v = e.cnhAmt || 0;
@@ -2122,9 +2122,9 @@ function calcTotals(month) {
       else if (/负债|借款|欠款|贷款|欠/.test(cat2)) debt += v;
       else if (/应收|借出|借给/.test(cat2)) liquid += v;
       else liquid += v;
-      // Currency breakdown: financial assets only (实物资产 excluded)
+      // Currency breakdown: sum original-currency amounts directly (no CNY round-trip)
       const ccy = e.currency || 'CNY';
-      ccyTotals[ccy] = (ccyTotals[ccy] || 0) + v;
+      ccyTotals[ccy] = (ccyTotals[ccy] || 0) + (e.origAmt || 0);
     }
   });
 
@@ -3006,9 +3006,13 @@ function renderLedger() {
 
   const t = month ? calcTotals(month) : {};
   const summary = document.getElementById('ledger-summary');
+  const eurNative = t.ccyTotals?.['EUR'];
+  const eurChipLabel = CURRENT_LANG === 'en' ? 'EUR Total' : 'EUR 合计';
+  const eurChipValue = eurNative != null ? '€' + fmt(eurNative, 0) : '—';
   summary.innerHTML = [
     [tr('总净资产'), fmtMainShort(t.total)],
     [tr('金融资产'), fmtMainShort(t.fin)],
+    [eurChipLabel, eurChipValue],
     [tr('项目数'), monthEntries.length+' '+tr('项')],
   ].map(([l,v]) => `<div class="ledger-summary-chip">
     <div class="ledger-summary-chip-label">${l}</div><div class="ledger-summary-chip-value">${v}</div></div>`).join('');
